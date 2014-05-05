@@ -1,0 +1,33 @@
+Class "RMQ_succinct" in files "RMQ_succinct.[c|h]pp" implements the
+succinct representation of RMQ information.
+
+Type "make" to get an executable "testRMQ" which, when run, creates
+a random array of length 5,000,000  and tests the data structure by
+posing 1,000 random RMQs to the array and comparing the result with
+the naive algorithm for RMQ ("RMQ_1_n.[c|h]pp"). Comparing with the
+*naive*  method is also the  reason why it  takes so long!  See how
+blindingly fast the test is without the naive algorithm.
+
+Implementation details:
+=======================
+- Block size s fixed to 8 and superblock size s'' to 256.
+- There is an intermediate block-layer of size 16  which is actually
+  not  implemented  (as a block consists of  two microblocks).  This
+  saves a lot of space in practice for tables M and M'. For details,
+  see my doctoral thesis (to appear) or ask via an e-mail.
+- Currently just implemented for 32-bit architectures. I've tried to
+  make appropriate comments in the code where changes should be made
+  for 64-bit computing.
+
+License:
+========
+Published under the GPL. See file  COPYRIGHT  which comes along with
+this package.
+
+Acknowledgments:
+================
+Thanks to Niko V"alim"aki (Uni Helsinki) for helping debug the code!
+
+Contact:
+========
+Johannes.Fischer@bio.ifi.lmu.de

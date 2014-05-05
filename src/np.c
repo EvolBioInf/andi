@@ -1,0 +1,179 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <unistd.h>
+#include <math.h>
+#include "global.h"
+#include "process.h"
+
+#include "sequence.h"
+
+
+int FLAGS = 0; /* global */
+int CORES = 1; /* global */
+int STRATEGY = S_SIMPLE; /* global */
+
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include <kseq.h>
+
+// was: KSEQ_INIT(FILE*, read)
+
+KSEQ_INIT(int, read)
+
+#ifdef __cplusplus
+}
+#endif
+
+
+#define MAX_SEQUENCES 1000
+
+void usage();
+int readFile( FILE *in, seq_t *nextSequence);
+
+int main( int argc, char *argv[]){
+	int c, i;
+	
+	// parse arguments
+	while((c = getopt( argc, argv, "s:vdhrc:")) != -1 ){
+		switch (c){
+			case 'h':
+				usage();
+				break;
+			case 'r':
+				FLAGS |= F_RAW;
+				break;
+			case 'd':
+				FLAGS |= F_DOUBLE;
+				break;
+			case 'v':
+				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
+				break;
+			case 's':
+				if( strcmp( optarg, "revlook") == 0 ){
+					STRATEGY = S_REVLOOK;
+				} else if ( strcmp( optarg, "simple") == 0 ){
+					STRATEGY = S_SIMPLE;
+				} else if ( strcmp( optarg, "hist") == 0 ){
+					STRATEGY = S_HIST;
+				} else if ( strcmp( optarg, "inc") == 0 ){
+					STRATEGY = S_INC;	
+				} else {
+					fprintf(stderr, "error, unknown strategy: %s\n", optarg);
+					usage();
+				}
+				break;
+#ifdef _OPENMP
+			case 'c':
+				CORES = atoi( optarg);
+				break;
+#endif
+			case '?': /* intentional fallthrough */
+			default:
+				usage();
+				break;
+		}
+	}
+	
+	seq_t *sequences = (seq_t*) malloc( MAX_SEQUENCES * sizeof(seq_t));
+	assert( sequences );
+	
+	FILE *in = NULL;
+	int n = 0;
+	
+	// if no files are supplied, read from stdin
+	if( optind == argc){
+		in = stdin;
+		n = readFile( in, sequences );
+	}
+	
+	// parse all files
+	for( i=optind; i< argc; i++){
+		in = fopen( argv[i], "r");
+		if( !in) continue;
+		
+		n += readFile( in, sequences + n);
+		
+		assert( n < MAX_SEQUENCES);
+		fclose(in);
+	}
+	
+	fprintf( stderr, "Comparing %d sequences\n", n);
+	fflush( stderr);
+	
+	// compute distance matrix
+	if( n >= 2){
+		printDistMatrix(sequences, n);
+	}
+
+	for( i=0; i<n; i++){
+		freeSeq( &sequences[i]);
+	}
+	free( sequences);
+	return 0;
+};
+
+
+/**
+ * This function reads sequences from a file.
+ * @param in The file pointer to read from.
+ * @param nextSequence A pointer to the next free beginning of a sequence.
+ * @return The number of found sequences.
+ */
+int readFile( FILE *in, seq_t *nextSequence){
+	int n = 0, l;
+	char *sequence;
+	char *name;
+	
+	kseq_t *seq = kseq_init(fileno(in));
+	
+	while( ( l = kseq_read(seq)) >= 0){
+		int len = strlen(seq->seq.s);
+		sequence = (char*) malloc( (len + 1) * sizeof(char));
+		assert( sequence);
+		memcpy( sequence, seq->seq.s, len + 1);
+		nextSequence->S = sequence;
+		
+		len = strlen( seq->name.s);
+		name = (char*) malloc( (len+1) * sizeof(char));
+		assert( name);
+		memcpy( name, seq->name.s, len + 1);
+		nextSequence->name = name;
+		
+		nextSequence->RS = NULL;
+		nextSequence++;
+		n++;
+	}
+	
+	kseq_destroy(seq);
+	return n;
+}
+
+/**
+ * Prints the usage to stdout. Does not return.
+ */
+void usage(){
+	const char str[]= {
+		"Usage: np [OPTIONS] FILES...\n"
+		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
+		"Options:\n"
+		"\t[-r  raw distances; default: corrected]\n"
+		"\t[-d  double stranded comparison]\n"
+		"\t[-v  verbose]\n"
+		"\t[-s <simple|revlook|hist|inc> strategy]\n"
+#ifdef _OPENMP
+		"\t[-c <INT>  The number of cores to be used]\n"
+#endif
+		"\t[-h  display this help]\n"
+	};
+
+	printf("%s", str);
+	exit(1);
+}
+
+
+
+

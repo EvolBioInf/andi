@@ -119,8 +119,6 @@ int compute_LCP_PHI( esa_t *C){
 		if( k != -1 ){
 			while( S[k+l] == S[i+l]){
 				l++;
-				assert( k+l <= len);
-				assert( i+l <= len);
 			}
 			PLCP[i] = l;
 			l--;

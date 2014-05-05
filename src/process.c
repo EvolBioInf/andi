@@ -23,11 +23,11 @@
  */
 int dist( esa_t *C, char *query, int ql){
 	int jumps = 0;
-	saidx64_t idx = 0;
+	saidx_t idx = 0;
 	
 	
 	while( idx < ql ){
-		saidx64_t l = longestMatch( C, query + idx, ql - idx);
+		saidx_t l = longestMatch( C, query + idx, ql - idx);
 		if( l == 0 ) break;
 
 		jumps++;
@@ -39,8 +39,8 @@ int dist( esa_t *C, char *query, int ql){
 
 int disthist( esa_t *C, char *query, int ql, FILE *log){
 	int jumps = 0;
-	saidx64_t idx = 0;
-	saidx64_t l;
+	saidx_t idx = 0;
+	saidx_t l;
 	lcp_inter_t inter = {0,0,0};
 	
 	fprintf(log, "length\tnum\n");
@@ -62,10 +62,10 @@ int disthist( esa_t *C, char *query, int ql, FILE *log){
 
 int dist_revlook( esa_t *C, char *query, int ql){
 	int jumps = 0;
-	saidx64_t idx = 0;
-	saidx64_t sidx = 0;
+	saidx_t idx = 0;
+	saidx_t sidx = 0;
 	lcp_inter_t inter = {0,0,0};
-	saidx64_t i, w;
+	saidx_t i, w;
 	
 	w = 2;
 	
@@ -97,14 +97,14 @@ int dist_inc( esa_t *C, char *query, int ql){
 	int jumps = 0;
 	int extral = 0;
 	int extrar = 0;
-	saidx64_t idx = 0;
-	saidx64_t expected = 0;
+	saidx_t idx = 0;
+	saidx_t expected = 0;
 	lcp_inter_t inter = {0,0,0};
-	saidx64_t lastpos, thispos;
-	saidx64_t found;
+	saidx_t lastpos, thispos;
+	saidx_t found;
 	RMQ *rmq_SA = new RMQ_succinct( C->SA, C->len);
-	saidx64_t *SA = C->SA;
-	saidx64_t k;
+	saidx_t *SA = C->SA;
+	saidx_t k;
 	signed long sldist;
 	
 	double dist = 0;
@@ -205,7 +205,7 @@ double *distMatrix( seq_t* sequences, int n){
 
 		result = compute_SA( &E);
 		assert( result == 0); // zero errors
-		result = compute_LCP( &E);
+		result = compute_LCP_PHI( &E);
 		assert( result == 0);
 	
 		E.rmq_lcp = new RMQ_succinct(E.LCP, E.len);

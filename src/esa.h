@@ -1,32 +1,33 @@
 #ifndef _ESA_H_
 #define _ESA_H_
 
-#include <divsufsort64.h>
+#include <divsufsort.h>
 #include <RMQ.hpp>
 
 
 typedef struct {
 	const char *S;
-	saidx64_t *SA;
-	saidx64_t *ISA;
-	saidx64_t *LCP;
-	saidx64_t len;
+	saidx_t *SA;
+	saidx_t *ISA;
+	saidx_t *LCP;
+	saidx_t len;
 	RMQ *rmq_lcp;
 } esa_t;
 
 typedef struct {
-	saidx64_t i;
-	saidx64_t j;
+	saidx_t i;
+	saidx_t j;
 } interval;
 
 typedef struct {
-	saidx64_t l, i,j;
+	saidx_t l, i,j;
 } lcp_inter_t;
 
 
 int compute_SA( esa_t *c);
 int compute_LCP( esa_t *c);
-saidx64_t longestMatch( const esa_t *C, const char *query, int qlen);
+int compute_LCP_PHI( esa_t *c);
+saidx_t longestMatch( const esa_t *C, const char *query, int qlen);
 interval  exactMatch( const esa_t *C, const char *query);
 
 interval getInterval( const esa_t *C, const interval ij, char a);

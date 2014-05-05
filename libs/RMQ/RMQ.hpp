@@ -3,8 +3,8 @@
 
 #include <math.h>
 
-typedef long DT;                 // use long for 64bit-version (but take care of fast log!)
-typedef unsigned long int DTidx;     // for indexing in arrays
+typedef int DT;                 // use long for 64bit-version (but take care of fast log!)
+typedef unsigned int DTidx;     // for indexing in arrays
 
 /* Abstract class for RMQ-queries. Proprocessing is done
    in constructor. */

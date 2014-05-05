@@ -16,7 +16,7 @@ np: $(OBJECTS)
 	$(CPP) $(FLAGS) $(INCLUDES) $< -c -o $@
 	
 .PHONY: profile
-profile: FLAGS= -W -Wall -fpermissive -fopenmp -std=gnu++0x -g -pg -O1
+profile: FLAGS= -W -Wall -fpermissive -std=gnu++0x -g -pg -O1
 profile: np
 
 .PHONY : clean

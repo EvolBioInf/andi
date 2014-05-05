@@ -20,7 +20,7 @@ typedef struct {
 } interval;
 
 typedef struct {
-	saidx_t l, i,j;
+	saidx_t l, i, j;
 } lcp_inter_t;
 
 

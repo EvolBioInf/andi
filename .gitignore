@@ -1,4 +1,6 @@
 *.o
+np
 
 *.fasta
-
+cachegrind*
+callgrind*

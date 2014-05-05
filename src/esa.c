@@ -220,7 +220,7 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 	
 	m = rmq_lcp->query(i+1, j); // m is now any minimum in (i..j]
 	l = LCP[m];
-	ij.l = l;
+	ij->l = l;
 	
 	do {
 		if( S[ SA[m] + l] <= a ){
@@ -238,11 +238,69 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 	if( S[SA[i] + l] == a){
 		ij->i = i;
 		ij->j = j;
+		ij->l = LCP[m];
 	} else {
 		ij->i = ij->j = -1;
 	}
 	
 	return ij;
+}
+
+/* Ohlebusch getInterval Alg 5.2 p.119
+ */
+lcp_inter_t getLCPInterval2( const esa_t *C, const char *query, size_t qlen){
+	lcp_inter_t res = {0,0,0};
+
+	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->rmq_lcp ){
+		res.i = res.j = res.l = -1;
+		return res;
+	}
+	
+	saidx_t k = 0, l, i, j, t, p;
+	lcp_inter_t ij = { 0, 0, C->len-1};
+	saidx_t m = qlen;
+	
+	saidx_t *SA = C->SA;
+	saidx_t *LCP = C->LCP;
+	const char *S = (const char *)C->S;
+	RMQ *rmq_lcp = C->rmq_lcp;
+	
+	
+	do {
+		getInterval( C, &ij, query[k]);
+		i = ij.i;
+		j = ij.j;
+		
+		if( i == -1 && j == -1 ){
+			res.l = k;
+			return res;
+		}
+		
+		res.i = ij.i;
+		res.j = ij.j;
+
+		l = m;
+		if( i < j){
+			/* Instead of making another RMQ we can use the LCP interval calculated in getInterval */
+			t = ij.l;
+			if( t < l ){
+				l = t;
+			}
+		}
+		p = SA[i];
+
+		for(;k<l && S[p+k] && query[k];k++){
+			if( S[p+k] != query[k] ){
+				res.l = k;
+				return res;
+			}
+		}
+
+		k = l;
+	} while ( k < m);
+
+	res.l = m;
+	return res;
 }
 
 /* Ohlebusch getInterval Alg 5.2 p.119
@@ -307,7 +365,7 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
  * @returns longest prefix of query found in subject
  */
 saidx_t longestMatch( const esa_t *C, const char *query, int qlen){
-	return getLCPInterval( C, query, qlen).l;
+	return getLCPInterval2( C, query, qlen).l;
 }
 
 /**

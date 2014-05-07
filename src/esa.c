@@ -154,6 +154,7 @@ int compute_LCP_PHI( esa_t *C){
 /**
  * Given the LCP interval for a string `w` this function calculates the 
  * LCP interval for `wa` where `a` is a single character.
+ * The empty interval is represented by ij.i == -1 and ij.j == -1.
  * @param {const esa_t*} C - This is the enhanced suffix array of the subject sequence.
  * @param {lcp_inter_t*} ij - The prefix `w` is given implicitly by the ij LCP interval.
  * @param {char} a - The next character in the query sequence.
@@ -169,6 +170,7 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 	const char *S = C->S;
 	RMQ *rmq_lcp = C->rmq_lcp;
 	
+	// check for singleton or empty interval
 	if( i == j ){
 		if( S[SA[i]] == a){
 			ij->i = ij->j = i;
@@ -184,23 +186,31 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 	l = LCP[m];
 	ij->l = l;
 	
+	/* We now use an abstract binary search. Think of `i` as the
+	 * lower and `j` as the upper boundary. Then `m` is the new
+	 * middle. */
 	do {
-		
+		// check if `m` will be a new lower or upper bound.
 		if( S[ SA[m] + l] <= a ){
 			i = m;
 		} else {
 			j = m - 1;
 		}
+		
 		if( i == j ){
-			break;
+			break; // `a` not found, exit early
 		}
 		
+		// find the next LCP boundary
 		m = rmq_lcp->query(i+1, j);
 	} while( LCP[m] == l);
 
+	// final sanity check
 	if( S[SA[i] + l] == a){
 		ij->i = i;
 		ij->j = j;
+		/* Also return the length of the LCP interval including `a` and
+		 * possibly even more characters. Note: l + 1 <= LCP[m] */
 		ij->l = LCP[m];
 	} else {
 		ij->i = ij->j = -1;
@@ -214,6 +224,7 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	lcp_inter_t res = {0,0,0};
 
+	// sanity checks
 	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->rmq_lcp ){
 		res.i = res.j = res.l = -1;
 		return res;
@@ -226,12 +237,13 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	saidx_t *SA = C->SA;
 	const char *S = (const char *)C->S;
 	
-	
+	// Loop over the query until a mismatch is found
 	do {
 		getInterval( C, &ij, query[k]);
 		i = ij.i;
 		j = ij.j;
 		
+		// If our match cannot be extended further, return.
 		if( i == -1 && j == -1 ){
 			res.l = k;
 			return res;
@@ -242,15 +254,15 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 
 		l = m;
 		if( i < j){
-			/* Instead of making another RMQ we can use the LCP interval calculated in getInterval */
-			t = ij.l;
-			if( t < l ){
-				l = t;
+			/* Instead of making another RMQ we can use the LCP interval calculated
+			 * in getInterval */
+			if( ij.l < l ){
+				l = ij.l;
 			}
 		}
-		p = SA[i];
-
-		for(;k<l && S[p+k] && query[k];k++){
+		
+		// Extend the match
+		for( p = SA[i]; k < l && S[p+k] && query[k]; k++){
 			if( S[p+k] != query[k] ){
 				res.l = k;
 				return res;

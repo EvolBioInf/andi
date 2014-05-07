@@ -16,8 +16,6 @@ enum {
 
 enum {
 	S_SIMPLE,
-	S_REVLOOK,
-	S_HIST,
 	S_INC
 };
 

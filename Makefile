@@ -11,6 +11,7 @@ profile:
 	@mv ./src/np .
 	
 clean:
+	@cd ./libs/RMQ; make clean
 	@cd ./src; make clean
 	@-rm np
 	

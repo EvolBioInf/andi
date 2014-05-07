@@ -37,61 +37,6 @@ int dist( esa_t *C, char *query, int ql){
 	return jumps;
 }
 
-int disthist( esa_t *C, char *query, int ql, FILE *log){
-	int jumps = 0;
-	saidx_t idx = 0;
-	saidx_t l;
-	lcp_inter_t inter = {0,0,0};
-	
-	fprintf(log, "length\tnum\n");
-	
-	while( idx < ql ){
-		inter = getLCPInterval( C, (char*) (query+idx), ql-idx);
-		l = inter.l;
-		if( l == 0 ) break;
-		
-		if( FLAGS & F_VERBOSE)
-		fprintf( log, "%ld\t%ld\n", l, inter.j - inter.i + 1);
-		
-		jumps++;
-		idx += l + 1; // skip the mutation
-	}
-
-	return jumps;
-}
-
-int dist_revlook( esa_t *C, char *query, int ql){
-	int jumps = 0;
-	saidx_t idx = 0;
-	saidx_t sidx = 0;
-	lcp_inter_t inter = {0,0,0};
-	saidx_t i, w;
-	
-	w = 2;
-	
-	while( idx < ql ){
-		if( FLAGS & F_VERBOSE ) printf("idx: %ld, sidx: %ld\n", idx, sidx);
-		inter = getLCPInterval( C, (char*) (query+idx), ql-idx);
-		if( inter.l == 0 ) break;
-		
-		jumps++;
-		idx += inter.l + 1; // skip the mutation
-		
-		if( FLAGS & F_VERBOSE ) printf("%2ld-[%ld..%ld]\n", inter.l, inter.i,inter.j);
-		for( i=0; i< w && sidx + i < C->len; i++){
-			if( C->ISA[ sidx + i ] >= inter.i && C->ISA[ sidx + i ] <= inter.j)
-				break;
-		}
-
-		if( i == w ){
-			// we propably missed another mutation
-			jumps++;
-		}
-		sidx += inter.l + /* i + */ 1;
-	}
-
-	return jumps;
-}
 
 int dist_inc( esa_t *C, char *query, int ql){
 	int jumps = 0;
@@ -144,7 +89,7 @@ int dist_inc( esa_t *C, char *query, int ql){
 		dist += fabs((double)sldist);
 		
 		if( FLAGS & F_EXTRA_VERBOSE){
-			fprintf(stderr, "%ld\t%ld\t%ld\t%2ld-[%ld..%ld]\n", idx, expected, thispos, inter.l, inter.i, inter.j);
+			fprintf(stderr, "%d\t%d\t%d\t%2d-[%d..%d]\n", idx, expected, thispos, inter.l, inter.i, inter.j);
 		}
 		
 		if( -sldist > (signed long)(2 * (inter.l + 1)) ){
@@ -229,12 +174,6 @@ double *distMatrix( seq_t* sequences, int n){
 			
 			if( STRATEGY == S_SIMPLE ){
 				result = dist( &E, sequences[j].S, ql);
-			} else if( STRATEGY == S_REVLOOK ){
-				result = dist_revlook( &E, sequences[j].S, ql);
-			} else if( STRATEGY == S_HIST ){
-				FILE *log = fopen("hist.log", "a+");
-				disthist( &E, sequences[j].S, ql, log);
-				fclose(log);				
 			} else if( STRATEGY == S_INC ){
 				result = dist_inc( &E, sequences[j].S, ql);
 			}

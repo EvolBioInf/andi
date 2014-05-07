@@ -53,12 +53,8 @@ int main( int argc, char *argv[]){
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
 				break;
 			case 's':
-				if( strcmp( optarg, "revlook") == 0 ){
-					STRATEGY = S_REVLOOK;
-				} else if ( strcmp( optarg, "simple") == 0 ){
+				if ( strcmp( optarg, "simple") == 0 ){
 					STRATEGY = S_SIMPLE;
-				} else if ( strcmp( optarg, "hist") == 0 ){
-					STRATEGY = S_HIST;
 				} else if ( strcmp( optarg, "inc") == 0 ){
 					STRATEGY = S_INC;	
 				} else {
@@ -163,7 +159,7 @@ void usage(){
 		"\t[-r  raw distances; default: corrected]\n"
 		"\t[-d  double stranded comparison]\n"
 		"\t[-v  verbose]\n"
-		"\t[-s <simple|revlook|hist|inc> strategy]\n"
+		"\t[-s <simple|inc> strategy]\n"
 #ifdef _OPENMP
 		"\t[-c <INT>  The number of cores to be used]\n"
 #endif

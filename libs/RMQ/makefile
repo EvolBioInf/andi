@@ -16,4 +16,6 @@ RMQ_1_n.o: RMQ_1_n.cpp RMQ_1_n.hpp RMQ.hpp
 profile: FLAG = -O1 -g -pg -fomit-frame-pointer -funroll-loops
 profile: all
 	
-
+.PHONY: clean
+clean:
+	-rm *.o

@@ -223,6 +223,7 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 	ij->l = l;
 	
 	do {
+		
 		if( S[ SA[m] + l] <= a ){
 			i = m;
 		} else {
@@ -231,10 +232,6 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 		if( i == j ){
 			break;
 		}
-				
-		//if( a == S[ SA[j] + l] && S[ SA[i] + l] == a ){
-		//	break;
-		//}
 		
 		m = rmq_lcp->query(i+1, j);
 	} while( LCP[m] == l);
@@ -265,9 +262,7 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	saidx_t m = qlen;
 	
 	saidx_t *SA = C->SA;
-	saidx_t *LCP = C->LCP;
 	const char *S = (const char *)C->S;
-	RMQ *rmq_lcp = C->rmq_lcp;
 	
 	
 	do {

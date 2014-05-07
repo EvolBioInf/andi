@@ -21,9 +21,9 @@
  * @param query - The actual query string.
  * @param ql - The length of the query string. Needed for speed reasons.
  */
-int dist( esa_t *C, char *query, size_t ql){
+double dist( esa_t *C, char *query, size_t ql){
 	int jumps = 0;
-	saidx_t idx = 0;
+	size_t idx = 0;
 	
 	
 	while( idx < ql ){
@@ -34,11 +34,14 @@ int dist( esa_t *C, char *query, size_t ql){
 		idx += l + 1; // skip the mutation
 	}
 
-	return jumps;
+	if( jumps <= 1){
+		jumps = 2;
+	}
+	return (double)(jumps-1)/(double)ql;
 }
 
 
-int dist_inc( esa_t *C, char *query, size_t ql){
+double dist_inc( esa_t *C, char *query, size_t ql){
 	int jumps = 0;
 	int extral = 0;
 	int extrar = 0;
@@ -114,7 +117,7 @@ int dist_inc( esa_t *C, char *query, size_t ql){
 		printf("var dist: %lf\n", dist/(double)jumps);
 	}
 
-	return jumps + extral + extrar ;
+	return (double)(jumps + extral + extrar-1)/(double)ql ;
 }
 
 
@@ -170,21 +173,13 @@ double *distMatrix( seq_t* sequences, int n){
 				}
 			}
 
-			int ql = sequences[j].len;
+			size_t ql = sequences[j].len;
 			
 			if( STRATEGY == S_SIMPLE ){
-				result = dist( &E, sequences[j].S, ql);
+				d = dist( &E, sequences[j].S, ql);
 			} else if( STRATEGY == S_INC ){
-				result = dist_inc( &E, sequences[j].S, ql);
+				d = dist_inc( &E, sequences[j].S, ql);
 			}
-			
-			if( result <= 1) result = 2; // avoid NaN
-			
-			if( FLAGS & F_VERBOSE ){
-				printf("i: %d, j: %d, jumps: %d, length: %d\n", i, j, result, ql);
-			}
-			
-			d = (double)(result - 1)/(double)ql;
 			
 			if( !(FLAGS & F_RAW)){
 				/*  Our shustring method might miss a mutation or two. Hence we need to correct  

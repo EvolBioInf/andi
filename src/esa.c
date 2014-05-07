@@ -140,60 +140,6 @@ int compute_LCP_PHI( esa_t *C){
 
 
 /**
- * Ohlebusch Alg 5.1
- */
-interval getInterval( const esa_t *C, interval ij, char a){
-	interval ret;
-	saidx_t i = ij.i;
-	saidx_t j = ij.j;
-	/*if( !C || !C->S || !C->SA || !C->LCP || !C->rmq_lcp ){
-		ij.i = ij.j = -2;
-		return ij;
-	}*/
-
-	saidx_t *SA = C->SA;
-	saidx_t *LCP = C->LCP;
-	const char *S = C->S;
-	RMQ *rmq_lcp = C->rmq_lcp;
-	
-	if( i == j ){
-		if( S[SA[i]] == a){
-			ret.i = ret.j = i;
-		} else {
-			ret.i = ret.j = -1;
-		}
-		return ret;
-	}
-
-	saidx_t l, m;
-	
-	m = rmq_lcp->query(i+1, j); // m is now any minimum in (i..j]
-	l = LCP[m];
-	do {
-		if( S[ SA[m] + l] <= a ){
-			i = m;
-		} else {
-			j = m - 1;
-		}
-		if( i == j ){
-			break;
-		}
-
-		// TODO: RMQ is slow. Find a better exit.
-		m = rmq_lcp->query(i+1, j);
-	} while( LCP[m] == l);
-
-	if( S[SA[i] + l] == a){
-		ret.i = i;
-		ret.j = j;
-	} else {
-		ret.i = ret.j = -1;
-	}
-	
-	return ret;
-}
-
-/**
  * Given the LCP interval for a string w this function calculates the 
  * LCP interval for wa.
  */

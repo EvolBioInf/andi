@@ -29,7 +29,7 @@ int compute_SA(esa_t *C){
 }
 
 /**
- * Computes the LCP and ISA given SA and S.
+ * Computes the LCP and ISA given SA and S. This function uses the method from Kasai et al.
  * @param C The enhanced suffix array.
  * @return 0 iff sucessful
  */
@@ -82,16 +82,26 @@ int compute_LCP( esa_t *C){
 	return 0;
 }
 
+/**
+ * This function implements an alternative way of computing an LCP
+ * array for a given suffix array. It uses an intermediate `phi`
+ * array, hence the name. It's a bit faster than the other version.
+ * @param {esa_t*} C - The enhanced suffix array to compute the LCP from.
+ * @returns 0 iff successful
+ */
 int compute_LCP_PHI( esa_t *C){
 	const char *S = C->S;
 	saidx_t *SA  = C->SA;
 	saidx_t len  = C->len;
 	
+	// Trivial safety checks
 	if( !C || S == NULL || SA == NULL || len == 0){
 		return 1;
 	}
 	
+	// Allocate new memory
 	if( C->LCP == NULL){
+		// The LCP array is one element longer than S.
 		C->LCP = (saidx_t*) malloc((len+1)*sizeof(saidx_t));
 		if( C->LCP == NULL ){
 			return 3;
@@ -102,18 +112,20 @@ int compute_LCP_PHI( esa_t *C){
 	LCP[0] = -1;
 	LCP[len] = -1;
 	
+	// Allocate temporary arrays
 	saidx_t *PHI = (saidx_t *) malloc( len * sizeof(saidx_t));
 	saidx_t *PLCP = (saidx_t *) malloc( len * sizeof(saidx_t));
 	if( !PHI || !PLCP) return 2;
 	
 	PHI[SA[0]] = -1;
-	int i, k;
+	ssize_t i, k;
+	
 	
 	for( i=1; i< len; i++){
 		PHI[SA[i]] = SA[ i-1];
 	}
 	
-	int l = 0;
+	ssize_t l = 0;
 	for( i = 0; i< len ; i++){
 		k = PHI[i];
 		if( k != -1 ){
@@ -128,7 +140,7 @@ int compute_LCP_PHI( esa_t *C){
 		}
 	}
 	
-	
+	// unpermutate the LCP array
 	for( i=1; i< len; i++){
 		LCP[i] = PLCP[SA[i]];
 	}
@@ -140,8 +152,12 @@ int compute_LCP_PHI( esa_t *C){
 
 
 /**
- * Given the LCP interval for a string w this function calculates the 
- * LCP interval for wa.
+ * Given the LCP interval for a string `w` this function calculates the 
+ * LCP interval for `wa` where `a` is a single character.
+ * @param {const esa_t*} C - This is the enhanced suffix array of the subject sequence.
+ * @param {lcp_inter_t*} ij - The prefix `w` is given implicitly by the ij LCP interval.
+ * @param {char} a - The next character in the query sequence.
+ * @returns A reference to the new LCP interval.
  */
 lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 	saidx_t i = ij->i;

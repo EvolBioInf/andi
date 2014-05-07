@@ -179,6 +179,7 @@ interval getInterval( const esa_t *C, interval ij, char a){
 			break;
 		}
 		
+		// TODO: RMQ is slow. Find a better exit.
 		m = rmq_lcp->query(i+1, j);
 	} while( LCP[m] == l);
 
@@ -192,8 +193,9 @@ interval getInterval( const esa_t *C, interval ij, char a){
 	return ret;
 }
 
-/*
- * optimize for speed.
+/**
+ * Given the LCP interval for a string w this function calculates the 
+ * LCP interval for wa.
  */
 lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 	saidx_t i = ij->i;

@@ -178,7 +178,7 @@ interval getInterval( const esa_t *C, interval ij, char a){
 		if( i == j ){
 			break;
 		}
-		
+
 		// TODO: RMQ is slow. Find a better exit.
 		m = rmq_lcp->query(i+1, j);
 	} while( LCP[m] == l);
@@ -231,6 +231,10 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 		if( i == j ){
 			break;
 		}
+				
+		//if( a == S[ SA[j] + l] && S[ SA[i] + l] == a ){
+		//	break;
+		//}
 		
 		m = rmq_lcp->query(i+1, j);
 	} while( LCP[m] == l);
@@ -248,7 +252,7 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 
 /* Ohlebusch getInterval Alg 5.2 p.119
  */
-lcp_inter_t getLCPInterval2( const esa_t *C, const char *query, size_t qlen){
+lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	lcp_inter_t res = {0,0,0};
 
 	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->rmq_lcp ){
@@ -303,69 +307,11 @@ lcp_inter_t getLCPInterval2( const esa_t *C, const char *query, size_t qlen){
 	return res;
 }
 
-/* Ohlebusch getInterval Alg 5.2 p.119
- */
-lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
-	lcp_inter_t res = {0,0,0};
-
-	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->rmq_lcp ){
-		res.i = res.j = res.l = -1;
-		return res;
-	}
-	
-	saidx_t k = 0, l, i, j, t, p;
-	interval ij = { 0, C->len-1};
-	saidx_t m = qlen;
-	
-	saidx_t *SA = C->SA;
-	saidx_t *LCP = C->LCP;
-	const char *S = (const char *)C->S;
-	RMQ *rmq_lcp = C->rmq_lcp;
-	
-	
-	do {
-		ij = getInterval( C, ij, query[k]);
-		i = ij.i;
-		j = ij.j;
-		
-		if( i == -1 && j == -1 ){
-			res.l = k;
-			return res;
-		}
-		
-		res.i = ij.i;
-		res.j = ij.j;
-
-		l = m;
-		if( i < j){
-			t = LCP[ rmq_lcp->query(i+1, j)];
-			if( t < l ){
-				l = t;
-			}
-		}
-		p = SA[i];
-
-		for(;k<l && S[p+k] && query[k];k++){
-			if( S[p+k] != query[k] ){
-				res.l = k;
-				return res;
-			}
-		}
-
-		k = l;
-	} while ( k < m);
-
-	res.l = m;
-	return res;
-}
-
-
-
 /**
  * @returns longest prefix of query found in subject
  */
 saidx_t longestMatch( const esa_t *C, const char *query, int qlen){
-	return getLCPInterval2( C, query, qlen).l;
+	return getLCPInterval( C, query, qlen).l;
 }
 
 /**

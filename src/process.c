@@ -21,7 +21,7 @@
  * @param query The actual query string.
  * @param ql The length of the query string. Needed for speed reasons.
  */
-int dist( esa_t *C, char *query, int ql){
+int dist( esa_t *C, char *query, size_t ql){
 	int jumps = 0;
 	saidx_t idx = 0;
 	
@@ -38,7 +38,7 @@ int dist( esa_t *C, char *query, int ql){
 }
 
 
-int dist_inc( esa_t *C, char *query, int ql){
+int dist_inc( esa_t *C, char *query, size_t ql){
 	int jumps = 0;
 	int extral = 0;
 	int extrar = 0;

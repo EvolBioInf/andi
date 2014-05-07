@@ -17,9 +17,9 @@
 /**
  * The dist function computes the distance between a subject and a query
  * @return Number of jumps which is related to the number of mutations
- * @param C The enhanced suffix array of the subject.
- * @param query The actual query string.
- * @param ql The length of the query string. Needed for speed reasons.
+ * @param C - The enhanced suffix array of the subject.
+ * @param query - The actual query string.
+ * @param ql - The length of the query string. Needed for speed reasons.
  */
 int dist( esa_t *C, char *query, size_t ql){
 	int jumps = 0;
@@ -178,18 +178,13 @@ double *distMatrix( seq_t* sequences, int n){
 				result = dist_inc( &E, sequences[j].S, ql);
 			}
 			
-			if( result <= 2) result = 3; // avoid NaN
+			if( result <= 1) result = 2; // avoid NaN
 			
 			if( FLAGS & F_VERBOSE ){
 				printf("i: %d, j: %d, jumps: %d, length: %d\n", i, j, result, ql);
 			}
 			
-			
-			if( FLAGS & F_DOUBLE ){
-				d = (double)(result - 2)/(double)ql;
-			} else {
-				d = (double)(result - 1)/(double)ql;
-			}
+			d = (double)(result - 1)/(double)ql;
 			
 			if( !(FLAGS & F_RAW)){
 				/*  Our shustring method might miss a mutation or two. Hence we need to correct  

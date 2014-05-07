@@ -219,7 +219,13 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 	return ij;
 }
 
-/* Ohlebusch getInterval Alg 5.2 p.119
+/**
+ * This function computes the LCPInterval for the longest prefix of `query` which
+ * can be found in the subject sequence. Compare Ohlebusch getInterval Alg 5.2 p.119
+ * @param {const esa_t*} C - The enhanced suffix array for the subject.
+ * @param {const char*} query - The query sequence.
+ * @param {size_t} qlen - The length of the query. Should correspond to `strlen(query)`.
+ * @returns {lcp_inter_t} The LCP interval for the longest prefix.
  */
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	lcp_inter_t res = {0,0,0};
@@ -277,7 +283,12 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 }
 
 /**
- * @returns longest prefix of query found in subject
+ * This function computes the length of the longest prefix of `query`
+ * which can be found in the subject sequence.
+ * @param {const esa_t*} C - The enhanced suffix array for the subject.
+ * @param {const char*} query - The query sequence.
+ * @param {size_t} qlen - The length of the query. Should correspond to `strlen(query)`.
+ * @returns {saidx_t} The length of the prefix.
  */
 saidx_t longestMatch( const esa_t *C, const char *query, int qlen){
 	return getLCPInterval( C, query, qlen).l;

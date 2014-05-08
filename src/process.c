@@ -34,90 +34,67 @@ double dist( esa_t *C, char *query, size_t ql){
 		idx += l + 1; // skip the mutation
 	}
 
+	// avoid NaN
 	if( jumps <= 1){
 		jumps = 2;
 	}
 	return (double)(jumps-1)/(double)ql;
 }
 
+#define N_PRO 2
 
-double dist_inc( esa_t *C, char *query, size_t ql){
-	int jumps = 0;
-	int extral = 0;
-	int extrar = 0;
-	saidx_t idx = 0;
-	saidx_t expected = 0;
-	lcp_inter_t inter = {0,0,0};
-	saidx_t lastpos, thispos;
-	saidx_t found;
-	RMQ *rmq_SA = new RMQ_succinct( C->SA, C->len);
-	saidx_t *SA = C->SA;
-	saidx_t k;
-	signed long sldist;
+double dist_inc( esa_t *C, const char *query, size_t ql){
+	size_t jumps = 0; // The jumps found so far
+	size_t homol = 0; // Number of homologous nuceotides so far.
 	
-	double dist = 0;
-	lastpos = 0;
+	size_t projected = 0;
+	lcp_inter_t inter;
+	
+	size_t idx = 0;
+	size_t found;
+	size_t l;
 	
 	while( idx < ql ){
-		inter = getLCPInterval( C, (char*) (query+idx), ql-idx);
-		if( inter.l == 0 ) break;
+		inter = getLCPInterval( C, query + idx, ql - idx );
+		l = inter.l;
+		if( l == 0){
+			break;
+		}
 		
+		if( l >= 100 ){
+			fprintf( stderr, "WTF? l:%ld\n", l);
+		}
 		
-		if( inter.j - inter.i < 4 ){
-			found = -1;
-			k = inter.i;
-			
-			for(; k<= inter.j && found == -1; k++){
-				if( SA[k] >= expected ){
-					found = k;
-					break;
-				}
-			}
-			
-			for( ; k <= inter.j; k++){
-				if( SA[k] >= expected && SA[k] < SA[found]){
-					found = k;
-				}
-			}
-			if( found == -1 ){
-				found = inter.i;
-			}
+		// lets just assume inter.j == inter.i
+		found = C->SA[ inter.j];
+		
+		if( projected == found ){
+			// We have homology
+			jumps++;
+			homol += l + 1;
+			idx += l + 1;
+			projected = found + l + 1;
 		} else {
-			found = rmq_SA->query(inter.i, inter.j);
+			idx += l + 1;
+			projected = found + l + 1;
 		}
-		thispos = SA[ found];
-		
-		// Assume thispos > lastpos. Otherwise we skipped a mutation (either here or there).
-		sldist = (long)thispos - (long)lastpos;
-		dist += fabs((double)sldist);
-		
-		if( FLAGS & F_EXTRA_VERBOSE){
-			fprintf(stderr, "%d\t%d\t%d\t%2d-[%d..%d]\n", idx, expected, thispos, inter.l, inter.i, inter.j);
-		}
-		
-		if( -sldist > (signed long)(2 * (inter.l + 1)) ){
-			// we propably missed another mutation
-			extral++;
-			expected += inter.l + 1;
-		} else if( sldist > (signed long)(2 * (inter.l + 1)) ){
-			extrar++; // dito
-			expected += inter.l + 1;
-		} else {
-			// no extra mutation
-			expected = thispos + inter.l + 1;
-		}
-		lastpos = thispos;
-		
-		jumps++;
-		idx += inter.l + 1; // skip the mutation
+	}	
+	
+	// avoid NaN
+	if( jumps <= 1){
+		jumps = 2;
+	}
+	if( homol <= 0){
+		homol = 1;
 	}
 	
-	if( FLAGS & F_VERBOSE ){
-		printf("jumps: %d, extral: %d, extrar: %d\n", jumps, extral, extrar);
-		printf("var dist: %lf\n", dist/(double)jumps);
+	if( jumps >= homol){
+		fprintf( stderr, "jumps: %ld, homol: %ld\n", jumps, homol);
+		fprintf( stderr, "idx: %ld, ql:%ld, l: %ld\n", idx, ql, l);
+		return 0.74999; // 0.75 - epsilon
 	}
 
-	return (double)(jumps + extral + extrar-1)/(double)ql ;
+	return (double)(jumps -1)/(double)homol ;
 }
 
 

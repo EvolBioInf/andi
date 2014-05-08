@@ -1,5 +1,7 @@
 *.o
 np
+randomSeed.dat
+seedms
 
 *.fasta
 cachegrind*

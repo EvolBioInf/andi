@@ -50,7 +50,7 @@ double dist_inc( esa_t *C, const char *query, size_t ql){
 	lcp_inter_t inter;
 	
 	size_t idx = 0;
-	size_t found;
+	ssize_t found;
 	size_t l;
 	
 	while( idx < ql ){
@@ -60,14 +60,32 @@ double dist_inc( esa_t *C, const char *query, size_t ql){
 			break;
 		}
 		
-		if( l >= 100 ){
-			fprintf( stderr, "WTF? l:%ld\n", l);
+		if( inter.j - inter.i < 10 ){
+			found = -1;
+			saidx_t k = inter.i;
+			
+			for( ; found == -1 && k <= inter.j; k++){
+				if( C->SA[k] >= projected ){
+					found = C->SA[k];
+					break;
+				}
+			}
+			
+			for( ; k <= inter.j; k++){
+				if( C->SA[k] >= projected && C->SA[k] < found ){
+					found = C->SA[k];
+				}
+			}
+			
+			if( found == -1 ){
+				found = C->SA[ inter.i];
+			}
+			
+		} else {
+			found = C->SA[ inter.j];
 		}
 		
-		// lets just assume inter.j == inter.i
-		found = C->SA[ inter.j];
-		
-		if( projected == found ){
+		if( found - projected < l ){
 			// We have homology
 			jumps++;
 			homol += l + 1;
@@ -160,7 +178,7 @@ double *distMatrix( seq_t* sequences, int n){
 			if( !(FLAGS & F_RAW)){
 				/*  Our shustring method might miss a mutation or two. Hence we need to correct  
 					the distance using math. See Haubold, Pfaffelhuber et al. (2009) */
-				if( STRATEGY == S_SIMPLE ){
+				if( STRATEGY == S_SIMPLE || STRATEGY == S_INC ){
 					d = divergence( 1.0/d, E.len, 0.5, 0.5);
 				}
 				d = -0.75 * log(1.0- (4.0 / 3.0) * d ); // jukes cantor

@@ -112,7 +112,7 @@ int main( int argc, char *argv[]){
 	}
 	free( sequences);
 	return 0;
-};
+}
 
 
 /**

@@ -122,25 +122,23 @@ int main( int argc, char *argv[]){
  * @return The number of found sequences.
  */
 int readFile( FILE *in, seq_t *nextSequence){
-	int n = 0, l;
-	char *sequence;
-	char *name;
+	int n = 0, l, check;
 	
 	kseq_t *seq = kseq_init(fileno(in));
 	
 	while( ( l = kseq_read(seq)) >= 0){
-		int len = strlen(seq->seq.s);
-		sequence = (char*) malloc( (len + 1) * sizeof(char));
-		assert( sequence);
-		memcpy( sequence, seq->seq.s, len + 1);
-		nextSequence->S = sequence;
+
+		check = asprintf( &nextSequence->S, "%s", seq->seq.s);
+		if( check == -1 ){
+			continue;
+		}
 		
-		len = strlen( seq->name.s);
-		name = (char*) malloc( (len+1) * sizeof(char));
-		assert( name);
-		memcpy( name, seq->name.s, len + 1);
-		nextSequence->name = name;
-		
+		check = asprintf( &nextSequence->name, "%s", seq->name.s);
+		if( check == -1 ){
+			free( nextSequence->S);
+			continue;
+		}
+
 		nextSequence->RS = NULL;
 		nextSequence++;
 		n++;

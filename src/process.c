@@ -41,11 +41,10 @@ double dist( esa_t *C, char *query, size_t ql){
 	return (double)(jumps-1)/(double)ql;
 }
 
-#define N_PRO 2
 
 double dist_inc( esa_t *C, const char *query, size_t ql){
 	size_t jumps = 0; // The jumps found so far
-	size_t homol = 0; // Number of homologous nuceotides so far.
+	size_t homol = 0; // Number of homologous nucleotides so far.
 	
 	size_t projected = 0;
 	lcp_inter_t inter;

@@ -33,12 +33,13 @@ KSEQ_INIT(int, read)
 
 void usage();
 int readFile( FILE *in, seq_t *nextSequence);
+void version();
 
 int main( int argc, char *argv[]){
 	int c, i;
 	
 	// parse arguments
-	while((c = getopt( argc, argv, "s:vdhrc:")) != -1 ){
+	while((c = getopt( argc, argv, "s:vdhrc:x")) != -1 ){
 		switch (c){
 			case 'h':
 				usage();
@@ -62,6 +63,7 @@ int main( int argc, char *argv[]){
 					usage();
 				}
 				break;
+			case 'x': version();
 #ifdef _OPENMP
 			case 'c':
 				CORES = atoi( optarg);
@@ -170,6 +172,14 @@ void usage(){
 	exit(1);
 }
 
-
+void version(){
+	const char str[]= {
+		"np v" VERSION  "\n"
+		"Copyright (C) 2014 Fabian Kloetzl\n"
+		"GPLv3+ license\n"
+	};
+	printf("%s", str);
+	exit(1);
+}
 
 

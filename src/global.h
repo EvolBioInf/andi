@@ -16,7 +16,8 @@ enum {
 
 enum {
 	S_SIMPLE,
-	S_INC
+	S_INC,
+	S_WINDOW
 };
 
 #endif

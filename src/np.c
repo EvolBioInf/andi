@@ -58,7 +58,9 @@ int main( int argc, char *argv[]){
 					STRATEGY = S_SIMPLE;
 				} else if ( strcmp( optarg, "inc") == 0 ){
 					STRATEGY = S_INC;	
-				} else {
+				} else if ( strcmp( optarg, "window") == 0 ){
+					STRATEGY = S_WINDOW;
+				} else{
 					fprintf(stderr, "error, unknown strategy: %s\n", optarg);
 					usage();
 				}

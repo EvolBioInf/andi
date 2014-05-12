@@ -159,7 +159,7 @@ void usage(){
 		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
 		"\t[-r  raw distances; default: corrected]\n"
-		"\t[-d  double stranded comparison]\n"
+		"\t[-D  single stranded comparison]\n"
 		"\t[-v  verbose]\n"
 		"\t[-s <simple|inc> strategy]\n"
 #ifdef _OPENMP

@@ -13,7 +13,7 @@ RMQ_1_n.o: RMQ_1_n.cpp RMQ_1_n.hpp RMQ.hpp
 	$(CPP) $(FLAG) -c RMQ_1_n.cpp
 
 .PHONY: profile
-profile: FLAG = -O1 -g -pg -fomit-frame-pointer -funroll-loops
+profile: FLAG = -O1 -g -pg -funroll-loops
 profile: all
 	
 .PHONY: clean

@@ -236,7 +236,7 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 		return res;
 	}
 	
-	saidx_t k = 0, l, i, j, t, p;
+	saidx_t k = 0, l, i, j, p;
 	lcp_inter_t ij = { 0, 0, C->len-1};
 	saidx_t m = qlen;
 	

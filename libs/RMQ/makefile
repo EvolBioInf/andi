@@ -18,4 +18,5 @@ profile: all
 	
 .PHONY: clean
 clean:
-	-rm *.o
+	-rm *.o testRMQ
+

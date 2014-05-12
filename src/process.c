@@ -21,7 +21,7 @@
  * @param query - The actual query string.
  * @param ql - The length of the query string. Needed for speed reasons.
  */
-double dist( esa_t *C, char *query, size_t ql){
+double dist( const esa_t *C, char *query, size_t ql){
 	int jumps = 0;
 	size_t idx = 0;
 	
@@ -42,7 +42,7 @@ double dist( esa_t *C, char *query, size_t ql){
 }
 
 
-double dist_inc( esa_t *C, const char *query, size_t ql){
+double dist_inc( const esa_t *C, const char *query, size_t ql){
 	size_t jumps = 0; // The jumps found so far
 	size_t homol = 0; // Number of homologous nucleotides so far.
 	
@@ -115,7 +115,6 @@ double dist_inc( esa_t *C, const char *query, size_t ql){
 
 	return (double)(jumps -1)/(double)homol ;
 }
-
 
 /**
  * The distMatrix populates the D matrix with computed distances. It allocates D and

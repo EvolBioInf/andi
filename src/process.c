@@ -229,12 +229,12 @@ double *distMatrix( seq_t* sequences, int n){
 		esa_t E = {NULL,NULL,NULL,NULL,0,NULL};
 		
 		// initialize the enhanced suffix array
-		if( FLAGS & F_DOUBLE ){
-			E.S = (const char*) sequences[i].RS;
-			E.len = sequences[i].RSlen;
-		} else {
+		if( FLAGS & F_SINGLE ){
 			E.S = (const char*) sequences[i].S;
 			E.len = sequences[i].len;
+		} else {
+			E.S = (const char*) sequences[i].RS;
+			E.len = sequences[i].RSlen;
 		}
 		
 		int result;
@@ -307,7 +307,7 @@ void printDistMatrix( seq_t* sequences, int n){
 			exit(1);
 		}
 		sequences[i].len = strlen( sequences[i].S);
-		if( FLAGS & F_DOUBLE ){
+		if( !(FLAGS & F_SINGLE) ){
 			sequences[i].RS = catcomp( sequences[i].S, sequences[i].len);
 			sequences[i].RSlen = 2 * sequences[i].len + 1;
 		}

@@ -39,7 +39,7 @@ int main( int argc, char *argv[]){
 	int c, i;
 	
 	// parse arguments
-	while((c = getopt( argc, argv, "s:vdhrc:x")) != -1 ){
+	while((c = getopt( argc, argv, "s:vDhrc:x")) != -1 ){
 		switch (c){
 			case 'h':
 				usage();
@@ -47,8 +47,8 @@ int main( int argc, char *argv[]){
 			case 'r':
 				FLAGS |= F_RAW;
 				break;
-			case 'd':
-				FLAGS |= F_DOUBLE;
+			case 'D':
+				FLAGS |= F_SINGLE;
 				break;
 			case 'v':
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;

@@ -1,8 +1,6 @@
 #include <stdlib.h>
 #include <RMQ.hpp>
 #include <string.h>
-#include <stdio.h>
-#include <assert.h>
 #include "esa.h"
 
 /**

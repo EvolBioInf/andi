@@ -2,6 +2,7 @@
 np
 randomSeed.dat
 seedms
+testRMQ
 
 *.fasta
 cachegrind*

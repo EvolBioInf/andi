@@ -169,15 +169,15 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 		homt = 0;
 				
 		if( extendable ){
-			int k = 1;
-			for( i= 0; i< 6; i++){
+			int k = 1; // Number of allowed mismatches
+			int LOOKAHEAD = 10;
+			for( i= 0; i< LOOKAHEAD && k; i++){
 				if( C->S[ projected + i] != query[ idx + i] ){
 					idx += i + 1;
 					projected += i + 1;
 					snpt++;
 					homt = i + 1;
-					
-					if( --k == 0) break;
+					k--;
 				}
 			}
 		}

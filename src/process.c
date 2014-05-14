@@ -97,22 +97,36 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 	int extendable = 0;
 	size_t snpt = 0, homt = 0;
 	
-	while( idx < ql){
-		if( FLAGS & F_EXTRA_VERBOSE ){
-			fprintf(stderr, "idx: %ld\n", idx);
-		}
+	size_t uniqs = 0;
+	size_t extensions = 0;
+	size_t nonextensions = 0;
+	size_t adjacent = 0;
 	
+	while( idx < ql){
 		inter = getLCPInterval( C, query + idx, ql - idx);
 		l = inter.l;
 		if( l == 0) break;
 		
+		if( FLAGS & F_EXTRA_VERBOSE ){
+			fprintf(stderr, "idx: %3ld, inter.i: %4d, found: %4ld, %d\n", idx, inter.i, C->SA[inter.i], extendable);
+		}
+		
 		// unique
 		if( inter.i == inter.j){
-			snps += 2;
-			homo += l + 2;
-			idx += l + 1;
+			uniqs++;
 			
 			found = C->SA[inter.i];
+			
+			if( extendable && found >= projected && found - projected < l ){
+				snps += snpt + 1;
+				homo += homt + l + 1;
+				adjacent++;
+			} else {
+				snps += 2;
+				homo += l + 2;
+			}
+			
+			idx += l + 1;
 			
 			projected = found + l + 1;
 			extendable = 1;
@@ -120,7 +134,7 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 			// neighbour?
 			found = -1;
 			
-			if( inter.j - inter.i < 5 ){
+			if( inter.j - inter.i < 50 ){
 				for( i= inter.i; i <= inter.j; i++){
 					if( C->SA[i] < projected ){
 						continue;
@@ -139,12 +153,15 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 				snps += snpt + 1;
 				homo += homt + l + 1;
 				projected = found + l + 1;
+				extensions++;
 			} else {
 				extendable = 0;
+				nonextensions++;
 			}
 			
 			idx += l + 1;
 		} else {
+			nonextensions++;
 			idx += l + 1;
 		}
 		
@@ -166,6 +183,8 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 	
 	if( FLAGS & F_VERBOSE ){
 		fprintf( stderr, "snps: %ld, homo: %ld\n", snps, homo);
+		fprintf( stderr, "unique matches: %ld, adjacent: %ld, extensions: %ld, nonextensions: %ld\n", 
+			uniqs, adjacent, extensions, nonextensions);
 	}
 	
 	return (double)snps/(double)homo;

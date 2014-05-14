@@ -22,7 +22,7 @@
  * @param ql - The length of the query string. Needed for speed reasons.
  */
 double dist( const esa_t *C, char *query, size_t ql){
-	int jumps = 0;
+	size_t jumps = 0;
 	size_t idx = 0;
 	
 	
@@ -108,7 +108,7 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 		if( l == 0) break;
 		
 		if( FLAGS & F_EXTRA_VERBOSE ){
-			fprintf(stderr, "idx: %3ld, inter.i: %4d, found: %4ld, %d\n", idx, inter.i, C->SA[inter.i], extendable);
+			fprintf(stderr, "idx: %3ld, inter.i: %4d, found: %4d, %d\n", idx, inter.i, C->SA[inter.i], extendable);
 		}
 		
 		// unique
@@ -169,13 +169,15 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 		homt = 0;
 				
 		if( extendable ){
-			for( i= 0; i< 3; i++){
+			int k = 1;
+			for( i= 0; i< 6; i++){
 				if( C->S[ projected + i] != query[ idx + i] ){
 					idx += i + 1;
 					projected += i + 1;
-					snpt = 1;
+					snpt++;
 					homt = i + 1;
-					break;
+					
+					if( --k == 0) break;
 				}
 			}
 		}
@@ -234,7 +236,7 @@ double dist_inc( const esa_t *C, const char *query, size_t ql){
 			found = C->SA[ inter.j];
 		}
 		
-		if( found >= projected && found - projected < l ){
+		if( found >= projected && (size_t)(found - projected) < l ){
 			// We have homology
 			jumps++;
 			homol += l + 1;
@@ -320,7 +322,7 @@ double dist_window( const esa_t *C, const char *query, size_t ql){
 		}
 		
 		for( p=0; p< WINDOW; p++){
-			if( found[p] >= projected[p] && found[p] - projected[p] < l ){
+			if( found[p] >= projected[p] && (size_t)(found[p] - projected[p]) < l ){
 				// homology
 				jumps += p + 1;
 				homol += dist[p] + l + 1;

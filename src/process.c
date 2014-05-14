@@ -169,12 +169,13 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 		homt = 0;
 				
 		if( extendable ){
-			for( i= 0; i< 5; i++){
+			for( i= 0; i< 3; i++){
 				if( C->S[ projected + i] != query[ idx + i] ){
 					idx += i + 1;
 					projected += i + 1;
 					snpt = 1;
 					homt = i + 1;
+					break;
 				}
 			}
 		}
@@ -279,6 +280,7 @@ double dist_window( const esa_t *C, const char *query, size_t ql){
 	size_t  dist[WINDOW] = {0};
 	ssize_t candidate;
 	size_t k, p;
+	size_t count = 0;
 	
 	size_t idx = 0;
 	while( idx < ql ){
@@ -322,6 +324,7 @@ double dist_window( const esa_t *C, const char *query, size_t ql){
 				// homology
 				jumps += p + 1;
 				homol += dist[p] + l + 1;
+				if( p > 0 ) count ++;
 				break;
 			}
 		}
@@ -352,6 +355,7 @@ double dist_window( const esa_t *C, const char *query, size_t ql){
 
 	if( FLAGS & F_VERBOSE ){
 		fprintf( stderr, "jumps: %ld, homol: %ld\n", jumps, homol);
+		fprintf( stderr, "jumps with history >= 1: %ld\n", count);
 	}
 
 	return (double)(jumps -1)/(double)homol ;

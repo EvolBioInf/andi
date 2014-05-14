@@ -10,6 +10,8 @@ typedef struct {
 } seq_t;
 
 void freeSeq( seq_t *S);
+char *revcomp( const char *str, size_t len);
+char *catcomp( char *s , size_t len);
 
 #endif
 

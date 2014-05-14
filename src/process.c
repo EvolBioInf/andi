@@ -85,6 +85,92 @@ double dist_check( const esa_t *C, const char *query, size_t ql){
 	return (double)snps/(double)homo;
 }
 
+double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
+	size_t idx = 0;
+	size_t snps = 0;
+	size_t homo = 0;
+	lcp_inter_t inter;
+	saidx_t l;
+	ssize_t projected = 0;
+	ssize_t i;
+	ssize_t found;
+	int extendable = 0;
+	size_t snpt = 0, homt = 0;
+	
+	while( idx < ql){
+		if( FLAGS & F_EXTRA_VERBOSE ){
+			fprintf(stderr, "idx: %ld\n", idx);
+		}
+	
+		inter = getLCPInterval( C, query + idx, ql - idx);
+		l = inter.l;
+		if( l == 0) break;
+		
+		// unique
+		if( inter.i == inter.j){
+			snps += 2;
+			homo += l + 2;
+			idx += l + 1;
+			
+			found = C->SA[inter.i];
+			
+			projected = found + l + 1;
+			extendable = 1;
+		} else if( extendable ){
+			// neighbour?
+			found = -1;
+			
+			if( inter.j - inter.i < 5 ){
+				for( i= inter.i; i <= inter.j; i++){
+					if( C->SA[i] < projected ){
+						continue;
+					}
+				
+					if( found == -1 || C->SA[i] < (size_t)found){
+						found = (ssize_t) C->SA[i];
+					}
+				}
+			} else {
+				found = inter.i;
+			}
+		
+			if( found >= projected && found - projected < l ){
+				// we have homology
+				snps += snpt + 1;
+				homo += homt + l + 1;
+				projected = found + l + 1;
+			} else {
+				extendable = 0;
+			}
+			
+			idx += l + 1;
+		} else {
+			idx += l + 1;
+		}
+		
+		snpt = 0;
+		homt = 0;
+				
+		if( extendable ){
+			for( i= 0; i< 5; i++){
+				if( C->S[ projected + i] != query[ idx + i] ){
+					idx += i + 1;
+					projected += i + 1;
+					snpt = 1;
+					homt = i + 1;
+				}
+			}
+		}
+		
+	}
+	
+	if( FLAGS & F_VERBOSE ){
+		fprintf( stderr, "snps: %ld, homo: %ld\n", snps, homo);
+	}
+	
+	return (double)snps/(double)homo;
+}
+
 double dist_inc( const esa_t *C, const char *query, size_t ql){
 	size_t jumps = 0; // The jumps found so far
 	size_t homol = 0; // Number of homologous nucleotides so far.
@@ -314,6 +400,8 @@ double *distMatrix( seq_t* sequences, int n){
 				d = dist_window( &E, sequences[j].S, ql);
 			} else if( STRATEGY == S_CHECK){
 				d = dist_check( &E, sequences[j].S, ql);
+			} else if( STRATEGY == S_SOPHISTICATED){
+				d = dist_sophisticated( &E, sequences[j].S, ql);
 			}
 			
 			if( !(FLAGS & F_RAW)){

@@ -62,6 +62,8 @@ int main( int argc, char *argv[]){
 					STRATEGY = S_WINDOW;
 				} else if ( strcmp( optarg, "check") == 0 ){
 					STRATEGY = S_CHECK;
+				} else if ( strcmp( optarg, "sophisticated") == 0 ){
+					STRATEGY = S_SOPHISTICATED;
 				} else{
 					fprintf(stderr, "error, unknown strategy: %s\n", optarg);
 					usage();

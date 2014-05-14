@@ -60,6 +60,8 @@ int main( int argc, char *argv[]){
 					STRATEGY = S_INC;	
 				} else if ( strcmp( optarg, "window") == 0 ){
 					STRATEGY = S_WINDOW;
+				} else if ( strcmp( optarg, "check") == 0 ){
+					STRATEGY = S_CHECK;
 				} else{
 					fprintf(stderr, "error, unknown strategy: %s\n", optarg);
 					usage();

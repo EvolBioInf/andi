@@ -38,9 +38,52 @@ double dist( const esa_t *C, char *query, size_t ql){
 	if( jumps <= 1){
 		jumps = 2;
 	}
+	
+	if( FLAGS & F_VERBOSE ){
+		fprintf( stderr, "jumps: %ld, homol: %ld\n", jumps, ql);
+	}
+	
 	return (double)(jumps-1)/(double)ql;
 }
 
+
+double dist_check( const esa_t *C, const char *query, size_t ql){
+	size_t idx = 0;
+	size_t snps = 0;
+	size_t homo = 0;
+	lcp_inter_t inter;
+	saidx_t l;
+	
+	size_t i;
+	size_t found;
+	
+	while( idx < ql){
+		inter = getLCPInterval( C, query + idx, ql - idx);
+		l = inter.l;
+		if( l == 0) break;
+		
+		snps += 1;
+		idx += l + 1;
+		homo += l + 1;
+		
+		// lets just assume inter.i == inter.j
+		found = C->SA[inter.i] + l + 1;
+		for( i=0; i< 2; i++){
+			if( C->S[found + i] != query[idx + i]){
+				idx += i + 1;
+				snps++;
+				homo += i + 1;
+				break;
+			}
+		}
+	}
+	
+	if( FLAGS & F_VERBOSE ){
+		fprintf( stderr, "snps: %ld, homo: %ld\n", snps, homo);
+	}
+	
+	return (double)snps/(double)homo;
+}
 
 double dist_inc( const esa_t *C, const char *query, size_t ql){
 	size_t jumps = 0; // The jumps found so far
@@ -269,12 +312,15 @@ double *distMatrix( seq_t* sequences, int n){
 				d = dist_inc( &E, sequences[j].S, ql);
 			} else if( STRATEGY == S_WINDOW){
 				d = dist_window( &E, sequences[j].S, ql);
+			} else if( STRATEGY == S_CHECK){
+				d = dist_check( &E, sequences[j].S, ql);
 			}
 			
 			if( !(FLAGS & F_RAW)){
 				/*  Our shustring method might miss a mutation or two. Hence we need to correct  
 					the distance using math. See Haubold, Pfaffelhuber et al. (2009) */
-				if( STRATEGY == S_SIMPLE || STRATEGY == S_INC || STRATEGY == S_WINDOW ){
+				if( STRATEGY == S_SIMPLE || STRATEGY == S_INC 
+					|| STRATEGY == S_WINDOW || STRATEGY == S_CHECK ){
 					d = divergence( 1.0/d, E.len, 0.5, 0.5);
 				}
 				d = -0.75 * log(1.0- (4.0 / 3.0) * d ); // jukes cantor

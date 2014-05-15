@@ -155,13 +155,13 @@ int readFile( FILE *in, seq_t *nextSequence){
 	
 	while( ( l = kseq_read(seq)) >= 0){
 
-		check = asprintf( &nextSequence->S, "%s", seq->seq.s);
-		if( check == -1 ){
+		nextSequence->S = strdup( seq->seq.s);
+		if( nextSequence->S == NULL ){
 			continue;
 		}
 		
-		check = asprintf( &nextSequence->name, "%s", seq->name.s);
-		if( check == -1 ){
+		nextSequence->name = strdup( seq->name.s);
+		if( nextSequence->name == NULL ){
 			free( nextSequence->S);
 			continue;
 		}

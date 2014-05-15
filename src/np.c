@@ -3,7 +3,7 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
-#include <math.h>
+#include <getopt.h>
 #include "global.h"
 #include "process.h"
 
@@ -37,10 +37,28 @@ void version();
 
 int main( int argc, char *argv[]){
 	int c, i;
+	int version_flag = 0;
+	
+	static struct option long_options[] = {
+		{"version", no_argument, &version_flag, 1},
+		{"help", no_argument, NULL, 'h'},
+		{0,0,0,0}
+	};
 	
 	// parse arguments
-	while((c = getopt( argc, argv, "s:vDhrc:x")) != -1 ){
+	while( 1 ){
+	
+		int option_index = 0;
+		
+		c = getopt_long( argc, argv, "s:vDhrc:", long_options, &option_index);
+		
+		if( c == -1){
+			break;
+		} 
+	
 		switch (c){
+			case 0:
+				break;
 			case 'h':
 				usage();
 				break;
@@ -69,7 +87,6 @@ int main( int argc, char *argv[]){
 					usage();
 				}
 				break;
-			case 'x': version();
 #ifdef _OPENMP
 			case 'c':
 				CORES = atoi( optarg);
@@ -80,6 +97,10 @@ int main( int argc, char *argv[]){
 				usage();
 				break;
 		}
+	}
+	
+	if( version_flag ){
+		version();
 	}
 	
 	seq_t *sequences = (seq_t*) malloc( MAX_SEQUENCES * sizeof(seq_t));

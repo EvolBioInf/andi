@@ -1,10 +1,17 @@
+/**
+ * @file
+ * @brief ESA functions
+ *
+ * This file contains various functions that operate on
+ * an ehanced suffix array.
+ */
 #include <stdlib.h>
 #include <RMQ.hpp>
 #include <string.h>
 #include "esa.h"
 
 /**
- * Computes the SA given a string S.
+ * Computes the SA given a string S. To do so it uses libdivsufsort.
  * @param C The enhanced suffix array to use. Reads C->S, fills C->SA.
  * @return 0 iff successful
  */
@@ -30,6 +37,7 @@ int compute_SA(esa_t *C){
  * Computes the LCP and ISA given SA and S. This function uses the method from Kasai et al.
  * @param C The enhanced suffix array.
  * @return 0 iff sucessful
+ * @deprecated Use compute_LCP_PHI( esa_t *C) instead.
  */
 int compute_LCP( esa_t *C){
 	const char *S = C->S;
@@ -84,7 +92,7 @@ int compute_LCP( esa_t *C){
  * This function implements an alternative way of computing an LCP
  * array for a given suffix array. It uses an intermediate `phi`
  * array, hence the name. It's a bit faster than the other version.
- * @param {esa_t*} C - The enhanced suffix array to compute the LCP from.
+ * @param C The enhanced suffix array to compute the LCP from.
  * @returns 0 iff successful
  */
 int compute_LCP_PHI( esa_t *C){
@@ -153,9 +161,9 @@ int compute_LCP_PHI( esa_t *C){
  * Given the LCP interval for a string `w` this function calculates the 
  * LCP interval for `wa` where `a` is a single character.
  * The empty interval is represented by ij.i == -1 and ij.j == -1.
- * @param {const esa_t*} C - This is the enhanced suffix array of the subject sequence.
- * @param {lcp_inter_t*} ij - The prefix `w` is given implicitly by the ij LCP interval.
- * @param {char} a - The next character in the query sequence.
+ * @param C This is the enhanced suffix array of the subject sequence.
+ * @param ij The prefix `w` is given implicitly by the ij LCP interval.
+ * @param a The next character in the query sequence.
  * @returns A reference to the new LCP interval.
  */
 lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
@@ -220,10 +228,10 @@ lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 /**
  * This function computes the LCPInterval for the longest prefix of `query` which
  * can be found in the subject sequence. Compare Ohlebusch getInterval Alg 5.2 p.119
- * @param {const esa_t*} C - The enhanced suffix array for the subject.
- * @param {const char*} query - The query sequence.
- * @param {size_t} qlen - The length of the query. Should correspond to `strlen(query)`.
- * @returns {lcp_inter_t} The LCP interval for the longest prefix.
+ * @param C The enhanced suffix array for the subject.
+ * @param query The query sequence.
+ * @param qlen The length of the query. Should correspond to `strlen(query)`.
+ * @returns The LCP interval for the longest prefix.
  */
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	lcp_inter_t res = {0,0,0};
@@ -283,10 +291,10 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 /**
  * This function computes the length of the longest prefix of `query`
  * which can be found in the subject sequence.
- * @param {const esa_t*} C - The enhanced suffix array for the subject.
- * @param {const char*} query - The query sequence.
- * @param {size_t} qlen - The length of the query. Should correspond to `strlen(query)`.
- * @returns {saidx_t} The length of the prefix.
+ * @param C The enhanced suffix array for the subject.
+ * @param query The query sequence.
+ * @param qlen The length of the query. Should correspond to `strlen(query)`.
+ * @returns The length of the prefix.
  */
 saidx_t longestMatch( const esa_t *C, const char *query, int qlen){
 	return getLCPInterval( C, query, qlen).l;

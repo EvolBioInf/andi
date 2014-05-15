@@ -1,8 +1,16 @@
 #ifndef _SEQUENCE_H_
 #define _SEQUENCE_H_
 
+/**
+ * @brief A structure for sequences.
+ *
+ * This structure is used to represent a DNA sequence of some kind.
+ */
 typedef struct {
+	/** This is the DNAs forward strand as a string. */
 	char *S;
+	/** This member contains first the reverse strand and then the
+		forward strand. */
 	char *RS;
 	size_t len;
 	size_t RSlen;

@@ -1,3 +1,27 @@
+/**
+ * @file
+ *
+ * This is the main file. It contains functions to parse the commandline arguments,
+ * read files etc.
+ * 
+ * @brief The main file
+ * @author Fabian Kloetzl
+ 
+ * @section License
+ 
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details at
+ * http://www.gnu.org/copyleft/gpl.html
+ *
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -176,7 +200,7 @@ int readFile( FILE *in, seq_t *nextSequence){
 }
 
 /**
- * Prints the usage to stdout. Does not return.
+ * Prints the usage to stdout and then exits successfully.
  */
 void usage(void){
 	const char str[]= {
@@ -194,17 +218,21 @@ void usage(void){
 	};
 
 	printf("%s", str);
-	exit(1);
+	exit(EXIT_SUCCESS);
 }
 
+/**
+ * This function just prints the version string and then aborts
+ * the program. It conforms to the [GNU Coding Standard](http://www.gnu.org/prep/standards/html_node/_002d_002dversion.html#g_t_002d_002dversion).
+ */
 void version(void){
 	const char str[]= {
-		"np v" VERSION  "\n"
+		"np " VERSION  "\n"
 		"Copyright (C) 2014 Fabian Kloetzl\n"
-		"GPLv3+ license\n"
+		"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 	};
 	printf("%s", str);
-	exit(1);
+	exit(EXIT_SUCCESS);
 }
 
 

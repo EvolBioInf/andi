@@ -3,6 +3,7 @@ np
 randomSeed.dat
 seedms
 testRMQ
+docs/*
 
 *.fasta
 cachegrind*

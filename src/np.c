@@ -186,7 +186,7 @@ void usage(void){
 		"\t[-r  raw distances; default: corrected]\n"
 		"\t[-D  single stranded comparison]\n"
 		"\t[-v  verbose]\n"
-		"\t[-s <simple|inc> strategy]\n"
+		"\t[-s <simple|inc|window|check|sophisticated> strategy]\n"
 #ifdef _OPENMP
 		"\t[-c <INT>  The number of cores to be used]\n"
 #endif

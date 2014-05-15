@@ -31,9 +31,9 @@ KSEQ_INIT(int, read)
 
 #define MAX_SEQUENCES 1000
 
-void usage();
+void usage(void);
 int readFile( FILE *in, seq_t *nextSequence);
-void version();
+void version(void);
 
 int main( int argc, char *argv[]){
 	int c, i;
@@ -178,7 +178,7 @@ int readFile( FILE *in, seq_t *nextSequence){
 /**
  * Prints the usage to stdout. Does not return.
  */
-void usage(){
+void usage(void){
 	const char str[]= {
 		"Usage: np [OPTIONS] FILES...\n"
 		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
@@ -197,7 +197,7 @@ void usage(){
 	exit(1);
 }
 
-void version(){
+void version(void){
 	const char str[]= {
 		"np v" VERSION  "\n"
 		"Copyright (C) 2014 Fabian Kloetzl\n"

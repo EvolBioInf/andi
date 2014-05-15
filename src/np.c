@@ -180,7 +180,7 @@ int readFile( FILE *in, seq_t *nextSequence){
  */
 void usage(void){
 	const char str[]= {
-		"Usage: np [OPTIONS] FILES...\n"
+		"Usage: np [-rDv] [-s strategy] FILES...\n"
 		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
 		"\t[-r  raw distances; default: corrected]\n"

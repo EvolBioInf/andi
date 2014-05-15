@@ -149,7 +149,7 @@ int main( int argc, char *argv[]){
  * @return The number of found sequences.
  */
 int readFile( FILE *in, seq_t *nextSequence){
-	int n = 0, l, check;
+	int n = 0, l;
 	
 	kseq_t *seq = kseq_init(fileno(in));
 	

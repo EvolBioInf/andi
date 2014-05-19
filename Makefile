@@ -9,9 +9,14 @@ profile:
 	cd ./libs/RMQ; make profile
 	cd ./src; make profile
 	@mv ./src/np .
-	
+
+.PHONY: clean
 clean:
 	@cd ./libs/RMQ; make clean
 	@cd ./src; make clean
 	@-rm np
-	
+
+.PHONY: docs
+docs:
+	doxygen
+

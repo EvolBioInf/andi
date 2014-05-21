@@ -135,7 +135,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 		
 		/* TODO: evaluate the result of different conditions */
 		if( inter.i == inter.j  
-			&& this_length >= 3 * log4(query_length) )
+			&& this_length >= 2 * log4(query_length) )
 		{
 			// new anchor?
 			this_pos_S = C->SA[ inter.i];
@@ -570,10 +570,11 @@ void printDistMatrix( seq_t* sequences, int n){
 	
 	double *D = distMatrix( sequences, n);
 	
+	printf("%d\n", n);
 	for( i=0;i<n;i++){
 		printf("%8s", sequences[i].name);
 		for( j=0;j<n;j++){
-			printf(" %1.4lf", D(i,j));
+			printf(" %1.4lf", (D(i,j) + D(j,i)) / 2.0);
 		}
 		printf("\n");
 	}

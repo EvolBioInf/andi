@@ -48,7 +48,8 @@ enum {
 	S_INC,
 	S_WINDOW,
 	S_CHECK,
-	S_SOPHISTICATED
+	S_SOPHISTICATED,
+	S_ANCHOR
 };
 
 #endif

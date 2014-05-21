@@ -33,11 +33,11 @@ double dist( const esa_t *C, char *query, size_t ql){
 		l = inter.l;
 		if( l == 0 ) break;
 		
-		if( FLAGS & F_VERBOSE ){
+		if( FLAGS & F_EXTRA_VERBOSE ){
 			fprintf( stderr, "idx: %ld, l: %d\n", idx, l);
 		}
 		
-		if( l == 423 ){
+		if( FLAGS & F_EXTRA_VERBOSE && l == 423 ){
 			fprintf( stderr, "[%d..%d]\n", inter.i, inter.j);
 			fprintf( stderr, "%s\n", query + idx );
 			fprintf( stderr, "%d\n", C->SA[inter.i] );
@@ -94,6 +94,86 @@ double dist_check( const esa_t *C, const char *query, size_t ql){
 	
 	if( FLAGS & F_VERBOSE ){
 		fprintf( stderr, "snps: %ld, homo: %ld\n", snps, homo);
+	}
+	
+	return (double)snps/(double)homo;
+}
+
+inline size_t log2( size_t num){
+	size_t res = 0;
+	while( num >>= 1){
+		res++;
+	}
+	return res;
+}
+
+inline size_t log4( size_t num){
+	return log2( num) >> 1;
+}
+
+double dist_anchor( const esa_t *C, const char *query, size_t query_length){
+	size_t snps = 0;
+	size_t homo = 0;
+	
+	lcp_inter_t inter;
+	
+	size_t last_pos_Q = 0;
+	size_t last_pos_S = 0;
+	size_t last_length = 0;
+	size_t last_was_right_anchor = 0;
+	
+	size_t this_pos_Q = 0;
+	size_t this_pos_S;
+	size_t this_length;
+	
+	size_t num_right_anchors = 0;
+	
+	while( this_pos_Q < query_length){
+		inter = getLCPInterval( C, query + this_pos_Q, query_length - this_pos_Q);
+		this_length = inter.l;
+		if( this_length == 0) break;
+		
+		/* TODO: evaluate the result of different conditions */
+		if( inter.i == inter.j  
+			&& this_length >= 3 * log4(query_length) )
+		{
+			// new anchor?
+			this_pos_S = C->SA[ inter.i];
+			
+			if( this_pos_Q - last_pos_Q == this_pos_S - last_pos_S ){
+				num_right_anchors++;
+			
+				// explicit check
+				size_t i;
+				for( i= 0; i< this_pos_Q - last_pos_Q; i++){
+					if( C->S[ last_pos_S + i] != query[ last_pos_Q + i] ){
+						snps++;
+					}
+				}
+				homo += this_pos_Q - last_pos_Q;
+				last_was_right_anchor = 1;
+			} else {
+				if( last_was_right_anchor){
+					homo += last_length;
+				}
+				
+				last_was_right_anchor = 0;
+			}
+			
+			last_pos_Q = this_pos_Q;
+			last_pos_S = this_pos_S;
+			last_length= this_length;
+		}
+		
+		this_pos_Q += this_length + 1;
+	}
+	
+	if ( snps <= 2) snps = 2;
+	if ( homo <= 2) homo = 2;
+	
+	if( FLAGS & F_VERBOSE ){
+		fprintf( stderr, "snps: %lu, homo: %lu\n", snps, homo);
+		fprintf( stderr, "number of right anchors: %lu\n", num_right_anchors);
 	}
 	
 	return (double)snps/(double)homo;
@@ -441,6 +521,8 @@ double *distMatrix( seq_t* sequences, int n){
 				d = dist_check( &E, sequences[j].S, ql);
 			} else if( STRATEGY == S_SOPHISTICATED){
 				d = dist_sophisticated( &E, sequences[j].S, ql);
+			} else if( STRATEGY == S_ANCHOR ){
+				d = dist_anchor( &E, sequences[j].S, ql);
 			}
 			
 			if( !(FLAGS & F_RAW)){

@@ -24,11 +24,25 @@
 double dist( const esa_t *C, char *query, size_t ql){
 	size_t jumps = 0;
 	size_t idx = 0;
-	
+	saidx_t l;
+	lcp_inter_t inter;
 	
 	while( idx < ql ){
-		saidx_t l = longestMatch( C, query + idx, ql - idx);
+		inter = getLCPInterval( C, query + idx, ql - idx);
+		//saidx_t l = longestMatch( C, query + idx, ql - idx);
+		l = inter.l;
 		if( l == 0 ) break;
+		
+		if( FLAGS & F_VERBOSE ){
+			fprintf( stderr, "idx: %ld, l: %d\n", idx, l);
+		}
+		
+		if( l == 423 ){
+			fprintf( stderr, "[%d..%d]\n", inter.i, inter.j);
+			fprintf( stderr, "%s\n", query + idx );
+			fprintf( stderr, "%d\n", C->SA[inter.i] );
+			fprintf( stderr, "%s\n", C->S + 992); 
+		}
 
 		jumps++;
 		idx += l + 1; // skip the mutation
@@ -129,7 +143,7 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 			idx += l + 1;
 			
 			projected = found + l + 1;
-			extendable = 1;
+			extendable = 1; 
 		} else if( extendable ){
 			// neighbour?
 			found = -1;
@@ -169,8 +183,8 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 		homt = 0;
 				
 		if( extendable ){
-			int k = 1; // Number of allowed mismatches
-			int LOOKAHEAD = 10;
+			int k = 0; // Number of allowed mismatches
+			int LOOKAHEAD = 0;
 			for( i= 0; i< LOOKAHEAD && k; i++){
 				if( C->S[ projected + i] != query[ idx + i] ){
 					idx += i + 1;

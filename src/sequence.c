@@ -1,3 +1,9 @@
+/**
+ * @file
+ * @brief Sequence utilities
+ *
+ * This file contains utility functions for working with DNA sequences.
+ */
 #include <stdlib.h>
 #include <string.h>
 #include "sequence.h"
@@ -44,9 +50,10 @@ char *revcomp( const char *str, size_t len){
 }
 
 /**
- * This function concatenates the reverse complement to a given master string.
- * @param s - The master string.
- * @param len - Its length.
+ * This function concatenates the reverse complement to a given master string. A
+ * `#` sign is used as a separator.
+ * @param s The master string.
+ * @param len Its length.
  * @return The new concatenated string.
  */
 char *catcomp( char *s , size_t len){

@@ -280,6 +280,12 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 				return res;
 			}
 		}
+		
+		// TODO: Verify if this is the best solution
+		if( k < l && (!S[p+k] || !query[k])){
+			res.l = k;
+			return res;
+		}
 
 		k = l;
 	} while ( k < m);

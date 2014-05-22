@@ -98,12 +98,6 @@ int main( int argc, char *argv[]){
 			case 's':
 				if ( strcmp( optarg, "simple") == 0 ){
 					STRATEGY = S_SIMPLE;
-				} else if ( strcmp( optarg, "inc") == 0 ){
-					STRATEGY = S_INC;	
-				} else if ( strcmp( optarg, "window") == 0 ){
-					STRATEGY = S_WINDOW;
-				} else if ( strcmp( optarg, "check") == 0 ){
-					STRATEGY = S_CHECK;
 				} else if ( strcmp( optarg, "sophisticated") == 0 ){
 					STRATEGY = S_SOPHISTICATED;
 				} else if ( strcmp( optarg, "anchor") == 0 ){
@@ -212,7 +206,7 @@ void usage(void){
 		"\t[-r  raw distances; default: corrected]\n"
 		"\t[-D  single stranded comparison]\n"
 		"\t[-v  verbose]\n"
-		"\t[-s <simple|inc|window|check|sophisticated> strategy]\n"
+		"\t[-s <simple|anchor|sophisticated> strategy]\n"
 #ifdef _OPENMP
 		"\t[-c <INT>  The number of cores to be used]\n"
 #endif

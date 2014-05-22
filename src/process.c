@@ -1,3 +1,7 @@
+/**
+ * @file
+ * @brief This file contains various distance methods.
+ */
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -60,6 +64,9 @@ double dist( const esa_t *C, char *query, size_t ql){
 	return (double)(jumps-1)/(double)ql;
 }
 
+/**
+ * @brief Calculates the log_2 of a given integer.
+ */
 inline size_t log2( size_t num){
 	size_t res = 0;
 	while( num >>= 1){
@@ -68,6 +75,9 @@ inline size_t log2( size_t num){
 	return res;
 }
 
+/**
+ * @brief Calculates the log_4 of a given integer.
+ */
 inline size_t log4( size_t num){
 	return log2( num) >> 1;
 }
@@ -89,6 +99,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 	
 	size_t num_right_anchors = 0;
 	
+	// Iterate over the complete query.
 	while( this_pos_Q < query_length){
 		inter = getLCPInterval( C, query + this_pos_Q, query_length - this_pos_Q);
 		this_length = inter.l;
@@ -98,13 +109,14 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 		if( inter.i == inter.j  
 			&& this_length >= 2 * log4(query_length) )
 		{
-			// new anchor?
+			// We have reached a new anchor.
 			this_pos_S = C->SA[ inter.i];
 			
+			// Check if this can be a right anchor to the last one.
 			if( this_pos_Q - last_pos_Q == this_pos_S - last_pos_S ){
 				num_right_anchors++;
 			
-				// explicit check
+				// Count the SNPs in between.
 				size_t i;
 				for( i= 0; i< this_pos_Q - last_pos_Q; i++){
 					if( C->S[ last_pos_S + i] != query[ last_pos_Q + i] ){
@@ -115,20 +127,30 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 				last_was_right_anchor = 1;
 			} else {
 				if( last_was_right_anchor){
+					// If the last was a right anchor, but with the current one, we 
+					// cannot extend, then add its length.
 					homo += last_length;
 				}
 				
 				last_was_right_anchor = 0;
 			}
 			
+			// Cache values for later
 			last_pos_Q = this_pos_Q;
 			last_pos_S = this_pos_S;
 			last_length= this_length;
 		}
 		
+		// Advance
 		this_pos_Q += this_length + 1;
 	}
 	
+	// We might miss a few nucleotides if the last anchor was also a right anchor.
+	if( last_was_right_anchor ){
+		homo += last_length;
+	}
+	
+	// Avoid NaN.
 	if ( snps <= 2) snps = 2;
 	if ( homo <= 3) homo = 3;
 	
@@ -249,6 +271,7 @@ double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
 }
 
 /**
+ * @brief Computes the distance matrix.
  * The distMatrix populates the D matrix with computed distances. It allocates D and
  * filles it with useful values, but the caller has to free it!
  * @return The distance matrix
@@ -331,7 +354,7 @@ double *distMatrix( seq_t* sequences, int n){
 }
 
 /**
- * Prints the distance matrix.
+ * @brief Prints the distance matrix.
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
@@ -358,7 +381,7 @@ void printDistMatrix( seq_t* sequences, int n){
 	for( i=0;i<n;i++){
 		printf("%8s", sequences[i].name);
 		for( j=0;j<n;j++){
-			printf(" %1.4lf", (D(i,j) + D(j,i)) / 2.0);
+			printf(" %1.4lf", D(i,j));
 		}
 		printf("\n");
 	}

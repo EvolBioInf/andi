@@ -68,7 +68,6 @@ int compute_LCP_PHI( esa_t *c);
 saidx_t longestMatch( const esa_t *C, const char *query, int qlen);
 interval  exactMatch( const esa_t *C, const char *query);
 
-interval getInterval( const esa_t *C, const interval ij, char a);
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen);
 
 #endif

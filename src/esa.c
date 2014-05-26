@@ -3,7 +3,7 @@
  * @brief ESA functions
  *
  * This file contains various functions that operate on
- * an ehanced suffix array.
+ * an enhanced suffix array.
  */
 #include <stdlib.h>
 #include <RMQ.hpp>
@@ -13,7 +13,7 @@
 /**
  * Computes the SA given a string S. To do so it uses libdivsufsort.
  * @param C The enhanced suffix array to use. Reads C->S, fills C->SA.
- * @return 0 iff successful
+ * @returns 0 iff successful
  */
 int compute_SA(esa_t *C){
 	// assert c.S
@@ -36,7 +36,7 @@ int compute_SA(esa_t *C){
 /**
  * Computes the LCP and ISA given SA and S. This function uses the method from Kasai et al.
  * @param C The enhanced suffix array.
- * @return 0 iff sucessful
+ * @returns 0 iff sucessful
  * @deprecated Use compute_LCP_PHI( esa_t *C) instead.
  */
 int compute_LCP( esa_t *C){
@@ -166,7 +166,7 @@ int compute_LCP_PHI( esa_t *C){
  * @param a The next character in the query sequence.
  * @returns A reference to the new LCP interval.
  */
-lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
+static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 	saidx_t i = ij->i;
 	saidx_t j = ij->j;
 

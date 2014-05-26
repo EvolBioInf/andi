@@ -18,7 +18,12 @@ Assuming you have installed all prerequisites, building is as easy as follows.
 
 	$ make
 
+If the build was successful you can get the usage instructions via `--help`.
+
+	$ ./np --help
+
 Code documentation is provided via doxygen.
 
 	$ make docs
+
 

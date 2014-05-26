@@ -8,10 +8,15 @@
 #include <string.h>
 #include "sequence.h"
 
+/**
+ * @brief Frees the memory of a given sequence.
+ * @param S - The sequence to free.
+ */
 void freeSeq( seq_t *S){
 	free( S->S);
 	free( S->RS);
 	free( S->name);
+	S->S = S->RS = S->name = NULL;
 }
 
 
@@ -54,7 +59,7 @@ char *revcomp( const char *str, size_t len){
  * `#` sign is used as a separator.
  * @param s The master string.
  * @param len Its length.
- * @return The new concatenated string.
+ * @return The newly concatenated string.
  */
 char *catcomp( char *s , size_t len){
 	if( !s) return NULL;

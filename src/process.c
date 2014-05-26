@@ -15,7 +15,9 @@
 #include <RMQ_1_n.hpp>
 #include <RMQ_succinct.hpp>
 
-
+/**
+ * This is a neat hack for dealing with matrices.
+ */
 #define D( X, Y) (D[ (X)*n + (Y) ])
 
 /**
@@ -37,17 +39,11 @@ double dist( const esa_t *C, char *query, size_t ql){
 		l = inter.l;
 		if( l == 0 ) break;
 		
+		// TODO: remove this from production code.
 		if( FLAGS & F_EXTRA_VERBOSE ){
 			fprintf( stderr, "idx: %ld, l: %d\n", idx, l);
 		}
 		
-		if( FLAGS & F_EXTRA_VERBOSE && l == 423 ){
-			fprintf( stderr, "[%d..%d]\n", inter.i, inter.j);
-			fprintf( stderr, "%s\n", query + idx );
-			fprintf( stderr, "%d\n", C->SA[inter.i] );
-			fprintf( stderr, "%s\n", C->S + 992); 
-		}
-
 		jumps++;
 		idx += l + 1; // skip the mutation
 	}
@@ -57,6 +53,7 @@ double dist( const esa_t *C, char *query, size_t ql){
 		jumps = 2;
 	}
 	
+	// TODO: remove this from production code.
 	if( FLAGS & F_VERBOSE ){
 		fprintf( stderr, "jumps: %ld, homol: %ld\n", jumps, ql);
 	}
@@ -67,7 +64,7 @@ double dist( const esa_t *C, char *query, size_t ql){
 /**
  * @brief Calculates the log_2 of a given integer.
  */
-inline size_t log2( size_t num){
+static inline size_t log2( size_t num){
 	size_t res = 0;
 	while( num >>= 1){
 		res++;
@@ -78,25 +75,41 @@ inline size_t log2( size_t num){
 /**
  * @brief Calculates the log_4 of a given integer.
  */
-inline size_t log4( size_t num){
+static inline size_t log4( size_t num){
 	return log2( num) >> 1;
 }
 
+/**
+ * @brief Divergence estimation using the anchor technique.
+ *
+ * The dist_anchor() function estimates the divergence between two
+ * DNA sequences. The subject is given as an ESA, whereas the query
+ * is a sinple string. This function then looks for *anchors* -- long
+ * substring that exist in both sequences. Then it manually checks for
+ * mutations between those anchors.
+ * 
+ * @return An estimate for the number of mutations within homologous regions.
+ * @param C - The enhanced suffix array of the subject.
+ * @param query - The actual query string.
+ * @param ql - The length of the query string. Needed for speed reasons.
+ */
 double dist_anchor( const esa_t *C, const char *query, size_t query_length){
-	size_t snps = 0;
-	size_t homo = 0;
+	size_t snps = 0; // Total number of found SNPs
+	size_t homo = 0; // Total number of homologous nucleotides.
 	
 	lcp_inter_t inter;
 	
 	size_t last_pos_Q = 0;
 	size_t last_pos_S = 0;
 	size_t last_length = 0;
+	// This variable indicates that the last anchor was the right anchor of a pair.
 	size_t last_was_right_anchor = 0;
 	
 	size_t this_pos_Q = 0;
 	size_t this_pos_S;
 	size_t this_length;
 	
+	// TODO: remove this from production code.
 	size_t num_right_anchors = 0;
 	
 	// Iterate over the complete query.
@@ -154,6 +167,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 	if ( snps <= 2) snps = 2;
 	if ( homo <= 3) homo = 3;
 	
+	// TODO: remove this from production code.
 	if( FLAGS & F_VERBOSE ){
 		fprintf( stderr, "snps: %lu, homo: %lu\n", snps, homo);
 		fprintf( stderr, "number of right anchors: %lu\n", num_right_anchors);
@@ -164,7 +178,8 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 
 /**
  * @brief Computes the distance matrix.
- * The distMatrix populates the D matrix with computed distances. It allocates D and
+ *
+ * The distMatrix() populates the D matrix with computed distances. It allocates D and
  * filles it with useful values, but the caller has to free it!
  * @return The distance matrix
  * @param sequences An array of pointers to the sequences.
@@ -208,6 +223,8 @@ double *distMatrix( seq_t* sequences, int n){
 				continue;
 			}
 			
+			// TODO: remove this from production code, or provide a nicer
+			// progress indicator.
 			if( FLAGS & F_VERBOSE ){
 				#pragma omp critical
 				{
@@ -254,19 +271,23 @@ void printDistMatrix( seq_t* sequences, int n){
 	// initialise the sequences
 	#pragma omp parallel for num_threads( THREADS)
 	for( i=0;i<n;i++){
-		if( !sequences[i].S){
+		if( sequences[i].S == NULL){
 			fprintf(stderr, "missing sequence %d\n", i);
 			exit(1);
 		}
 		sequences[i].len = strlen( sequences[i].S);
+		
+		// double stranded comparision?
 		if( !(FLAGS & F_SINGLE) ){
 			sequences[i].RS = catcomp( sequences[i].S, sequences[i].len);
 			sequences[i].RSlen = 2 * sequences[i].len + 1;
 		}
 	}
 	
+	// compute the distances
 	double *D = distMatrix( sequences, n);
 	
+	// print the results
 	printf("%d\n", n);
 	for( i=0;i<n;i++){
 		printf("%8s", sequences[i].name);

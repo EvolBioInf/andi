@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief Functions and structures for DNA sequences
+ *
+ */
 #ifndef _SEQUENCE_H_
 #define _SEQUENCE_H_
 
@@ -12,8 +17,11 @@ typedef struct {
 	/** This member contains first the reverse strand and then the
 		forward strand. */
 	char *RS;
+	/** The length of the forward strand. */
 	size_t len;
+	/** Corresponds to strlen(RS) */
 	size_t RSlen;
+	/** A name for this sequence */
 	char *name;
 } seq_t;
 

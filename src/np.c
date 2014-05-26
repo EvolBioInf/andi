@@ -52,13 +52,20 @@ KSEQ_INIT(int, read)
 }
 #endif
 
-
+/** The total number of sequences np can compare at once. */
 #define MAX_SEQUENCES 1000
 
 void usage(void);
 int readFile( FILE *in, seq_t *nextSequence);
 void version(void);
 
+/**
+ * @brief The main function.
+ *
+ * The main function reads and parses the commandline arguments. Depending on
+ * the set flags it reads the input files and forwards the contained sequences
+ * to processing.
+ */
 int main( int argc, char *argv[]){
 	int c, i;
 	int version_flag = 0;

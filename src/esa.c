@@ -320,22 +320,3 @@ interval exactMatch( const esa_t *C, const char *query){
 	return ij;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

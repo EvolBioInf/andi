@@ -1,3 +1,8 @@
+/**
+ * @file
+ * @brief This header contains the declarations for functions in esa.c.
+ *
+ */
 #ifndef _ESA_H_
 #define _ESA_H_
 

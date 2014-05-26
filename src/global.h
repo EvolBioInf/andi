@@ -16,10 +16,10 @@
 extern int FLAGS;
 
 /**
- * The *global* variable ::CORES contains the number of cores the program
- * should use. This might be renamed to THREADS in a future version.
+ * The *global* variable ::THREADS contains the number of threads the program
+ * should use.
  */
-extern int CORES;
+extern int THREADS;
 
 /**
  * The ::STRATEGY variable may hold one of the `S_NAME` values. Each of

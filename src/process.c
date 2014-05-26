@@ -286,7 +286,7 @@ double *distMatrix( seq_t* sequences, int n){
 	
 	int i;
 
-	#pragma omp parallel for num_threads( CORES)
+	#pragma omp parallel for num_threads( THREADS)
 	for(i=0;i<n;i++){
 		esa_t E = {NULL,NULL,NULL,NULL,0,NULL};
 		
@@ -362,7 +362,7 @@ void printDistMatrix( seq_t* sequences, int n){
 	int i, j;
 
 	// initialise the sequences
-	#pragma omp parallel for num_threads( CORES)
+	#pragma omp parallel for num_threads( THREADS)
 	for( i=0;i<n;i++){
 		if( !sequences[i].S){
 			fprintf(stderr, "missing sequence %d\n", i);

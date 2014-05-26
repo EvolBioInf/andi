@@ -35,7 +35,7 @@
 
 
 int FLAGS = 0; /* global */
-int CORES = 1; /* global */
+int THREADS = 1; /* global */
 int STRATEGY = S_SIMPLE; /* global */
 
 
@@ -74,7 +74,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "s:vDhrc:", long_options, &option_index);
+		c = getopt_long( argc, argv, "s:vDhrt:", long_options, &option_index);
 		
 		if( c == -1){
 			break;
@@ -108,8 +108,8 @@ int main( int argc, char *argv[]){
 				}
 				break;
 #ifdef _OPENMP
-			case 'c':
-				CORES = atoi( optarg);
+			case 't':
+				THREADS = atoi( optarg);
 				break;
 #endif
 			case '?': /* intentional fallthrough */
@@ -208,7 +208,7 @@ void usage(void){
 		"\t[-v  verbose]\n"
 		"\t[-s <simple|anchor|sophisticated> strategy]\n"
 #ifdef _OPENMP
-		"\t[-c <INT>  The number of cores to be used]\n"
+		"\t[-t <INT>  The number of threads to be used]\n"
 #endif
 		"\t[-h  display this help]\n"
 	};

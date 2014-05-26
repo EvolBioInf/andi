@@ -162,114 +162,6 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 	return (double)snps/(double)homo;
 }
 
-double dist_sophisticated( const esa_t *C, const char *query, size_t ql){
-	size_t idx = 0;
-	size_t snps = 0;
-	size_t homo = 0;
-	lcp_inter_t inter;
-	saidx_t l;
-	ssize_t projected = 0;
-	ssize_t i;
-	ssize_t found;
-	int extendable = 0;
-	size_t snpt = 0, homt = 0;
-	
-	size_t uniqs = 0;
-	size_t extensions = 0;
-	size_t nonextensions = 0;
-	size_t adjacent = 0;
-	
-	while( idx < ql){
-		inter = getLCPInterval( C, query + idx, ql - idx);
-		l = inter.l;
-		if( l == 0) break;
-		
-		if( FLAGS & F_EXTRA_VERBOSE ){
-			fprintf(stderr, "idx: %3ld, inter.i: %4d, found: %4d, %d\n", idx, inter.i, C->SA[inter.i], extendable);
-		}
-		
-		// unique
-		if( inter.i == inter.j){
-			uniqs++;
-			
-			found = C->SA[inter.i];
-			
-			if( extendable && found >= projected && found - projected < l ){
-				snps += snpt + 1;
-				homo += homt + l + 1;
-				adjacent++;
-			} else {
-				snps += 2;
-				homo += l + 2;
-			}
-			
-			idx += l + 1;
-			
-			projected = found + l + 1;
-			extendable = 1; 
-		} else if( extendable ){
-			// neighbour?
-			found = -1;
-			
-			if( inter.j - inter.i < 50 ){
-				for( i= inter.i; i <= inter.j; i++){
-					if( C->SA[i] < projected ){
-						continue;
-					}
-				
-					if( found == -1 || C->SA[i] < (size_t)found){
-						found = (ssize_t) C->SA[i];
-					}
-				}
-			} else {
-				found = inter.i;
-			}
-		
-			if( found >= projected && found - projected < l ){
-				// we have homology
-				snps += snpt + 1;
-				homo += homt + l + 1;
-				projected = found + l + 1;
-				extensions++;
-			} else {
-				extendable = 0;
-				nonextensions++;
-			}
-			
-			idx += l + 1;
-		} else {
-			nonextensions++;
-			idx += l + 1;
-		}
-		
-		snpt = 0;
-		homt = 0;
-				
-		if( extendable ){
-			int k = 0; // Number of allowed mismatches
-			int LOOKAHEAD = 0;
-			for( i= 0; i< LOOKAHEAD && k; i++){
-				if( C->S[ projected + i] != query[ idx + i] ){
-					idx += i + 1;
-					projected += i + 1;
-					snpt++;
-					homt = i + 1;
-					k--;
-				}
-			}
-		}
-		
-	}
-	
-	if( FLAGS & F_VERBOSE ){
-		fprintf( stderr, "snps: %ld, homo: %ld\n", snps, homo);
-		fprintf( stderr, "unique matches: %ld, adjacent: %ld, extensions: %ld, nonextensions: %ld\n", 
-			uniqs, adjacent, extensions, nonextensions);
-	}
-	
-	return (double)snps/(double)homo;
-}
-
 /**
  * @brief Computes the distance matrix.
  * The distMatrix populates the D matrix with computed distances. It allocates D and
@@ -327,8 +219,6 @@ double *distMatrix( seq_t* sequences, int n){
 			
 			if( STRATEGY == S_SIMPLE ){
 				d = dist( &E, sequences[j].S, ql);
-			} else if( STRATEGY == S_SOPHISTICATED){
-				d = dist_sophisticated( &E, sequences[j].S, ql);
 			} else if( STRATEGY == S_ANCHOR ){
 				d = dist_anchor( &E, sequences[j].S, ql);
 			}

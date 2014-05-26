@@ -45,7 +45,6 @@ enum {
  */
 enum {
 	S_SIMPLE,
-	S_SOPHISTICATED,
 	S_ANCHOR
 };
 

@@ -105,8 +105,6 @@ int main( int argc, char *argv[]){
 			case 's':
 				if ( strcmp( optarg, "simple") == 0 ){
 					STRATEGY = S_SIMPLE;
-				} else if ( strcmp( optarg, "sophisticated") == 0 ){
-					STRATEGY = S_SOPHISTICATED;
 				} else if ( strcmp( optarg, "anchor") == 0 ){
 					STRATEGY = S_ANCHOR;
 				} else {
@@ -213,7 +211,7 @@ void usage(void){
 		"\t[-r  raw distances; default: corrected]\n"
 		"\t[-D  single stranded comparison]\n"
 		"\t[-v  verbose]\n"
-		"\t[-s <simple|anchor|sophisticated> strategy]\n"
+		"\t[-s <simple|anchor> strategy]\n"
 #ifdef _OPENMP
 		"\t[-t <INT>  The number of threads to be used]\n"
 #endif

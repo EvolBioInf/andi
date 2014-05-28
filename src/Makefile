@@ -1,6 +1,6 @@
 CC=clang
 CPP=g++
-VERSION= \"0.3\"
+VERSION= \"pre0.4\"
 
 OBJECTS= np.o esa.o process.o sequence.o
 

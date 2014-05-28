@@ -84,14 +84,14 @@ double shuprop( size_t x, double g, size_t l){
  *
  * The dist_anchor() function estimates the divergence between two
  * DNA sequences. The subject is given as an ESA, whereas the query
- * is a sinple string. This function then looks for *anchors* -- long
- * substring that exist in both sequences. Then it manually checks for
+ * is a simple string. This function then looks for *anchors* -- long
+ * substrings that exist in both sequences. Then it manually checks for
  * mutations between those anchors.
  * 
  * @return An estimate for the number of mutations within homologous regions.
  * @param C - The enhanced suffix array of the subject.
  * @param query - The actual query string.
- * @param ql - The length of the query string. Needed for speed reasons.
+ * @param query_length - The length of the query string. Needed for speed reasons.
  */
 double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 	size_t snps = 0; // Total number of found SNPs

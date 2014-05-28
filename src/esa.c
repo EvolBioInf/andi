@@ -9,6 +9,7 @@
 #include <RMQ.hpp>
 #include <string.h>
 #include "esa.h"
+#include "stdio.h"
 
 /**
  * Computes the SA given a string S. To do so it uses libdivsufsort.
@@ -188,9 +189,12 @@ static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 
 	saidx_t l, m;
 	
-	m = rmq_lcp->query(i+1, j); // m is now any minimum in (i..j]
-	l = LCP[m];
-	ij->l = l;
+	//m = rmq_lcp->query(i+1, j); // m is now any minimum in (i..j]
+	m = ij->m;
+	//l = LCP[m];
+	//fprintf(stderr, "l: %d ij->l: %d\n", l, ij->l);
+	//ij->l = l;
+	l = ij->l;
 	
 	/* We now use an abstract binary search. Think of `i` as the
 	 * lower and `j` as the upper boundary. Then `m` is the new
@@ -218,6 +222,7 @@ static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 		/* Also return the length of the LCP interval including `a` and
 		 * possibly even more characters. Note: l + 1 <= LCP[m] */
 		ij->l = LCP[m];
+		ij->m = m;
 	} else {
 		ij->i = ij->j = -1;
 	}
@@ -234,7 +239,7 @@ static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
  * @returns The LCP interval for the longest prefix.
  */
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
-	lcp_inter_t res = {0,0,0};
+	lcp_inter_t res = {0,0,0,0};
 
 	// sanity checks
 	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->rmq_lcp ){
@@ -243,11 +248,13 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	}
 	
 	saidx_t k = 0, l, i, j, p;
-	lcp_inter_t ij = { 0, 0, C->len-1};
+	lcp_inter_t ij = { 0, 0, C->len-1, 0};
 	saidx_t m = qlen;
 	
 	saidx_t *SA = C->SA;
 	const char *S = (const char *)C->S;
+	
+	ij.m = C->rmq_lcp->query(1,C->len-1);
 	
 	// Loop over the query until a mismatch is found
 	do {

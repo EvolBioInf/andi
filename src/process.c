@@ -11,6 +11,8 @@
 #include "divergence.h"
 #include "global.h"
 #include "process.h"
+#include <gsl/gsl_sf_gamma.h>
+#include "gsl/gsl_nan.h"
 
 #include <RMQ_1_n.hpp>
 #include <RMQ_succinct.hpp>
@@ -79,6 +81,64 @@ static inline size_t log4( size_t num){
 	return log2( num) >> 1;
 }
 
+double shuprop( size_t x, double g, size_t l);
+
+/**
+ * @param p - The propability with which an anchor is allowed to be random.
+ * @param g - The the relative amount of GC in the subject.
+ * @param l - The length of the subject.
+ * @returns The minimum length of an anchor.
+ */
+size_t minAnchorLength( double p, double g, size_t l){
+	const double d = 0.5 + g - g*g;
+	size_t x = 1;
+	
+	double prop = 0.0;
+	while( prop < 1 - p){
+		prop = shuprop( x, g/2, l);
+		prop *= 1.0 - pow(d, (double)x);
+		x++;
+	}
+	
+	return x;
+}
+
+/**
+ * @brief Given `x` this function calculates the propability of a shustring 
+ * with a length less than `x`.
+ *
+ * Let X be the longest shortest unique substring (shustring) at any position. Then
+ * this function computes P{X <= x} in the given parameter set.
+ *
+ * @param x - The maximum length of a shustring.
+ * @param g - The the relative amount of GC in the DNA.
+ * @param l - The length of the subject.
+ * @returns The propability of a certain shustring length.
+ */
+double shuprop( size_t x, double g, size_t l){
+	double xx = (double)x;
+	double ll = (double)l;
+	size_t k;
+	
+	double s = 0.0;
+	
+	for(k=0; k<= x; k++){
+		double kk = (double)k;
+		double t = pow(g,kk) * pow(0.5 - g, xx - kk);
+		
+		s += exp(
+			log(pow(2,xx) * (t * pow(1-t,ll)))
+			+ gsl_sf_lnchoose(xx,kk)
+		);
+		if( s >= 1.0){
+			s = 1.0;
+			break;
+		}
+	}
+
+	return s;
+}
+
 /**
  * @brief Divergence estimation using the anchor technique.
  *
@@ -112,6 +172,10 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 	// TODO: remove this from production code.
 	size_t num_right_anchors = 0;
 	
+	// TODO: Make args variable.
+	// TODO: C->len or C->len/2 ?
+	size_t threshhold = minAnchorLength( RANDOM_ANCHOR_PROP, 0.5, C->len);
+	
 	// Iterate over the complete query.
 	while( this_pos_Q < query_length){
 		inter = getLCPInterval( C, query + this_pos_Q, query_length - this_pos_Q);
@@ -120,7 +184,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 		
 		/* TODO: evaluate the result of different conditions */
 		if( inter.i == inter.j  
-			&& this_length >= 2 * log4(query_length) )
+			&& this_length >= threshhold)
 		{
 			// We have reached a new anchor.
 			this_pos_S = C->SA[ inter.i];
@@ -140,7 +204,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 				last_was_right_anchor = 1;
 			} else {
 				if( last_was_right_anchor){
-					// If the last was a right anchor, but with the current one, we 
+					// If the last was a right anchor, but with the prop one, we 
 					// cannot extend, then add its length.
 					homo += last_length;
 				}

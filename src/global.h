@@ -27,6 +27,13 @@ extern int THREADS;
  */
 extern int STRATEGY;
 
+/**
+ * The ::RANDOM_ANCHOR_PROP represents the propability with which a found
+ * anchor is a random match and not homologous. Its value can be set using
+ * the `-p` switch.
+ */
+extern double RANDOM_ANCHOR_PROP;
+
 /** 
  * This enum contains the available flags. Please note that all
  * available options are a power of 2.

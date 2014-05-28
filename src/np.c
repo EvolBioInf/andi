@@ -33,10 +33,11 @@
 
 #include "sequence.h"
 
-
-int FLAGS = 0; /* global */
-int THREADS = 1; /* global */
-int STRATEGY = S_ANCHOR; /* global */
+/* Global Variables */
+int FLAGS = 0;
+int THREADS = 1;
+int STRATEGY = S_ANCHOR;
+double RANDOM_ANCHOR_PROP = 0.05;
 
 
 #ifdef __cplusplus
@@ -81,7 +82,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "s:vDhrt:", long_options, &option_index);
+		c = getopt_long( argc, argv, "s:vDhrt:p:", long_options, &option_index);
 		
 		if( c == -1){
 			break;
@@ -111,6 +112,9 @@ int main( int argc, char *argv[]){
 					fprintf(stderr, "error, unknown strategy: %s\n", optarg);
 					usage();
 				}
+				break;
+			case 'p':
+				RANDOM_ANCHOR_PROP = atof( optarg);
 				break;
 #ifdef _OPENMP
 			case 't':

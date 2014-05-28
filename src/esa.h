@@ -59,6 +59,8 @@ typedef struct {
  */
 typedef struct {
 	saidx_t l, i, j;
+	/** The new middle. */
+	saidx_t m;
 } lcp_inter_t;
 
 

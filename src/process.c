@@ -364,7 +364,7 @@ void printDistMatrix( seq_t* sequences, int n){
 	for( i=0;i<n;i++){
 		printf("%8s", sequences[i].name);
 		for( j=0;j<n;j++){
-			printf(" %1.4lf", D(i,j));
+			printf(" %1.4lf", (D(i,j)+D(j,i))/2 );
 		}
 		printf("\n");
 	}

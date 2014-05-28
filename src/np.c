@@ -36,7 +36,7 @@
 
 int FLAGS = 0; /* global */
 int THREADS = 1; /* global */
-int STRATEGY = S_SIMPLE; /* global */
+int STRATEGY = S_ANCHOR; /* global */
 
 
 #ifdef __cplusplus

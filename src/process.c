@@ -23,47 +23,6 @@
 #define D( X, Y) (D[ (X)*n + (Y) ])
 
 /**
- * The dist function computes the distance between a subject and a query
- * @return Number of jumps which is related to the number of mutations
- * @param C - The enhanced suffix array of the subject.
- * @param query - The actual query string.
- * @param ql - The length of the query string. Needed for speed reasons.
- */
-double dist( const esa_t *C, char *query, size_t ql){
-	size_t jumps = 0;
-	size_t idx = 0;
-	saidx_t l;
-	lcp_inter_t inter;
-	
-	while( idx < ql ){
-		inter = getLCPInterval( C, query + idx, ql - idx);
-		//saidx_t l = longestMatch( C, query + idx, ql - idx);
-		l = inter.l;
-		if( l == 0 ) break;
-		
-		// TODO: remove this from production code.
-		if( FLAGS & F_EXTRA_VERBOSE ){
-			fprintf( stderr, "idx: %ld, l: %d\n", idx, l);
-		}
-		
-		jumps++;
-		idx += l + 1; // skip the mutation
-	}
-
-	// avoid NaN
-	if( jumps <= 1){
-		jumps = 2;
-	}
-	
-	// TODO: remove this from production code.
-	if( FLAGS & F_VERBOSE ){
-		fprintf( stderr, "jumps: %ld, homol: %ld\n", jumps, ql);
-	}
-	
-	return (double)(jumps-1)/(double)ql;
-}
-
-/**
  * @brief Calculates the log_2 of a given integer.
  */
 static inline size_t log2( size_t num){
@@ -306,18 +265,11 @@ double *distMatrix( seq_t* sequences, int n){
 
 			size_t ql = sequences[j].len;
 			
-			if( STRATEGY == S_SIMPLE ){
-				d = dist( &E, sequences[j].S, ql);
-			} else if( STRATEGY == S_ANCHOR ){
+			if( STRATEGY == S_ANCHOR ){
 				d = dist_anchor( &E, sequences[j].S, ql);
 			}
 			
 			if( !(FLAGS & F_RAW)){
-				/*  Our shustring method might miss a mutation or two. Hence we need to correct  
-					the distance using math. See Haubold, Pfaffelhuber et al. (2009) */
-				if( STRATEGY == S_SIMPLE ){
-					d = divergence( 1.0/d, E.len, 0.5, 0.5);
-				}
 				d = -0.75 * log(1.0- (4.0 / 3.0) * d ); // jukes cantor
 			}
 			D(i,j) = d;

@@ -104,9 +104,7 @@ int main( int argc, char *argv[]){
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
 				break;
 			case 's':
-				if ( strcmp( optarg, "simple") == 0 ){
-					STRATEGY = S_SIMPLE;
-				} else if ( strcmp( optarg, "anchor") == 0 ){
+				if ( strcmp( optarg, "anchor") == 0 ){
 					STRATEGY = S_ANCHOR;
 				} else {
 					fprintf(stderr, "error, unknown strategy: %s\n", optarg);
@@ -215,7 +213,7 @@ void usage(void){
 		"\t[-r  raw distances; default: corrected]\n"
 		"\t[-D  single stranded comparison]\n"
 		"\t[-v  verbose]\n"
-		"\t[-s <simple|anchor> strategy]\n"
+		"\t[-s <anchor> strategy]\n"
 #ifdef _OPENMP
 		"\t[-t <INT>  The number of threads to be used]\n"
 #endif

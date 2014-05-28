@@ -51,7 +51,6 @@ enum {
  * global variable ::STRATEGY should only ever have one of these values.
  */
 enum {
-	S_SIMPLE,
 	S_ANCHOR
 };
 

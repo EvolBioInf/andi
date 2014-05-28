@@ -2,7 +2,7 @@ CC=clang
 CPP=g++
 VERSION= \"pre0.3\"
 
-OBJECTS= np.o esa.o divergence.o process.o sequence.o
+OBJECTS= np.o esa.o process.o sequence.o
 
 INCLUDES= -I ../libs -I../libs/RMQ
 

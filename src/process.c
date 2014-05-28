@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "esa.h"
-#include "divergence.h"
 #include "global.h"
 #include "process.h"
 #include <gsl/gsl_sf_gamma.h>

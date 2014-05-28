@@ -37,7 +37,7 @@
 int FLAGS = 0;
 int THREADS = 1;
 int STRATEGY = S_ANCHOR;
-double RANDOM_ANCHOR_PROP = 0.05;
+double RANDOM_ANCHOR_PROP = 0.95;
 
 
 #ifdef __cplusplus

@@ -174,7 +174,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 	
 	// TODO: Make args variable.
 	// TODO: C->len or C->len/2 ?
-	size_t threshhold = minAnchorLength( sqrt(RANDOM_ANCHOR_PROP), 0.5, C->len);
+	size_t threshhold = minAnchorLength( 1-sqrt(RANDOM_ANCHOR_PROP), 0.5, C->len);
 	if( FLAGS & F_VERBOSE){
 		fprintf(stderr, "threshhold: %ld\n", threshhold);
 	}

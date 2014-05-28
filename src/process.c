@@ -108,7 +108,7 @@ size_t minAnchorLength( double p, double g, size_t l){
  * with a length less than `x`.
  *
  * Let X be the longest shortest unique substring (shustring) at any position. Then
- * this function computes P{X <= x} in the given parameter set.
+ * this function computes P{X <= x} with respect to the given parameter set.
  *
  * @param x - The maximum length of a shustring.
  * @param g - The the relative amount of GC in the DNA.
@@ -174,7 +174,10 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 	
 	// TODO: Make args variable.
 	// TODO: C->len or C->len/2 ?
-	size_t threshhold = minAnchorLength( RANDOM_ANCHOR_PROP, 0.5, C->len);
+	size_t threshhold = minAnchorLength( sqrt(RANDOM_ANCHOR_PROP), 0.5, C->len);
+	if( FLAGS & F_VERBOSE){
+		fprintf(stderr, "threshhold: %ld\n", threshhold);
+	}
 	
 	// Iterate over the complete query.
 	while( this_pos_Q < query_length){
@@ -204,7 +207,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 				last_was_right_anchor = 1;
 			} else {
 				if( last_was_right_anchor){
-					// If the last was a right anchor, but with the prop one, we 
+					// If the last was a right anchor, but with the current one, we 
 					// cannot extend, then add its length.
 					homo += last_length;
 				}
@@ -225,6 +228,11 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 	// We might miss a few nucleotides if the last anchor was also a right anchor.
 	if( last_was_right_anchor ){
 		homo += last_length;
+	}
+	
+	if ( num_right_anchors <= 1 || snps <= 2 || homo <= 3){
+		// Insignificant results. All abort the fail train.
+		return 1.0;
 	}
 	
 	// Avoid NaN.

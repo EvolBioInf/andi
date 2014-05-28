@@ -21,24 +21,6 @@
  */
 #define D( X, Y) (D[ (X)*n + (Y) ])
 
-/**
- * @brief Calculates the log_2 of a given integer.
- */
-static inline size_t log2( size_t num){
-	size_t res = 0;
-	while( num >>= 1){
-		res++;
-	}
-	return res;
-}
-
-/**
- * @brief Calculates the log_4 of a given integer.
- */
-static inline size_t log4( size_t num){
-	return log2( num) >> 1;
-}
-
 double shuprop( size_t x, double g, size_t l);
 
 /**

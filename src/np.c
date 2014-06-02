@@ -210,14 +210,15 @@ void usage(void){
 		"Usage: np [-rDv] [-s strategy] FILES...\n"
 		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
-		"\t[-r  raw distances; default: corrected]\n"
-		"\t[-D  single stranded comparison]\n"
-		"\t[-v  verbose]\n"
-		"\t[-s <anchor> strategy]\n"
+		"\t-p <FLOAT>  Propability for a random anchor\n"
+		"\t-r  raw distances; default: corrected\n"
+		"\t-D  single stranded comparison\n"
+		"\t-v  verbose\n"
+		"\t-s <anchor>  strategy\n"
 #ifdef _OPENMP
-		"\t[-t <INT>  The number of threads to be used]\n"
+		"\t-t <INT>  The number of threads to be used\n"
 #endif
-		"\t[-h  display this help]\n"
+		"\t-h  display this help\n"
 	};
 
 	printf("%s", str);

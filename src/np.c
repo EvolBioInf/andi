@@ -54,7 +54,7 @@ KSEQ_INIT(int, read)
 #endif
 
 /** The total number of sequences np can compare at once. */
-#define MAX_SEQUENCES 1000
+#define MAX_SEQUENCES 10000
 
 void usage(void);
 int readFile( FILE *in, seq_t *nextSequence);

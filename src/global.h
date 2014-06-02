@@ -3,7 +3,7 @@
  * @brief Global Definitions
  *
  * This file contains the declaration of global variables and
- * their related values. The actual definition is located in np.c
+ * their related values. The actual definition is located in andi.c
  */
 #ifndef _GLOBAL_H_
 #define _GLOBAL_H_

@@ -2,19 +2,19 @@
 all: 
 	cd ./libs/RMQ; make
 	cd ./src; make
-	@mv ./src/np .
+	@mv ./src/andi .
 
 .PHONY: profile
 profile:
 	cd ./libs/RMQ; make profile
 	cd ./src; make profile
-	@mv ./src/np .
+	@mv ./src/andi .
 
 .PHONY: clean
 clean:
 	@cd ./libs/RMQ; make clean
 	@cd ./src; make clean
-	@-rm np
+	@-rm andi
 
 .PHONY: docs
 docs:

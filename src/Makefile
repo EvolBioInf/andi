@@ -2,7 +2,7 @@ CC=clang
 CPP=g++
 VERSION= \"pre0.4\"
 
-OBJECTS= np.o esa.o process.o sequence.o
+OBJECTS= andi.o esa.o process.o sequence.o
 
 INCLUDES= -I ../libs -I../libs/RMQ
 
@@ -12,15 +12,15 @@ LIBS= -ldivsufsort -ldivsufsort64 -lgsl -lgslcblas
 
 PREPROCESS= -D VERSION=$(VERSION)
 
-np: $(OBJECTS)
-	$(CPP) $(FLAGS) -o np $(OBJECTS) ../libs/RMQ/RMQ_1_n.o ../libs/RMQ/RMQ_succinct.o -L/usr/local/lib $(LIBS)
+andi: $(OBJECTS)
+	$(CPP) $(FLAGS) -o andi $(OBJECTS) ../libs/RMQ/RMQ_1_n.o ../libs/RMQ/RMQ_succinct.o -L/usr/local/lib $(LIBS)
 
 %.o: %.c
 	$(CPP) $(FLAGS) $(INCLUDES) $(PREPROCESS) $< -c -o $@
 	
 .PHONY: profile
 profile: FLAGS= -W -Wall -fpermissive -std=gnu++0x -g -pg -O1
-profile: np
+profile: andi
 
 .PHONY : clean
 clean:

@@ -1,5 +1,5 @@
 *.o
-np
+andi
 randomSeed.dat
 seedms
 testRMQ

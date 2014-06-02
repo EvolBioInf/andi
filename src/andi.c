@@ -53,7 +53,7 @@ KSEQ_INIT(int, read)
 }
 #endif
 
-/** The total number of sequences np can compare at once. */
+/** The total number of sequences andi can compare at once. */
 #define MAX_SEQUENCES 10000
 
 void usage(void);
@@ -207,7 +207,7 @@ int readFile( FILE *in, seq_t *nextSequence){
  */
 void usage(void){
 	const char str[]= {
-		"Usage: np [-rDv] [-s strategy] FILES...\n"
+		"Usage: andi [-rDv] [-s strategy] FILES...\n"
 		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
 		"\t-p <FLOAT>  Propability for a random anchor\n"
@@ -231,7 +231,7 @@ void usage(void){
  */
 void version(void){
 	const char str[]= {
-		"np " VERSION  "\n"
+		"andi " VERSION  "\n"
 		"Copyright (C) 2014 Fabian Kloetzl\n"
 		"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 	};

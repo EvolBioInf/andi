@@ -16,11 +16,13 @@ This program has the following dependencies: kseq.h, RMQ_succinct, libdivsufsort
 
 Assuming you have installed all prerequisites, building is as easy as follows.
 
+	$ ./configure
 	$ make
+	$ make install
 
 If the build was successful you can get the usage instructions via `--help`.
 
-	$ ./andi --help
+	$ andi --help
 
 Code documentation is provided via doxygen.
 

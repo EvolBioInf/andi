@@ -76,3 +76,16 @@ char *catcomp( char *s , size_t len){
 	return rev;
 }
 
+double calc_gc( seq_t *S){
+	size_t GC = 0;
+	char *p = S->S;
+	
+	for(; *p; p++){
+		if( *p == 'G' || *p == 'C'){
+			GC++;
+		}
+	}
+	
+	return S->gc = (double)GC/S->len;
+} 
+

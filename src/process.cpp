@@ -93,7 +93,7 @@ double shuprop( size_t x, double g, size_t l){
  * @param query - The actual query string.
  * @param query_length - The length of the query string. Needed for speed reasons.
  */
-double dist_anchor( const esa_t *C, const char *query, size_t query_length){
+double dist_anchor( const esa_t *C, const char *query, size_t query_length, double gc){
 	size_t snps = 0; // Total number of found SNPs
 	size_t homo = 0; // Total number of homologous nucleotides.
 	
@@ -112,9 +112,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 	// TODO: remove this from production code.
 	size_t num_right_anchors = 0;
 	
-	// TODO: Make args variable.
-	// TODO: C->len or C->len/2 ?
-	size_t threshhold = minAnchorLength( 1-sqrt(RANDOM_ANCHOR_PROP), 0.5, C->len);
+	size_t threshhold = minAnchorLength( 1-sqrt(RANDOM_ANCHOR_PROP), gc, C->len);
 	if( FLAGS & F_VERBOSE){
 		fprintf(stderr, "threshhold: %ld\n", threshhold);
 	}
@@ -125,9 +123,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length){
 		this_length = inter.l;
 		if( this_length == 0) break;
 		
-		/* TODO: evaluate the result of different conditions */
-		if( inter.i == inter.j  
-			&& this_length >= threshhold)
+		if( inter.i == inter.j && this_length >= threshhold)
 		{
 			// We have reached a new anchor.
 			this_pos_S = C->SA[ inter.i];
@@ -247,7 +243,7 @@ double *distMatrix( seq_t* sequences, int n){
 			size_t ql = sequences[j].len;
 			
 			if( STRATEGY == S_ANCHOR ){
-				d = dist_anchor( &E, sequences[j].S, ql);
+				d = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
 			}
 			
 			if( !(FLAGS & F_RAW)){
@@ -287,6 +283,8 @@ void printDistMatrix( seq_t* sequences, int n){
 			sequences[i].RS = catcomp( sequences[i].S, sequences[i].len);
 			sequences[i].RSlen = 2 * sequences[i].len + 1;
 		}
+		
+		calc_gc( &sequences[i]);
 	}
 	
 	// compute the distances

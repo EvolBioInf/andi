@@ -23,11 +23,18 @@ typedef struct {
 	size_t RSlen;
 	/** A name for this sequence */
 	char *name;
+	/**
+	 * @brief GC-Content
+	 *
+	 * The relative amount of G or C in the DNA.
+	 */
+	double gc;
 } seq_t;
 
 void freeSeq( seq_t *S);
 char *revcomp( const char *str, size_t len);
 char *catcomp( char *s , size_t len);
+double calc_gc( seq_t *S);
 
 #endif
 

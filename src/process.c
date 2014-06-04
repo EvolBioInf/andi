@@ -237,9 +237,7 @@ double *distMatrix( seq_t* sequences, int n){
 
 			size_t ql = sequences[j].len;
 			
-			if( STRATEGY == S_ANCHOR ){
-				d = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
-			}
+			d = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
 			
 			if( !(FLAGS & F_RAW)){
 				d = -0.75 * log(1.0- (4.0 / 3.0) * d ); // jukes cantor

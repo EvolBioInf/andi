@@ -36,7 +36,6 @@
 /* Global Variables */
 int FLAGS = 0;
 int THREADS = 1;
-int STRATEGY = S_ANCHOR;
 double RANDOM_ANCHOR_PROP = 0.95;
 
 
@@ -82,7 +81,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "s:vhrt:p:", long_options, &option_index);
+		c = getopt_long( argc, argv, "vhrt:p:", long_options, &option_index);
 		
 		if( c == -1){
 			break;
@@ -99,14 +98,6 @@ int main( int argc, char *argv[]){
 				break;
 			case 'v':
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
-				break;
-			case 's':
-				if ( strcmp( optarg, "anchor") == 0 ){
-					STRATEGY = S_ANCHOR;
-				} else {
-					fprintf(stderr, "error, unknown strategy: %s\n", optarg);
-					usage();
-				}
 				break;
 			case 'p':
 				RANDOM_ANCHOR_PROP = atof( optarg);
@@ -210,7 +201,6 @@ void usage(void){
 		"\t-p <FLOAT>  Propability for a random anchor\n"
 		"\t-r  raw distances; default: corrected\n"
 		"\t-v  verbose\n"
-		"\t-s <anchor>  strategy\n"
 #ifdef _OPENMP
 		"\t-t <INT>  The number of threads to be used\n"
 #endif

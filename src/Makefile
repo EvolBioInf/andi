@@ -8,7 +8,7 @@ INCLUDES= -I ../libs -I../libs/RMQ
 
 FLAGS= -O3 -W -Wall -fpermissive -fopenmp -std=gnu++0x
 
-LIBS= -ldivsufsort -ldivsufsort64 -lgsl -lgslcblas 
+LIBS= -ldivsufsort -lgsl -lgslcblas 
 
 PREPROCESS= -D VERSION=$(VERSION)
 

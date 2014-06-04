@@ -1,6 +1,6 @@
-SUBDIRS = . libs/RMQ src
+SUBDIRS = . libs/RMQ src docs
 
-src_DATA = README
+noinst_DATA = README
 
 README: README.md
 	cp README.md README

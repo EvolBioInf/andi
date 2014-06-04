@@ -1,4 +1,4 @@
-AC_INIT([andi], [0.4])
+AC_INIT([andi], [pre0.4])
 AM_INIT_AUTOMAKE([-Wall foreign])
 
 AC_PROG_CC
@@ -31,6 +31,7 @@ AC_CONFIG_FILES([
  Makefile
  src/Makefile
  libs/RMQ/Makefile
+ docs/Makefile
 ])
 AC_OUTPUT
 

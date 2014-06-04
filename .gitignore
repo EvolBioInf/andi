@@ -1,10 +1,26 @@
 *.o
+*.a
 andi
 randomSeed.dat
 seedms
 testRMQ
 docs/*
+*.in
+*.log
+**/Makefile
+configure.scan
+config.status
+depcomp
+install-sh
+aclocal.m4
+**/.deps/
+autom4te.cache/
 
 *.fasta
 cachegrind*
 callgrind*
+
+# for legacy git only:
+libs/RMQ/.deps/
+libs/RMQ/Makefile
+

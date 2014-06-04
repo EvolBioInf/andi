@@ -1,5 +1,10 @@
 
-SUBDIRS = libs/RMQ src
+SUBDIRS = . libs/RMQ src
+
+src_DATA = README
+
+README: README.md
+	cp README.md README
 
 #.PHONY:all
 #all: 

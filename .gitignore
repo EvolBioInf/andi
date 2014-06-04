@@ -15,6 +15,7 @@ install-sh
 aclocal.m4
 **/.deps/
 autom4te.cache/
+README
 
 *.fasta
 cachegrind*
@@ -23,4 +24,5 @@ callgrind*
 # for legacy git only:
 libs/RMQ/.deps/
 libs/RMQ/Makefile
+Makefile
 

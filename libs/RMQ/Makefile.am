@@ -1,25 +1,4 @@
-#FLAG = -O3 -fomit-frame-pointer -funroll-loops
-#CPP=g++
-
-
 noinst_LIBRARIES = libRMQ_succinct.a
 libRMQ_succinct_a_SOURCES = RMQ_succinct.cpp RMQ_succinct.hpp RMQ.hpp
 libRMQ_succinct_a_CXXFLAGS = -O3 -fomit-frame-pointer -funroll-loops
-
-#testRMQ: testRMQ.cpp RMQ_1_n.o RMQ_succinct.o
-#	$(CPP) $(FLAG) testRMQ.cpp -o testRMQ  RMQ_1_n.o RMQ_succinct.o
-
-#RMQ_succinct.o: RMQ_succinct.cpp RMQ_succinct.hpp RMQ.hpp
-#	$(CPP) $(FLAG) -c RMQ_succinct.cpp
-
-#RMQ_1_n.o: RMQ_1_n.cpp RMQ_1_n.hpp RMQ.hpp
-#	$(CPP) $(FLAG) -c RMQ_1_n.cpp
-
-.PHONY: profile
-profile: FLAG = -O1 -g -pg -funroll-loops
-profile: all
-	
-#.PHONY: clean
-#clean:
-#	-rm *.o testRMQ
 

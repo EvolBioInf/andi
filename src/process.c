@@ -112,7 +112,6 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	// TODO: remove this from production code.
 	size_t num_right_anchors = 0;
 	
-	// TODO: C->len or C->len/2 ?
 	size_t threshhold = minAnchorLength( 1-sqrt(RANDOM_ANCHOR_PROP), gc, C->len);
 	if( FLAGS & F_VERBOSE){
 		fprintf(stderr, "threshhold: %ld\n", threshhold);
@@ -124,9 +123,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		this_length = inter.l;
 		if( this_length == 0) break;
 		
-		/* TODO: evaluate the result of different conditions */
-		if( inter.i == inter.j  
-			&& this_length >= threshhold)
+		if( inter.i == inter.j && this_length >= threshhold)
 		{
 			// We have reached a new anchor.
 			this_pos_S = C->SA[ inter.i];

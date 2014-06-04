@@ -41,9 +41,8 @@ extern double RANDOM_ANCHOR_PROP;
 enum {
 	F_NONE = 0,
 	F_RAW = 1,
-	F_SINGLE = 2,
-	F_VERBOSE = 4,
-	F_EXTRA_VERBOSE = 8
+	F_VERBOSE = 2,
+	F_EXTRA_VERBOSE = 4
 };
 
 /**

@@ -82,7 +82,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "s:vDhrt:p:", long_options, &option_index);
+		c = getopt_long( argc, argv, "s:vhrt:p:", long_options, &option_index);
 		
 		if( c == -1){
 			break;
@@ -96,9 +96,6 @@ int main( int argc, char *argv[]){
 				break;
 			case 'r':
 				FLAGS |= F_RAW;
-				break;
-			case 'D':
-				FLAGS |= F_SINGLE;
 				break;
 			case 'v':
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
@@ -212,7 +209,6 @@ void usage(void){
 		"Options:\n"
 		"\t-p <FLOAT>  Propability for a random anchor\n"
 		"\t-r  raw distances; default: corrected\n"
-		"\t-D  single stranded comparison\n"
 		"\t-v  verbose\n"
 		"\t-s <anchor>  strategy\n"
 #ifdef _OPENMP

@@ -36,7 +36,6 @@
 /* Global Variables */
 int FLAGS = 0;
 int THREADS = 1;
-int STRATEGY = S_ANCHOR;
 double RANDOM_ANCHOR_PROP = 0.95;
 
 
@@ -74,6 +73,8 @@ int main( int argc, char *argv[]){
 	static struct option long_options[] = {
 		{"version", no_argument, &version_flag, 1},
 		{"help", no_argument, NULL, 'h'},
+		{"raw", no_argument, NULL, 'r'},
+		{"verbose", no_argument, NULL, 'v'},
 		{0,0,0,0}
 	};
 	
@@ -82,7 +83,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "s:vDhrt:p:", long_options, &option_index);
+		c = getopt_long( argc, argv, "vhrt:p:", long_options, &option_index);
 		
 		if( c == -1){
 			break;
@@ -97,19 +98,8 @@ int main( int argc, char *argv[]){
 			case 'r':
 				FLAGS |= F_RAW;
 				break;
-			case 'D':
-				FLAGS |= F_SINGLE;
-				break;
 			case 'v':
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
-				break;
-			case 's':
-				if ( strcmp( optarg, "anchor") == 0 ){
-					STRATEGY = S_ANCHOR;
-				} else {
-					fprintf(stderr, "error, unknown strategy: %s\n", optarg);
-					usage();
-				}
 				break;
 			case 'p':
 				RANDOM_ANCHOR_PROP = atof( optarg);
@@ -207,18 +197,17 @@ int readFile( FILE *in, seq_t *nextSequence){
  */
 void usage(void){
 	const char str[]= {
-		"Usage: andi [-rDv] [-s strategy] FILES...\n"
+		"Usage: andi [-rv] [-p FLOAT] FILES...\n"
 		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
-		"\t-p <FLOAT>  Propability for a random anchor\n"
-		"\t-r  raw distances; default: corrected\n"
-		"\t-D  single stranded comparison\n"
-		"\t-v  verbose\n"
-		"\t-s <anchor>  strategy\n"
+		"  -p <FLOAT>      Propability for a random anchor\n"
+		"  -r, --raw       Calculates raw distances; default: corrected\n"
+		"  -v, --verbose   Prints additional information\n"
 #ifdef _OPENMP
-		"\t-t <INT>  The number of threads to be used\n"
+		"  -t <INT>        The number of threads to be used\n"
 #endif
-		"\t-h  display this help\n"
+		"  -h, --help      display this help and exit\n"
+		"      --version   output version information and exit\n"
 	};
 
 	printf("%s", str);
@@ -234,6 +223,8 @@ void version(void){
 		"andi " VERSION  "\n"
 		"Copyright (C) 2014 Fabian Kloetzl\n"
 		"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
+		"This is free software: you are free to change and redistribute it.\n"
+		"There is NO WARRANTY, to the extent permitted by law.\n"
 	};
 	printf("%s", str);
 	exit(EXIT_SUCCESS);

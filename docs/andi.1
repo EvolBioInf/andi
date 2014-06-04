@@ -1,0 +1,38 @@
+.TH ANDI "1" "June 2014" "andi pre0.4" "User Commands"
+.SH NAME
+andi \- manual page for andi pre0.4
+.SH SYNOPSIS
+.B andi
+[\fI-rv\fR] [\fI-p FLOAT\fR] \fIFILES\fR...
+.SH DESCRIPTION
+.TP
+Estimate the diversity between genomes.
+.br
+FILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.
+.SH OPTIONS
+.TP
+\fB\-p\fR <FLOAT>
+Propability for a random anchor
+.TP
+\fB\-r\fR, \fB\-\-raw\fR
+Calculates raw distances; default: corrected
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Prints additional information
+.TP
+\fB\-t\fR <INT>
+The number of threads to be used
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+display this help and exit
+.TP
+\fB\-\-version\fR
+output version information and exit
+.SH COPYRIGHT
+Copyright \(co 2014 Fabian Kloetzl
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+.br
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+\" .SH "SEE ALSO"
+

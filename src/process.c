@@ -10,6 +10,7 @@
 #include "esa.h"
 #include "global.h"
 #include "process.h"
+#include "sequence.h"
 #include <gsl/gsl_sf_gamma.h>
 #include "gsl/gsl_nan.h"
 
@@ -269,6 +270,9 @@ void printDistMatrix( seq_t* sequences, int n){
 			fprintf(stderr, "missing sequence %d\n", i);
 			exit(1);
 		}
+		if( FLAGS & F_STRIP ){
+			strip( &sequences[i]);
+		}
 		sequences[i].len = strlen( sequences[i].S);
 		
 		// double stranded comparision!
@@ -276,6 +280,15 @@ void printDistMatrix( seq_t* sequences, int n){
 		sequences[i].RSlen = 2 * sequences[i].len + 1;
 		
 		calc_gc( &sequences[i]);
+	}
+	
+	if( FLAGS & F_NON_ACGT ){
+		const char str[] = {
+			"The input sequences contain characters other than ACGT. "
+			"This may lead to unexpected results. "
+			"Please use the option --strip or -s to remove unwanted characters.\n"
+		};
+		fprintf( stderr, "%s", str);
 	}
 	
 	// compute the distances

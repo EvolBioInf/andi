@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "sequence.h"
+#include "global.h"
 
 /**
  * @brief Frees the memory of a given sequence.
@@ -36,6 +37,7 @@ char *revcomp( const char *str, size_t len){
 	rev[len] = '\0';
 	
 	char c, d;
+	char local_non_acgt = 0;
 	
 	while( len --> 0 ){
 		c = *s--;
@@ -45,10 +47,17 @@ char *revcomp( const char *str, size_t len){
 			case 'T': d = 'A'; break;
 			case 'G': d = 'C'; break;
 			case 'C': d = 'G'; break;
-			default: continue;
+			default:
+				local_non_acgt = 1; 
+				continue;
 		}
 		
 		*r++ = d;
+	}
+	
+	if( local_non_acgt ){
+		#pragma omp atomic
+		FLAGS |= F_NON_ACGT;
 	}
 	
 	return rev;
@@ -76,6 +85,11 @@ char *catcomp( char *s , size_t len){
 	return rev;
 }
 
+/**
+ * @brief Calculates the GC content of a sequence.
+ *
+ * This function computes the relatice amount of G and C in the total sequence.
+ */
 double calc_gc( seq_t *S){
 	size_t GC = 0;
 	char *p = S->S;
@@ -87,5 +101,23 @@ double calc_gc( seq_t *S){
 	}
 	
 	return S->gc = (double)GC/S->len;
-} 
+}
+
+/**
+ * @brief Strips a sequence of any non ACGT characters.
+ *
+ * This function removes any character that is not an A, C, G or T from
+ * the given sequence.
+ */
+void strip( seq_t *S){
+	char *p, *q;
+	for( p= q= S->S; *p; p++){
+		if( *p == 'A' || *p == 'C' || *p == 'G' || *p == 'T'){
+			*q++ = *p;
+		}
+	}
+	*q = '\0';
+}
+
+
 

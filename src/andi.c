@@ -75,6 +75,7 @@ int main( int argc, char *argv[]){
 		{"help", no_argument, NULL, 'h'},
 		{"raw", no_argument, NULL, 'r'},
 		{"verbose", no_argument, NULL, 'v'},
+		{"strip", no_argument, NULL, 's'},
 		{0,0,0,0}
 	};
 	
@@ -83,7 +84,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "vhrt:p:", long_options, &option_index);
+		c = getopt_long( argc, argv, "vhrt:p:s", long_options, &option_index);
 		
 		if( c == -1){
 			break;
@@ -103,6 +104,9 @@ int main( int argc, char *argv[]){
 				break;
 			case 'p':
 				RANDOM_ANCHOR_PROP = atof( optarg);
+				break;
+			case 's':
+				FLAGS |= F_STRIP;
 				break;
 #ifdef _OPENMP
 			case 't':

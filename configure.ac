@@ -1,4 +1,4 @@
-AC_INIT([andi], [pre0.4])
+AC_INIT([andi], [0.4-dev])
 AM_INIT_AUTOMAKE([-Wall foreign])
 
 AC_PROG_CC

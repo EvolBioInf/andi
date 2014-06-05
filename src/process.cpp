@@ -13,7 +13,6 @@
 #include <gsl/gsl_sf_gamma.h>
 #include "gsl/gsl_nan.h"
 
-#include <RMQ_1_n.hpp>
 #include <RMQ_succinct.hpp>
 
 /**

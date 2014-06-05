@@ -16,16 +16,16 @@ AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
 AC_SEARCH_LIBS([gsl_sf_lnchoose], gslcblas)
 AC_SEARCH_LIBS([gsl_sf_lnchoose], gsl)
 
-#AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h])
 
-#AC_C_INLINE
-#AC_TYPE_SIZE_T
-#AC_TYPE_SSIZE_T
-#AC_HEADER_STDBOOL
+AC_C_INLINE
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
+AC_HEADER_STDBOOL
 
-#AC_FUNC_MALLOC
-#AC_FUNC_REALLOC
-#AC_CHECK_FUNCS([floor pow sqrt strdup])
+AC_FUNC_MALLOC
+AC_FUNC_REALLOC
+AC_CHECK_FUNCS([floor pow sqrt strdup])
 
 AC_CONFIG_FILES([
  Makefile

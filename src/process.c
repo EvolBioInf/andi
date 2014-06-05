@@ -270,23 +270,14 @@ void printDistMatrix( seq_t* sequences, int n){
 			fprintf(stderr, "missing sequence %d\n", i);
 			exit(1);
 		}
-		if( FLAGS & F_STRIP ){
-			strip( &sequences[i]);
-		}
-		sequences[i].len = strlen( sequences[i].S);
 		
-		// double stranded comparision!
-		sequences[i].RS = catcomp( sequences[i].S, sequences[i].len);
-		sequences[i].RSlen = 2 * sequences[i].len + 1;
-		
-		calc_gc( &sequences[i]);
+		init_seq( &sequences[i]);
 	}
 	
 	if( FLAGS & F_NON_ACGT ){
 		const char str[] = {
-			"The input sequences contain characters other than ACGT. "
-			"This may lead to unexpected results. "
-			"Please use the option --strip or -s to remove unwanted characters.\n"
+			"The input sequences contained characters other than acgtACGT. "
+			"These were automatically stripped to ensure correct results.\n"
 		};
 		fprintf( stderr, "%s", str);
 	}

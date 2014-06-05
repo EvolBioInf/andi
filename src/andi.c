@@ -75,7 +75,6 @@ int main( int argc, char *argv[]){
 		{"help", no_argument, NULL, 'h'},
 		{"raw", no_argument, NULL, 'r'},
 		{"verbose", no_argument, NULL, 'v'},
-		{"strip", no_argument, NULL, 's'},
 		{0,0,0,0}
 	};
 	
@@ -104,9 +103,6 @@ int main( int argc, char *argv[]){
 				break;
 			case 'p':
 				RANDOM_ANCHOR_PROP = atof( optarg);
-				break;
-			case 's':
-				FLAGS |= F_STRIP;
 				break;
 #ifdef _OPENMP
 			case 't':

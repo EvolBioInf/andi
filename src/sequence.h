@@ -32,10 +32,7 @@ typedef struct {
 } seq_t;
 
 void freeSeq( seq_t *S);
-char *revcomp( const char *str, size_t len);
-char *catcomp( char *s , size_t len);
-double calc_gc( seq_t *S);
-void strip( seq_t *S);
+void init_seq( seq_t *S);
 
 #endif
 

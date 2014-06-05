@@ -6,8 +6,11 @@
  */
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "sequence.h"
 #include "global.h"
+
+void normalize( seq_t *S);
 
 /**
  * @brief Frees the memory of a given sequence.
@@ -104,20 +107,52 @@ double calc_gc( seq_t *S){
 }
 
 /**
- * @brief Strips a sequence of any non ACGT characters.
+ * @brief Initializes a sequence.
  *
- * This function removes any character that is not an A, C, G or T from
- * the given sequence.
+ * This function prepares a sequence for further processing.
  */
-void strip( seq_t *S){
+void init_seq( seq_t *S){
+	normalize( S);
+	S->len = strlen(S->S);
+	calc_gc(S);
+	
+	S->RS = catcomp(S->S, S->len);
+	S->RSlen = 2 * S->len + 1;
+}
+
+/**
+ * @brief Restricts a sequence characters set to ACGT.
+ *
+ * This function strips a sequence of non ACGT characters and converts acgt to
+ * the upper case equivalent. A flag is set if a non-canonical character was encountered.
+ */
+void normalize( seq_t *S){
 	char *p, *q;
+	char local_non_acgt = 0;
 	for( p= q= S->S; *p; p++){
-		if( *p == 'A' || *p == 'C' || *p == 'G' || *p == 'T'){
-			*q++ = *p;
+		switch( *p){
+			case 'A':
+			case 'C':
+			case 'G':
+			case 'T':
+				*q++ = *p;
+				break;
+			case 'a':
+			case 'c':
+			case 'g':
+			case 't':
+				*q++ = toupper( (unsigned char)*p);
+				break;
+			default:
+				local_non_acgt = 1;
+				break;
+				
 		}
 	}
 	*q = '\0';
+	if ( local_non_acgt ){
+		#pragma omp atomic
+		FLAGS |= F_NON_ACGT;
+	}
 }
-
-
 

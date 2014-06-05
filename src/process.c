@@ -162,6 +162,11 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		this_pos_Q += this_length + 1;
 	}
 	
+	// Very special case: The sequences are identical
+	if( last_length >= query_length ){
+		return 0.0;
+	}
+	
 	// We might miss a few nucleotides if the last anchor was also a right anchor.
 	if( last_was_right_anchor ){
 		homo += last_length;
@@ -242,6 +247,10 @@ double *distMatrix( seq_t* sequences, int n){
 			
 			if( !(FLAGS & F_RAW)){
 				d = -0.75 * log(1.0- (4.0 / 3.0) * d ); // jukes cantor
+			}
+			// fix negative zero
+			if( d <= 0.0 ){
+				d = 0.0;
 			}
 			D(i,j) = d;
 		}

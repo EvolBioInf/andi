@@ -1,0 +1,5 @@
+version=3
+
+opts=filenamemangle=s/.+\/v?(\d\S*)\.tar\.gz/andi-$1\.tar\.gz/ \
+  https://github.com/kloetzl/andi/tags .*/v?(\d\S*)\.tar\.gz
+

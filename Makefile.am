@@ -1,4 +1,4 @@
-SUBDIRS = . libs/RMQ src docs
+SUBDIRS = . libs/RMQ libs/libdivsufsort-2.0.1 src docs
 
 noinst_DATA = README
 

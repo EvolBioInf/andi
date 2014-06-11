@@ -1,5 +1,7 @@
 AC_INIT([andi], [0.4-dev])
+AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([-Wall foreign])
+
 
 AC_PROG_CC
 AC_PROG_CXX
@@ -8,7 +10,7 @@ AC_PROG_CPP
 AC_PROG_RANLIB
 
 AC_CHECK_LIB(m, cos)
-AC_CHECK_LIB(divsufsort, divsufsort)
+#AC_CHECK_LIB(divsufsort, divsufsort)
 
 AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
@@ -33,5 +35,6 @@ AC_CONFIG_FILES([
  libs/RMQ/Makefile
  docs/Makefile
 ])
+AC_CONFIG_SUBDIRS([libs/libdivsufsort-2.0.1])
 AC_OUTPUT
 

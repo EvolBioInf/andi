@@ -172,6 +172,11 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		homo += last_length;
 	}
 	
+	// Nearly identical sequences
+	if( homo == query_length){
+		return (double)snps/(double)homo;
+	}
+	
 	if ( num_right_anchors <= 1 || snps <= 2 || homo <= 3){
 		// Insignificant results. All abort the fail train.
 		return 1.0;

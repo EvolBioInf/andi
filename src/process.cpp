@@ -10,6 +10,7 @@
 #include "esa.h"
 #include "global.h"
 #include "process.h"
+#include "sequence.h"
 #include <gsl/gsl_sf_gamma.h>
 #include "gsl/gsl_nan.h"
 
@@ -160,19 +161,25 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		this_pos_Q += this_length + 1;
 	}
 	
+	// Very special case: The sequences are identical
+	if( last_length >= query_length ){
+		return 0.0;
+	}
+	
 	// We might miss a few nucleotides if the last anchor was also a right anchor.
 	if( last_was_right_anchor ){
 		homo += last_length;
+	}
+	
+	// Nearly identical sequences
+	if( homo == query_length){
+		return (double)snps/(double)homo;
 	}
 	
 	if ( num_right_anchors <= 1 || snps <= 2 || homo <= 3){
 		// Insignificant results. All abort the fail train.
 		return 1.0;
 	}
-	
-	// Avoid NaN.
-	if ( snps <= 2) snps = 2;
-	if ( homo <= 3) homo = 3;
 	
 	// TODO: remove this from production code.
 	if( FLAGS & F_VERBOSE ){
@@ -241,6 +248,10 @@ double *distMatrix( seq_t* sequences, int n){
 			if( !(FLAGS & F_RAW)){
 				d = -0.75 * log(1.0- (4.0 / 3.0) * d ); // jukes cantor
 			}
+			// fix negative zero
+			if( d <= 0.0 ){
+				d = 0.0;
+			}
 			D(i,j) = d;
 		}
 		
@@ -255,11 +266,48 @@ double *distMatrix( seq_t* sequences, int n){
 
 /**
  * @brief Prints the distance matrix.
+ *
+ * This function pretty prints the distance matrix. For small distances
+ * scientific notation is used.
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-void printDistMatrix( seq_t* sequences, int n){
-	int i, j;
+void printDistMatrix( double *D, seq_t* sequences, size_t n){
+
+	int use_scientific = 0;
+	size_t i,j;
+	
+	for( i=0; i<n && !use_scientific; i++){
+		for( j=0; j<n; j++){
+			if( D(i,j) > 0 && D(i,j) < 0.001 ){
+				use_scientific = 1;
+				break;
+			}
+		}
+	}
+	
+	printf("%lu\n", n);
+	for( i=0;i<n;i++){
+		printf("%-9s", sequences[i].name);
+		
+		for( j=0;j<n;j++){
+			if( use_scientific){
+				printf(" %1.4e", (D(i,j)+D(j,i))/2 );
+			} else {
+				printf(" %1.4lf", (D(i,j)+D(j,i))/2 );
+			}
+		}
+		printf("\n");
+	}
+}
+
+/**
+ * @brief Calculates and prints the distance matrix
+ * @param sequences - An array of pointers to the sequences.
+ * @param n - The number of sequences.
+ */
+void calcDistMatrix( seq_t* sequences, int n){
+	int i;
 
 	// initialise the sequences
 	#pragma omp parallel for num_threads( THREADS)
@@ -268,27 +316,24 @@ void printDistMatrix( seq_t* sequences, int n){
 			fprintf(stderr, "missing sequence %d\n", i);
 			exit(1);
 		}
-		sequences[i].len = strlen( sequences[i].S);
 		
-		// double stranded comparision!
-		sequences[i].RS = catcomp( sequences[i].S, sequences[i].len);
-		sequences[i].RSlen = 2 * sequences[i].len + 1;
-		
-		calc_gc( &sequences[i]);
+		init_seq( &sequences[i]);
+	}
+	
+	// Warn about non ACGT residues.
+	if( FLAGS & F_NON_ACGT ){
+		const char str[] = {
+			"The input sequences contained characters other than acgtACGT. "
+			"These were automatically stripped to ensure correct results.\n"
+		};
+		fprintf( stderr, "%s", str);
 	}
 	
 	// compute the distances
 	double *D = distMatrix( sequences, n);
 	
 	// print the results
-	printf("%d\n", n);
-	for( i=0;i<n;i++){
-		printf("%8s", sequences[i].name);
-		for( j=0;j<n;j++){
-			printf(" %1.4lf", (D(i,j)+D(j,i))/2 );
-		}
-		printf("\n");
-	}
+	printDistMatrix( D, sequences, n);
 	
 	free(D);
 }

@@ -33,7 +33,7 @@
 
 #include "sequence.h"
 
-/* Global Variables */
+/* Global variables */
 int FLAGS = 0;
 int THREADS = 1;
 double RANDOM_ANCHOR_PROP = 0.95;
@@ -83,7 +83,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "vhrt:p:", long_options, &option_index);
+		c = getopt_long( argc, argv, "vhrt:p:s", long_options, &option_index);
 		
 		if( c == -1){
 			break;
@@ -143,12 +143,14 @@ int main( int argc, char *argv[]){
 		fclose(in);
 	}
 	
-	fprintf( stderr, "Comparing %d sequences\n", n);
-	fflush( stderr);
+	if( FLAGS & F_VERBOSE){
+		fprintf( stderr, "Comparing %d sequences\n", n);
+		fflush( stderr);
+	}
 	
 	// compute distance matrix
 	if( n >= 2){
-		printDistMatrix(sequences, n);
+		calcDistMatrix(sequences, n);
 	}
 
 	for( i=0; i<n; i++){
@@ -200,14 +202,14 @@ void usage(void){
 		"Usage: andi [-rv] [-p FLOAT] FILES...\n"
 		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
-		"  -p <FLOAT>      Propability for a random anchor\n"
-		"  -r, --raw       Calculates raw distances; default: corrected\n"
+		"  -p <FLOAT>      Propability for a random anchor; default: 0.95\n"
+		"  -r, --raw       Calculates raw distances; default: Jukes-Cantor corrected\n"
 		"  -v, --verbose   Prints additional information\n"
 #ifdef _OPENMP
-		"  -t <INT>        The number of threads to be used\n"
+		"  -t <INT>        The number of threads to be used; default: 1\n"
 #endif
 		"  -h, --help      display this help and exit\n"
-		"      --version   output version information and exit\n"
+		"      --version   output version information and acknowledgements\n"
 	};
 
 	printf("%s", str);
@@ -224,7 +226,17 @@ void version(void){
 		"Copyright (C) 2014 Fabian Kloetzl\n"
 		"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 		"This is free software: you are free to change and redistribute it.\n"
-		"There is NO WARRANTY, to the extent permitted by law.\n"
+		"There is NO WARRANTY, to the extent permitted by law.\n\n"
+		"Acknowledgements:\n"
+		"1) Andi: Haubold, B. Kl\"otzl, F. and Pfaffelhuber, P. (2014)."
+		" Fast and accurate estimation of evolutionary distances between genomes. In preparation.\n"
+		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algoritms. Sequence Analysis, "
+		"Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.\n"
+		"3) RMQ: Fischer, J. and Heun, V. (2007). A new succinct representation of "
+		"RMQ-information and improvements in the enhanced suffix array. "
+		"Chen, B. Paterson, M., and Zhang, G. (Eds): ESCAPE 2007, LCNS 4614, pp. 459-470.\n"
+		"4) SA construction: Mori, Y. (2005). Short description of improved two-stage suffix "
+		"sorting alorithm. http://homepage3.nifty.com/wpage/software/itssort.txt\n"
 	};
 	printf("%s", str);
 	exit(EXIT_SUCCESS);

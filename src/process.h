@@ -8,7 +8,7 @@
 
 #include "sequence.h"
 
-void printDistMatrix( seq_t* sequences, int n);
+void calcDistMatrix( seq_t* sequences, int n);
 
 #endif
 

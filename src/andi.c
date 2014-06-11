@@ -226,7 +226,17 @@ void version(void){
 		"Copyright (C) 2014 Fabian Kloetzl\n"
 		"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 		"This is free software: you are free to change and redistribute it.\n"
-		"There is NO WARRANTY, to the extent permitted by law.\n"
+		"There is NO WARRANTY, to the extent permitted by law.\n\n"
+		"Acknowledgements:\n"
+		"1) Andi: Haubold, B. Kl\"otzl, F. and Pfaffelhuber, P. (2014)."
+		" Fast and accurate estimation of evolutionary distances between genomes. In preparation."
+		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algoritms. Sequence Analysis, "
+		"Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.\n"
+		"3) RMQ: Fischer, J. and Heun, V. (2007). A new succinct representation of "
+		"RMQ-information and improvements in the enhanced suffix array. "
+		"Chen, B. Paterson, M., and Zhang, G. (Eds): ESCAPE 2007, LCNS 4614, pp. 459-470.\n"
+		"4) SA construction: Mori, Y. (2005). Short description of improved two-stage suffix "
+		"sorting alorithm. http://homepage3.nifty.com/wpage/software/itssort.txt\n"
 	};
 	printf("%s", str);
 	exit(EXIT_SUCCESS);

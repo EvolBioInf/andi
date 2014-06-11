@@ -209,7 +209,7 @@ void usage(void){
 		"  -t <INT>        The number of threads to be used; default: 1\n"
 #endif
 		"  -h, --help      display this help and exit\n"
-		"      --version   output version information and exit\n"
+		"      --version   output version information and acknowledgements\n"
 	};
 
 	printf("%s", str);
@@ -229,7 +229,7 @@ void version(void){
 		"There is NO WARRANTY, to the extent permitted by law.\n\n"
 		"Acknowledgements:\n"
 		"1) Andi: Haubold, B. Kl\"otzl, F. and Pfaffelhuber, P. (2014)."
-		" Fast and accurate estimation of evolutionary distances between genomes. In preparation."
+		" Fast and accurate estimation of evolutionary distances between genomes. In preparation.\n"
 		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algoritms. Sequence Analysis, "
 		"Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.\n"
 		"3) RMQ: Fischer, J. and Heun, V. (2007). A new succinct representation of "

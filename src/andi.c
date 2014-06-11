@@ -33,7 +33,7 @@
 
 #include "sequence.h"
 
-/* Global Variables */
+/* Global variables */
 int FLAGS = 0;
 int THREADS = 1;
 double RANDOM_ANCHOR_PROP = 0.95;
@@ -143,8 +143,10 @@ int main( int argc, char *argv[]){
 		fclose(in);
 	}
 	
-	fprintf( stderr, "Comparing %d sequences\n", n);
-	fflush( stderr);
+	if( FLAGS & F_VERBOSE){
+		fprintf( stderr, "Comparing %d sequences\n", n);
+		fflush( stderr);
+	}
 	
 	// compute distance matrix
 	if( n >= 2){
@@ -200,11 +202,11 @@ void usage(void){
 		"Usage: andi [-rv] [-p FLOAT] FILES...\n"
 		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
-		"  -p <FLOAT>      Propability for a random anchor\n"
-		"  -r, --raw       Calculates raw distances; default: corrected\n"
+		"  -p <FLOAT>      Propability for a random anchor; default: 0.95\n"
+		"  -r, --raw       Calculates raw distances; default: Jukes-Cantor corrected\n"
 		"  -v, --verbose   Prints additional information\n"
 #ifdef _OPENMP
-		"  -t <INT>        The number of threads to be used\n"
+		"  -t <INT>        The number of threads to be used; default: 1\n"
 #endif
 		"  -h, --help      display this help and exit\n"
 		"      --version   output version information and exit\n"

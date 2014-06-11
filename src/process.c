@@ -182,10 +182,6 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		return 1.0;
 	}
 	
-	// Avoid NaN.
-	if ( snps <= 2) snps = 2;
-	if ( homo <= 3) homo = 3;
-	
 	// TODO: remove this from production code.
 	if( FLAGS & F_VERBOSE ){
 		fprintf( stderr, "snps: %lu, homo: %lu\n", snps, homo);
@@ -271,11 +267,48 @@ double *distMatrix( seq_t* sequences, int n){
 
 /**
  * @brief Prints the distance matrix.
+ *
+ * This function pretty prints the distance matrix. For small distances
+ * scientific notation is used.
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-void printDistMatrix( seq_t* sequences, int n){
-	int i, j;
+void printDistMatrix( double *D, seq_t* sequences, size_t n){
+
+	int use_scientific = 0;
+	size_t i,j;
+	
+	for( i=0; i<n && !use_scientific; i++){
+		for( j=0; j<n; j++){
+			if( D(i,j) > 0 && D(i,j) < 0.001 ){
+				use_scientific = 1;
+				break;
+			}
+		}
+	}
+	
+	printf("%lu\n", n);
+	for( i=0;i<n;i++){
+		printf("%-9s", sequences[i].name);
+		
+		for( j=0;j<n;j++){
+			if( use_scientific){
+				printf(" %1.4e", (D(i,j)+D(j,i))/2 );
+			} else {
+				printf(" %1.4lf", (D(i,j)+D(j,i))/2 );
+			}
+		}
+		printf("\n");
+	}
+}
+
+/**
+ * @brief Calculates and prints the distance matrix
+ * @param sequences - An array of pointers to the sequences.
+ * @param n - The number of sequences.
+ */
+void calcDistMatrix( seq_t* sequences, int n){
+	int i;
 
 	// initialise the sequences
 	#pragma omp parallel for num_threads( THREADS)
@@ -288,6 +321,7 @@ void printDistMatrix( seq_t* sequences, int n){
 		init_seq( &sequences[i]);
 	}
 	
+	// Warn about non ACGT residues.
 	if( FLAGS & F_NON_ACGT ){
 		const char str[] = {
 			"The input sequences contained characters other than acgtACGT. "
@@ -300,14 +334,7 @@ void printDistMatrix( seq_t* sequences, int n){
 	double *D = distMatrix( sequences, n);
 	
 	// print the results
-	printf("%d\n", n);
-	for( i=0;i<n;i++){
-		printf("%-9s", sequences[i].name);
-		for( j=0;j<n;j++){
-			printf(" %1.4lf", (D(i,j)+D(j,i))/2 );
-		}
-		printf("\n");
-	}
+	printDistMatrix( D, sequences, n);
 	
 	free(D);
 }

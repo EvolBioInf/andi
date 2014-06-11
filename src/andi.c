@@ -150,7 +150,7 @@ int main( int argc, char *argv[]){
 	
 	// compute distance matrix
 	if( n >= 2){
-		printDistMatrix(sequences, n);
+		calcDistMatrix(sequences, n);
 	}
 
 	for( i=0; i<n; i++){

@@ -37,7 +37,8 @@ enum {
 	F_RAW = 1,
 	F_VERBOSE = 2,
 	F_EXTRA_VERBOSE = 4,
-	F_NON_ACGT = 8
+	F_NON_ACGT = 8,
+	F_JOIN = 16
 };
 
 #endif

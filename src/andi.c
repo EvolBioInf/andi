@@ -52,9 +52,6 @@ KSEQ_INIT(int, read)
 }
 #endif
 
-/** The total number of sequences andi can compare at once. */
-#define MAX_SEQUENCES 10000
-
 void usage(void);
 void readFile( FILE *in, dyn_seq_arr *dsa);
 void joinedRead( FILE *in, dyn_seq_arr *dsa);
@@ -133,7 +130,7 @@ int main( int argc, char *argv[]){
 	if( FLAGS & F_JOIN ){
 		// atleast one file name must be given
 		if( optind == argc ){
-			fprintf( stderr, "Error: in join mode atleast one filename needs to be supplied\n");
+			fprintf( stderr, "Error: in join mode at least one filename needs to be supplied\n");
 			exit(EXIT_FAILURE);
 		}
 		
@@ -184,7 +181,7 @@ int main( int argc, char *argv[]){
 		fprintf( stderr, "I am truly sorry, but with less than two sequences there is nothing to compare.\n");
 	}
 
-	for( i=0; i< dsa.n; i++){
+	for( i=0; i< (int)dsa.n; i++){
 		freeSeq( &sequences[i]);
 	}
 	free( sequences);

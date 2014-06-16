@@ -34,5 +34,13 @@ typedef struct {
 void freeSeq( seq_t *S);
 void init_seq( seq_t *S);
 
+typedef struct {
+	seq_t *seqs;
+	size_t size;
+	size_t n;
+} dyn_seq_arr;
+
+void *ensure_dyn_seq_arr( dyn_seq_arr *dsa);
+
 #endif
 

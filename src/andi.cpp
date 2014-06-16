@@ -36,7 +36,7 @@
 /* Global variables */
 int FLAGS = 0;
 int THREADS = 1;
-double RANDOM_ANCHOR_PROP = 0.95;
+double RANDOM_ANCHOR_PROP = 0.6;
 
 
 #ifdef __cplusplus
@@ -52,11 +52,9 @@ KSEQ_INIT(int, read)
 }
 #endif
 
-/** The total number of sequences andi can compare at once. */
-#define MAX_SEQUENCES 10000
-
 void usage(void);
-int readFile( FILE *in, seq_t *nextSequence);
+void readFile( FILE *in, dyn_seq_arr *dsa);
+void joinedRead( FILE *in, dyn_seq_arr *dsa);
 void version(void);
 
 /**
@@ -75,6 +73,7 @@ int main( int argc, char *argv[]){
 		{"help", no_argument, NULL, 'h'},
 		{"raw", no_argument, NULL, 'r'},
 		{"verbose", no_argument, NULL, 'v'},
+		{"join", no_argument, NULL, 'j'},
 		{0,0,0,0}
 	};
 	
@@ -83,7 +82,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "vhrt:p:s", long_options, &option_index);
+		c = getopt_long( argc, argv, "jvhrt:p:s", long_options, &option_index);
 		
 		if( c == -1){
 			break;
@@ -104,6 +103,9 @@ int main( int argc, char *argv[]){
 			case 'p':
 				RANDOM_ANCHOR_PROP = atof( optarg);
 				break;
+			case 'j':
+				FLAGS |= F_JOIN;
+				break;
 #ifdef _OPENMP
 			case 't':
 				THREADS = atoi( optarg);
@@ -120,78 +122,144 @@ int main( int argc, char *argv[]){
 		version();
 	}
 	
-	seq_t *sequences = (seq_t*) malloc( MAX_SEQUENCES * sizeof(seq_t));
-	assert( sequences );
+	dyn_seq_arr dsa = { NULL, 0, 0 };
+	ensure_dyn_seq_arr( &dsa);
 	
 	FILE *in = NULL;
-	int n = 0;
 	
-	// if no files are supplied, read from stdin
-	if( optind == argc){
-		in = stdin;
-		n = readFile( in, sequences );
-	}
+	if( FLAGS & F_JOIN ){
+		// atleast one file name must be given
+		if( optind == argc ){
+			fprintf( stderr, "Error: in join mode at least one filename needs to be supplied\n");
+			exit(EXIT_FAILURE);
+		}
+		
+		// only one file
+		if( optind + 1 == argc ){
+			in = stdin;
+			joinedRead( in, &dsa);
+		}
+		
+		// parse all files
+		for( i=optind; i< argc; i++){
+			in = fopen( argv[i], "r");
+			if( !in) continue;
+
+			joinedRead( in, &dsa);
+
+			fclose(in);
+		}
+		
+	} else {
+		// if no files are supplied, read from stdin
+		if( optind == argc){
+			in = stdin;
+			readFile( in, &dsa );
+		}
 	
-	// parse all files
-	for( i=optind; i< argc; i++){
-		in = fopen( argv[i], "r");
-		if( !in) continue;
-		
-		n += readFile( in, sequences + n);
-		
-		assert( n < MAX_SEQUENCES);
-		fclose(in);
+		// parse all files
+		for( i=optind; i< argc; i++){
+			in = fopen( argv[i], "r");
+			if( !in) continue;
+
+			readFile( in, &dsa);
+
+			fclose(in);
+		}
 	}
 	
 	if( FLAGS & F_VERBOSE){
-		fprintf( stderr, "Comparing %d sequences\n", n);
+		fprintf( stderr, "Comparing %lu sequences\n", dsa.n);
 		fflush( stderr);
 	}
 	
+	seq_t *sequences = dsa.seqs;
 	// compute distance matrix
-	if( n >= 2){
-		calcDistMatrix(sequences, n);
+	if( dsa.n >= 2){
+		calcDistMatrix(sequences, dsa.n);
+	} else {
+		fprintf( stderr, "I am truly sorry, but with less than two sequences there is nothing to compare.\n");
 	}
 
-	for( i=0; i<n; i++){
+	for( i=0; i< (int)dsa.n; i++){
 		freeSeq( &sequences[i]);
 	}
 	free( sequences);
 	return 0;
 }
 
+/**
+ * "I didn't learn joined up handwriting for nothing, you know."
+ * ~ Gilderoy Lockhart
+ */
+void joinedRead( FILE *in, dyn_seq_arr *dsa){
+	if( ensure_dyn_seq_arr( dsa) == NULL ){
+		return;
+	}
+	
+	dyn_seq_arr single = { NULL, 0, 0};
+	readFile( in, &single);
+	
+	if( single.n == 0 ){
+		return;
+	}
+	
+	size_t i = 0, n = dsa->n;
+	dsa->seqs[n].name = strdup( single.seqs[0].name);
+	dsa->seqs[n].S = (char *) calloc(1,1);
+	dsa->seqs[n].RS = NULL;
+	
+	char *ptr;
+	int check;
+	
+	for(; i< single.n; i++){
+		check = asprintf( &ptr, "%s!%s", dsa->seqs[n].S, single.seqs[i].S);
+		if( check == -1 ){
+			freeSeq( &single.seqs[i]);
+		} else {
+			free( dsa->seqs[n].S);
+			dsa->seqs[n].S = ptr;
+			freeSeq( &single.seqs[i]);
+		}
+		
+	}
+	
+	free( single.seqs);
+	dsa->n++;
+}
+
 
 /**
  * This function reads sequences from a file.
- * @param in The file pointer to read from.
+ * @param in - The file pointer to read from.
  * @param nextSequence A pointer to the next free beginning of a sequence.
- * @return The number of found sequences.
  */
-int readFile( FILE *in, seq_t *nextSequence){
-	int n = 0, l;
+void readFile( FILE *in, dyn_seq_arr *dsa){
+	int l;
 	
 	kseq_t *seq = kseq_init(fileno(in));
 	
 	while( ( l = kseq_read(seq)) >= 0){
+		if( ensure_dyn_seq_arr( dsa) == NULL ){
+			continue;
+		}
 
-		nextSequence->S = strdup( seq->seq.s);
-		if( nextSequence->S == NULL ){
+		dsa->seqs[dsa->n].S = strdup( seq->seq.s);
+		if( dsa->seqs[dsa->n].S == NULL ){
 			continue;
 		}
 		
-		nextSequence->name = strdup( seq->name.s);
-		if( nextSequence->name == NULL ){
-			free( nextSequence->S);
+		dsa->seqs[dsa->n].name = strdup( seq->name.s);
+		if( dsa->seqs[dsa->n].name == NULL ){
+			free( dsa->seqs[dsa->n].S);
 			continue;
 		}
 
-		nextSequence->RS = NULL;
-		nextSequence++;
-		n++;
+		dsa->seqs[dsa->n].RS = NULL;
+		dsa->n++;
 	}
 	
 	kseq_destroy(seq);
-	return n;
 }
 
 /**
@@ -199,9 +267,10 @@ int readFile( FILE *in, seq_t *nextSequence){
  */
 void usage(void){
 	const char str[]= {
-		"Usage: andi [-rv] [-p FLOAT] FILES...\n"
+		"Usage: andi [-jrv] [-p FLOAT] FILES...\n"
 		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
+		"  -j, --join      Treat all sequences from one file as a single genome\n"
 		"  -p <FLOAT>      Propability for a random anchor; default: 0.95\n"
 		"  -r, --raw       Calculates raw distances; default: Jukes-Cantor corrected\n"
 		"  -v, --verbose   Prints additional information\n"

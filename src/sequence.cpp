@@ -23,6 +23,31 @@ void freeSeq( seq_t *S){
 	S->S = S->RS = S->name = NULL;
 }
 
+/**
+ * @brief Ensures that a dynamic array can hols at least one more element.
+ *
+ * @param dsa - The dynamic array of sequences.
+ */
+void *ensure_dyn_seq_arr( dyn_seq_arr *dsa){
+	seq_t *block;
+	
+	if( dsa->size == 0 ){
+		dsa->size = 2;
+		return dsa->seqs = (seq_t*) malloc( sizeof(seq_t) * dsa->size );
+	}
+	
+	if( dsa->n >= dsa->size ){
+		dsa->size *= 2;
+		block = (seq_t*) realloc( dsa->seqs, sizeof(seq_t) * dsa->size );
+		if( !block ){
+			return NULL;
+		} else {
+			dsa->seqs = block;
+		}
+	}
+	
+	return dsa->seqs;
+}
 
 /**
  * Compute the reverse complement.
@@ -50,6 +75,7 @@ char *revcomp( const char *str, size_t len){
 			case 'T': d = 'A'; break;
 			case 'G': d = 'C'; break;
 			case 'C': d = 'G'; break;
+			case '!': d = ';'; break; // rosebud
 			default:
 				local_non_acgt = 1; 
 				continue;
@@ -135,6 +161,7 @@ void normalize( seq_t *S){
 			case 'C':
 			case 'G':
 			case 'T':
+			case '!':
 				*q++ = *p;
 				break;
 			case 'a':

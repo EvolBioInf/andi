@@ -23,6 +23,11 @@ void freeSeq( seq_t *S){
 	S->S = S->RS = S->name = NULL;
 }
 
+/**
+ * @brief Ensures that a dynamic array can hols at least one more element.
+ *
+ * @param dsa - The dynamic array of sequences.
+ */
 void *ensure_dyn_seq_arr( dyn_seq_arr *dsa){
 	seq_t *block;
 	

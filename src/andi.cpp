@@ -162,8 +162,20 @@ int main( int argc, char *argv[]){
 		for( i=optind; i< argc; i++){
 			in = fopen( argv[i], "r");
 			if( !in) continue;
+			
+			/* In join mode we try to be clever about the sequence name. Given the file
+			 * path we extract just the file name. ie. path/file.ext -> file
+			 */
+			char *filename = argv[i];
+			char *left = strrchr( filename, '/') + 1;
+			if( left == NULL ){
+				left = filename;
+			}
+			char *dot = strchrnul( left, '.');
+			
+			filename = strndup( left, dot-left );
 
-			joinedRead( in, dsa, strdup(argv[i]));
+			joinedRead( in, dsa, filename);
 
 			fclose(in);
 		}

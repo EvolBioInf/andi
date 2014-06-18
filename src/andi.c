@@ -101,14 +101,34 @@ int main( int argc, char *argv[]){
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
 				break;
 			case 'p':
-				RANDOM_ANCHOR_PROP = atof( optarg);
+				{
+					double prop = atof( optarg);
+					if( prop < 0.0 || prop > 1.0 ){
+						const char str[] = {
+							"Warning: A propability should be a value between 0 and 1; "
+							"Ignoring -p argument.\n"
+						};
+						fprintf( stderr, "%s", str);
+						break;
+					}
+					RANDOM_ANCHOR_PROP = prop;
+				}
 				break;
 			case 'j':
 				FLAGS |= F_JOIN;
 				break;
 #ifdef _OPENMP
 			case 't':
-				THREADS = atoi( optarg);
+				{
+					int threads = atoi( optarg);
+					if( threads < 1 ){
+						fprintf( stderr, 
+							"Warning: The number of threads should be positive; Ignoring -t argument.\n"
+						);
+						break;
+					}
+					THREADS = threads;
+				}
 				break;
 #endif
 			case '?': /* intentional fallthrough */

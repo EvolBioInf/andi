@@ -182,6 +182,12 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		return 1.0;
 	}
 	
+	// Abort have more homologous nucleotides than just nucleotides. This might
+	// happen with sequences of different lengths.
+	if( homo >= C->len ){
+		return 1.0;
+	}
+	
 	// TODO: remove this from production code.
 	if( FLAGS & F_VERBOSE ){
 		fprintf( stderr, "snps: %lu, homo: %lu\n", snps, homo);

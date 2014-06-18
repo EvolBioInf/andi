@@ -6,6 +6,8 @@
 #ifndef _SEQUENCE_H_
 #define _SEQUENCE_H_
 
+#include <vector>
+
 /**
  * @brief A structure for sequences.
  *
@@ -31,16 +33,20 @@ typedef struct {
 	double gc;
 } seq_t;
 
-void freeSeq( seq_t *S);
+void free_seq( seq_t *S);
 void init_seq( seq_t *S);
 
-typedef struct {
-	seq_t *seqs;
-	size_t size;
-	size_t n;
-} dyn_seq_arr;
+/**
+ * A dynamicly growing structure for sequences.
+ */
+typedef std::vector<seq_t> dsa_t;
 
-void *ensure_dyn_seq_arr( dyn_seq_arr *dsa);
+dsa_t *init_dsa();
+void   push_dsa( dsa_t *dsa, seq_t S);
+void   free_dsa( dsa_t *dsa);
+size_t size_dsa( dsa_t *dsa);
+seq_t* data_dsa( dsa_t *dsa);
+seq_t join_dsa( dsa_t *dsa);
 
 #endif
 

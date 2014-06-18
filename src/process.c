@@ -289,7 +289,8 @@ void printDistMatrix( double *D, seq_t* sequences, size_t n){
 	
 	printf("%lu\n", n);
 	for( i=0;i<n;i++){
-		printf("%-9s", sequences[i].name);
+		// Print exactly nine characters of the name. Padd wih spaces if necessary.
+		printf("%-9.9s", sequences[i].name);
 		
 		for( j=0;j<n;j++){
 			if( use_scientific){

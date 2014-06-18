@@ -14,6 +14,9 @@ PREPROCESS= -D VERSION=$(VERSION)
 
 andi: $(OBJECTS)
 	$(CPP) $(FLAGS) -o andi $(OBJECTS) ../libs/RMQ/RMQ_1_n.o ../libs/RMQ/RMQ_succinct.o -L/usr/local/lib $(LIBS)
+	
+sequence.o: sequence.cpp
+	$(CPP) $(FLAGS) $(INCLUDES) $(PREPROCESS) $< -c -o $@
 
 %.o: %.c
 	$(CPP) $(FLAGS) $(INCLUDES) $(PREPROCESS) $< -c -o $@

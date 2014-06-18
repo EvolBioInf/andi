@@ -181,6 +181,12 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		return 1.0;
 	}
 	
+	// Abort have more homologous nucleotides than just nucleotides. This might
+	// happen with sequences of different lengths.
+	if( homo >= C->len ){
+		return 1.0;
+	}
+	
 	// TODO: remove this from production code.
 	if( FLAGS & F_VERBOSE ){
 		fprintf( stderr, "snps: %lu, homo: %lu\n", snps, homo);
@@ -288,7 +294,8 @@ void printDistMatrix( double *D, seq_t* sequences, size_t n){
 	
 	printf("%lu\n", n);
 	for( i=0;i<n;i++){
-		printf("%-9s", sequences[i].name);
+		// Print exactly nine characters of the name. Padd wih spaces if necessary.
+		printf("%-9.9s", sequences[i].name);
 		
 		for( j=0;j<n;j++){
 			if( use_scientific){

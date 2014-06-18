@@ -7,46 +7,101 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <vector>
 #include "sequence.h"
 #include "global.h"
 
 void normalize( seq_t *S);
 
+using namespace std;
+
+/** Create a new dynamic array for sequences. */
+dsa_t *init_dsa(){
+	return new vector<seq_t>();
+}
+
+/** Add a sequence to an array. */
+void push_dsa( dsa_t *dsa, seq_t S){
+	dsa->push_back( S);
+}
+
+/** Frees the array and all sequences stored within. */
+void free_dsa( dsa_t *dsa){
+	size_t i = 0;
+	for(i=0; i < dsa->size(); i++){
+		free_seq( &(dsa->at(i)));
+	}
+	delete dsa;
+}
+
+/** Returns the number of sequences stored within an array. */
+size_t size_dsa( dsa_t *dsa){
+	return dsa->size();
+}
+
+/** Get the raw C array. */
+seq_t* data_dsa( dsa_t *dsa){
+	return dsa->data();
+}
+
+/**
+ * @brief Convert an array of multiple sequences into a single sequence.
+ * 
+ * This function joins all sequences containd in an array into one
+ * long sequence. The sequences are seperated by a `!` character. The
+ * caller has to free the initial array.
+ *
+ * @returns A new sequence represention the union of the array.
+ */
+seq_t join_dsa( dsa_t *dsa){
+	seq_t joined = { NULL, NULL, 0, 0, NULL, 0.0};
+	if( dsa->size() == 0){
+		return joined;
+	}
+	
+	// Compute the total length
+	size_t total = 0;
+	for( auto it = dsa->begin(); it != dsa->end(); it++){
+		total += it->len + 1;
+	}
+	
+	// A single malloc for the whole new sequence
+	char *ptr = (char *) malloc( total);
+	if( ptr == NULL ){
+		return joined;
+	}
+	char *next = ptr;
+	
+	// Copy all old sequences and add a `!` in between
+	auto it = dsa->begin();
+	memcpy( next, it->S, it->len);
+	next += it->len;
+	for( it++; it != dsa->end(); it++){
+		*next++ = '!';
+		memcpy( next, it->S, it->len);
+		next += it->len;
+	}
+	
+	// Dont forget the null byte.
+	*next = '\0';
+	
+	joined.S = ptr;
+	joined.len = total -1; // subtract the null byte
+	
+	return joined;
+}
+
 /**
  * @brief Frees the memory of a given sequence.
  * @param S - The sequence to free.
  */
-void freeSeq( seq_t *S){
+void free_seq( seq_t *S){
 	free( S->S);
 	free( S->RS);
 	free( S->name);
 	S->S = S->RS = S->name = NULL;
-}
-
-/**
- * @brief Ensures that a dynamic array can hols at least one more element.
- *
- * @param dsa - The dynamic array of sequences.
- */
-void *ensure_dyn_seq_arr( dyn_seq_arr *dsa){
-	seq_t *block;
-	
-	if( dsa->size == 0 ){
-		dsa->size = 2;
-		return dsa->seqs = (seq_t*) malloc( sizeof(seq_t) * dsa->size );
-	}
-	
-	if( dsa->n >= dsa->size ){
-		dsa->size *= 2;
-		block = (seq_t*) realloc( dsa->seqs, sizeof(seq_t) * dsa->size );
-		if( !block ){
-			return NULL;
-		} else {
-			dsa->seqs = block;
-		}
-	}
-	
-	return dsa->seqs;
+	S->len = S->RSlen = 0;
+	S->gc = 0.0;
 }
 
 /**
@@ -139,7 +194,10 @@ double calc_gc( seq_t *S){
  */
 void init_seq( seq_t *S){
 	normalize( S);
-	S->len = strlen(S->S);
+	
+	if( !S->len){
+		S->len = strlen(S->S);
+	}
 	calc_gc(S);
 	
 	S->RS = catcomp(S->S, S->len);

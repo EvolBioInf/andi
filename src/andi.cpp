@@ -53,8 +53,8 @@ KSEQ_INIT(int, read)
 #endif
 
 void usage(void);
-void readFile( FILE *in, dyn_seq_arr *dsa);
-void joinedRead( FILE *in, dyn_seq_arr *dsa);
+void readFile( FILE *in, dsa_t *dsa);
+void joinedRead( FILE *in, dsa_t *dsa, char *name);
 void version(void);
 
 /**
@@ -101,14 +101,34 @@ int main( int argc, char *argv[]){
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
 				break;
 			case 'p':
-				RANDOM_ANCHOR_PROP = atof( optarg);
+				{
+					double prop = atof( optarg);
+					if( prop < 0.0 || prop > 1.0 ){
+						const char str[] = {
+							"Warning: A propability should be a value between 0 and 1; "
+							"Ignoring -p argument.\n"
+						};
+						fprintf( stderr, "%s", str);
+						break;
+					}
+					RANDOM_ANCHOR_PROP = prop;
+				}
 				break;
 			case 'j':
 				FLAGS |= F_JOIN;
 				break;
 #ifdef _OPENMP
 			case 't':
-				THREADS = atoi( optarg);
+				{
+					int threads = atoi( optarg);
+					if( threads < 1 ){
+						fprintf( stderr, 
+							"Warning: The number of threads should be positive; Ignoring -t argument.\n"
+						);
+						break;
+					}
+					THREADS = threads;
+				}
 				break;
 #endif
 			case '?': /* intentional fallthrough */
@@ -122,9 +142,7 @@ int main( int argc, char *argv[]){
 		version();
 	}
 	
-	dyn_seq_arr dsa = { NULL, 0, 0 };
-	ensure_dyn_seq_arr( &dsa);
-	
+	dsa_t *dsa = init_dsa();
 	FILE *in = NULL;
 	
 	if( FLAGS & F_JOIN ){
@@ -137,7 +155,7 @@ int main( int argc, char *argv[]){
 		// only one file
 		if( optind + 1 == argc ){
 			in = stdin;
-			joinedRead( in, &dsa);
+			joinedRead( in, dsa, strdup("stdin"));
 		}
 		
 		// parse all files
@@ -145,7 +163,7 @@ int main( int argc, char *argv[]){
 			in = fopen( argv[i], "r");
 			if( !in) continue;
 
-			joinedRead( in, &dsa);
+			joinedRead( in, dsa, strdup(argv[i]));
 
 			fclose(in);
 		}
@@ -154,7 +172,7 @@ int main( int argc, char *argv[]){
 		// if no files are supplied, read from stdin
 		if( optind == argc){
 			in = stdin;
-			readFile( in, &dsa );
+			readFile( in, dsa );
 		}
 	
 		// parse all files
@@ -162,101 +180,84 @@ int main( int argc, char *argv[]){
 			in = fopen( argv[i], "r");
 			if( !in) continue;
 
-			readFile( in, &dsa);
+			readFile( in, dsa);
 
 			fclose(in);
 		}
 	}
 	
+	size_t n = size_dsa( dsa);
+	
 	if( FLAGS & F_VERBOSE){
-		fprintf( stderr, "Comparing %lu sequences\n", dsa.n);
+		fprintf( stderr, "Comparing %lu sequences\n", n);
 		fflush( stderr);
 	}
 	
-	seq_t *sequences = dsa.seqs;
+	seq_t *sequences = data_dsa( dsa);
 	// compute distance matrix
-	if( dsa.n >= 2){
-		calcDistMatrix(sequences, dsa.n);
+	if( n >= 2){
+		calcDistMatrix(sequences, n);
 	} else {
 		fprintf( stderr, "I am truly sorry, but with less than two sequences there is nothing to compare.\n");
 	}
 
-	for( i=0; i< (int)dsa.n; i++){
-		freeSeq( &sequences[i]);
-	}
-	free( sequences);
+	free_dsa( dsa);
 	return 0;
 }
 
 /**
+ * @brief Joins all sequnces from a file into a single long sequence.
+ *
+ * Apart from reading all sequences from a file, this function also
+ * merges them into one long sequence.
+ *
  * "I didn't learn joined up handwriting for nothing, you know."
  * ~ Gilderoy Lockhart
+ *
+ * @param in - The file pointer to read from.
+ * @param dsa - An array that holds found sequences.
+ * @param name - The name of the file to be used for the name of the sequence.
  */
-void joinedRead( FILE *in, dyn_seq_arr *dsa){
-	if( ensure_dyn_seq_arr( dsa) == NULL ){
+void joinedRead( FILE *in, dsa_t *dsa, char *name){
+	if( !in || !dsa) return;
+
+	dsa_t *single = init_dsa();
+	readFile( in, single);
+	
+	if( size_dsa( single) == 0 ){
 		return;
 	}
 	
-	dyn_seq_arr single = { NULL, 0, 0};
-	readFile( in, &single);
-	
-	if( single.n == 0 ){
-		return;
-	}
-	
-	size_t i = 0, n = dsa->n;
-	dsa->seqs[n].name = strdup( single.seqs[0].name);
-	dsa->seqs[n].S = (char *) calloc(1,1);
-	dsa->seqs[n].RS = NULL;
-	
-	char *ptr;
-	int check;
-	
-	for(; i< single.n; i++){
-		check = asprintf( &ptr, "%s!%s", dsa->seqs[n].S, single.seqs[i].S);
-		if( check == -1 ){
-			freeSeq( &single.seqs[i]);
-		} else {
-			free( dsa->seqs[n].S);
-			dsa->seqs[n].S = ptr;
-			freeSeq( &single.seqs[i]);
-		}
-		
-	}
-	
-	free( single.seqs);
-	dsa->n++;
+	seq_t joined = join_dsa( single);
+	joined.name = name;
+	push_dsa( dsa, joined);
+	free_dsa( single);
 }
 
 
 /**
  * This function reads sequences from a file.
  * @param in - The file pointer to read from.
- * @param nextSequence A pointer to the next free beginning of a sequence.
+ * @param dsa - An array that holds found sequences.
  */
-void readFile( FILE *in, dyn_seq_arr *dsa){
+void readFile( FILE *in, dsa_t *dsa){
+	if( !in || !dsa) return;
 	int l;
+	seq_t top = { NULL, NULL, 0, 0, NULL, 0.0};
 	
 	kseq_t *seq = kseq_init(fileno(in));
 	
 	while( ( l = kseq_read(seq)) >= 0){
-		if( ensure_dyn_seq_arr( dsa) == NULL ){
-			continue;
-		}
-
-		dsa->seqs[dsa->n].S = strdup( seq->seq.s);
-		if( dsa->seqs[dsa->n].S == NULL ){
+		top.S = strdup( seq->seq.s);
+		top.name = strdup( seq->name.s);
+		top.len = strlen( top.S);
+		
+		if( !top.S || !top.name ){
+			free_seq( &top);
 			continue;
 		}
 		
-		dsa->seqs[dsa->n].name = strdup( seq->name.s);
-		if( dsa->seqs[dsa->n].name == NULL ){
-			free( dsa->seqs[dsa->n].S);
-			continue;
-		}
-
-		dsa->seqs[dsa->n].RS = NULL;
-		dsa->n++;
+		push_dsa( dsa, top);
 	}
 	
 	kseq_destroy(seq);

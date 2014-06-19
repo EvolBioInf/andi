@@ -1,16 +1,18 @@
-.TH ANDI "1" "June 2014" "andi 0.4-pre" "User Commands"
+.TH ANDI "1" "June 2014" "andi 0.4-pre" ""
 .SH NAME
-andi \- manual page for andi 0.4-pre
+andi \- estimates evolutionary distance
 .SH SYNOPSIS
 .B andi
 [\fI-jrv\fR] [\fI-p FLOAT\fR] \fIFILES\fR...
 .SH DESCRIPTION
-.IP
-Estimates the evolutionary distance between genomes.
+.TP
+\fBandi\fR estimates the evolutionary distance between closely related genomes. For this \fBandi\fR reads the input sequences from \fIFASTA\fR files and computes the pairwise anchor distance. The idea behind this is explained in a paper by Haubold et al. (see below).
+.SH OUTPUT
+The output is a symmetrical distance matrix with each entry representing divergence with a value beween 0 and 1. A distance of zero means that two sequences are identical whereas other values are estimates for the nucleotide mutation rate. For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were to short (<200bp) or too diverce (K>0.5) for our method to work properly.
 .SH OPTIONS
 .TP
 \fB\-j\fR, \fB\-\-join\fR
-Use this mode if each of your fasta files represents one assembly with numerous contigs. \fBandi\fR will then treat all of the contained sequences as a single genome. In this mode at least one file must be provided via command line arguments. In the output the filename is used to identify each sequence.
+Use this mode if each of your \fIFASTA\fR files represents one assembly with numerous contigs. \fBandi\fR will then treat all of the contained sequences as a single genome. In this mode at least one file must be provided via command line arguments. For the output the filename is used to identify each sequence.
 .TP
 \fB\-p\fR <FLOAT>
 Certainty that a pair of anchors was not found by chance; default: 0.95
@@ -33,10 +35,11 @@ display this help and exit
 output version information and acknowledgements
 .SH COPYRIGHT
 Copyright \(co 2014 Fabian Klötzl
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+License GPLv3+: GNU GPL version 3 or later.
 .br
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
+The full license text is available at <http://gnu.org/licenses/gpl.html>.
 .PP
 .SH ACKNOWLEDGEMENTS
 1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014). Fast and accurate estimation of evolutionary distances between genomes. In preparation.
@@ -46,4 +49,10 @@ There is NO WARRANTY, to the extent permitted by law.
 3) RMQ: Fischer, J. and Heun, V. (2007). A new succinct representation of RMQ\-information and improvements in the enhanced suffix array. Chen, B. Paterson, M., and Zhang, G. (Eds): ESCAPE 2007, LCNS 4614, pp. 459\-470.
 .br
 4) SA construction: Mori, Y. (2005). Short description of improved two\-stage suffix sorting alorithm. http://homepage3.nifty.com/wpage/software/itssort.txt
+.SH BUGS
+.SS Reporting Bugs
+Please report bugs to <kloetzl@evolbio.mpg.de> or at <https://github.com/EvolBioInf/andi>.
+.SS
+Known Bugs
+There is a slight memory leak in the RMQ lib used. But it is relatively small (some KB) compared to the overall memory consumption (a few GB).
 

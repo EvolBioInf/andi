@@ -36,7 +36,7 @@
 /* Global variables */
 int FLAGS = 0;
 int THREADS = 1;
-double RANDOM_ANCHOR_PROP = 0.6;
+double RANDOM_ANCHOR_PROP = 0.95;
 
 
 #ifdef __cplusplus

@@ -6,7 +6,9 @@ seedms
 testRMQ
 docs/html/*
 docs/latex/*
+docs/andi.1
 *.in
+!docs/andi.1.in
 *.log
 **/Makefile
 configure.scan

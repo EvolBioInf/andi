@@ -39,6 +39,7 @@ AC_CONFIG_FILES([
  src/Makefile
  libs/RMQ/Makefile
  docs/Makefile
+ docs/andi.1
 ])
 AC_OUTPUT
 

@@ -30,13 +30,11 @@ double shuprop( size_t x, double g, size_t l);
  * @returns The minimum length of an anchor.
  */
 size_t minAnchorLength( double p, double g, size_t l){
-	const double d = 0.5 + g - g*g;
 	size_t x = 1;
 	
 	double prop = 0.0;
 	while( prop < 1 - p){
 		prop = shuprop( x, g/2, l);
-		prop *= 1.0 - pow(d, (double)x);
 		x++;
 	}
 	
@@ -48,14 +46,15 @@ size_t minAnchorLength( double p, double g, size_t l){
  * with a length less than `x`.
  *
  * Let X be the longest shortest unique substring (shustring) at any position. Then
- * this function computes P{X <= x} with respect to the given parameter set.
+ * this function computes P{X <= x} with respect to the given parameter set. See
+ * Haubold et al. (2009).
  *
  * @param x - The maximum length of a shustring.
- * @param g - The the relative amount of GC in the DNA.
+ * @param g - The the half of the relative amount of GC in the DNA.
  * @param l - The length of the subject.
  * @returns The propability of a certain shustring length.
  */
-double shuprop( size_t x, double g, size_t l){
+double shuprop( size_t x, double p, size_t l){
 	double xx = (double)x;
 	double ll = (double)l;
 	size_t k;
@@ -64,7 +63,7 @@ double shuprop( size_t x, double g, size_t l){
 	
 	for(k=0; k<= x; k++){
 		double kk = (double)k;
-		double t = pow(g,kk) * pow(0.5 - g, xx - kk);
+		double t = pow(p,kk) * pow(0.5 - p, xx - kk);
 		
 		s += exp(
 			log(pow(2,xx) * (t * pow(1-t,ll)))

@@ -29,11 +29,14 @@ Code documentation is provided via doxygen.
 
 # Links and Additional Resources
 
-The release of this software is accompanied by a paper from Haubold et al. (in prep.). It explains the used *anchor distance* strategy in great detail. As soon as the various data sets used for validation are available online we will link to them here. The `maf2phy.awk` script used in the validation process is provided in the `scripts` directory.
+The release of this software is accompanied by a paper from Haubold et al. (in prep.). It explains the used *anchor distance* strategy in great detail. As soon as the various data sets used for validation are available online we will link to them here. The `maf2phy.awk` script used in the validation process is located under `scripts`. Simulations were done using our own [simK](http://guanine.evolbio.mpg.de/bioBox/) tool.
 
 # License
 
-This program is released under the GNU Public License 3.
+Copyright © 2014 Fabian Klötzl  
+License GPLv3+: GNU GPL version 3 or later.
+
+This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law. The full license text is available at <http://gnu.org/licenses/gpl.html>.
 
 ## Known Bugs
 

@@ -23,12 +23,6 @@ if test "x${have_libdivsufsort}" = xno; then
 	])
 fi
 
-AC_CHECK_LIB([gslcblas],[cblas_dgemm])
-AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
-
-AC_SEARCH_LIBS([gsl_sf_lnchoose], gslcblas)
-AC_SEARCH_LIBS([gsl_sf_lnchoose], gsl)
-
 AC_OPENMP
 
 AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h])

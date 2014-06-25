@@ -11,8 +11,6 @@
 #include "global.h"
 #include "process.h"
 #include "sequence.h"
-#include <gsl/gsl_sf_gamma.h>
-#include "gsl/gsl_nan.h"
 
 #include <RMQ_succinct.hpp>
 
@@ -42,6 +40,44 @@ size_t minAnchorLength( double p, double g, size_t l){
 }
 
 /**
+ * @brief Calculates the binomial coefficient of n and k.
+ *
+ * We used to use gsl_sf_lnchoose(xx,kk) for this functionality.
+ * Afterall, why implement something that has already been done?
+ * Well, the reason is simplicity: GSL is used for only this one
+ * function and the input (n<=20) is not even considered big.
+ * Hence its much easier to have our own implementation and ditch
+ * the GSL depenency even if that means our code is a tiny bit
+ * less optimized and slower.
+ *
+ * @param n - The n part of the binomial coefficient.
+ * @param k - analog.
+ * @returns (n choose k)
+ */
+size_t binomial_coefficient( size_t n, size_t k){
+	if( n <= 0 || k < 0 || k > n){
+		return 0;
+	}
+	
+	if( k == 0 || k == n ){
+		return 1;
+	}
+	
+	if( k > n-k ){
+		k = n-k;
+	}
+	
+	size_t res = 1;
+
+	for( size_t i= 1; i <= k; i++){
+		res *= n - k + i;
+		res /= i;
+	}
+	
+	return res;
+}
+
+/**
  * @brief Given `x` this function calculates the propability of a shustring 
  * with a length less than `x`.
  *
@@ -65,10 +101,7 @@ double shuprop( size_t x, double p, size_t l){
 		double kk = (double)k;
 		double t = pow(p,kk) * pow(0.5 - p, xx - kk);
 		
-		s += exp(
-			log(pow(2,xx) * (t * pow(1-t,ll)))
-			+ gsl_sf_lnchoose(xx,kk)
-		);
+		s += pow(2,xx) * (t * pow(1-t,ll)) * (double)binomial_coefficient(x,k);
 		if( s >= 1.0){
 			s = 1.0;
 			break;

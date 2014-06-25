@@ -10,8 +10,8 @@ AC_LANG(C++)
 
 AC_CHECK_LIB(m, cos)
 
-have_libdivsufsort=no
-AC_CHECK_LIB(divsufsort, divsufsort, [have_libdivsufsort=yes])
+have_libdivsufsort=yes
+AC_CHECK_LIB(divsufsort, divsufsort, [], [have_libdivsufsort=no])
 
 if test "x${have_libdivsufsort}" = xyes; then
 	AC_CHECK_HEADERS([divsufsort.h],[],[have_libdivsufsort=no])

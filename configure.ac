@@ -9,7 +9,19 @@ AC_PROG_RANLIB
 AC_LANG(C++)
 
 AC_CHECK_LIB(m, cos)
-AC_CHECK_LIB(divsufsort, divsufsort)
+
+have_libdivsufsort=no
+AC_CHECK_LIB(divsufsort, divsufsort, [have_libdivsufsort=yes])
+
+if test "x${have_libdivsufsort}" = xyes; then
+	AC_CHECK_HEADERS([divsufsort.h],[],[have_libdivsufsort=no])
+fi
+
+if test "x${have_libdivsufsort}" = xno; then
+	AC_MSG_ERROR([
+	The libdivsufsort library and header files are required for compilation. Aborting.
+	])
+fi
 
 AC_CHECK_LIB([gslcblas],[cblas_dgemm])
 AC_CHECK_LIB([gsl],[gsl_blas_dgemm])

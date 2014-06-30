@@ -172,7 +172,7 @@ char *catcomp( char *s , size_t len){
 /**
  * @brief Calculates the GC content of a sequence.
  *
- * This function computes the relatice amount of G and C in the total sequence.
+ * This function computes the relative amount of G and C in the total sequence.
  */
 double calc_gc( seq_t *S){
 	size_t GC = 0;

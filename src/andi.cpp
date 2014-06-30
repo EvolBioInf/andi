@@ -82,7 +82,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "jvhrt:p:s", long_options, &option_index);
+		c = getopt_long( argc, argv, "jvhrt:p:", long_options, &option_index);
 		
 		if( c == -1){
 			break;

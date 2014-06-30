@@ -209,13 +209,13 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	
 	if ( num_right_anchors <= 1 || snps <= 2 || homo <= 3){
 		// Insignificant results. All abort the fail train.
-		return 1.0;
+		return log(-1.0);
 	}
 	
-	// Abort have more homologous nucleotides than just nucleotides. This might
+	// Abort if we have more homologous nucleotides than just nucleotides. This might
 	// happen with sequences of different lengths.
 	if( homo >= C->len ){
-		return 1.0;
+		return log(-1.0);
 	}
 
 	if( FLAGS & F_VERBOSE ){

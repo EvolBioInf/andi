@@ -336,7 +336,7 @@ void printDistMatrix( double *D, seq_t* sequences, size_t n){
 			if( use_scientific){
 				printf(" %1.4e", (D(i,j)+D(j,i))/2 );
 			} else {
-				printf(" %1.4lf", (D(i,j)+D(j,i))/2 );
+				printf(" %1.4f", (D(i,j)+D(j,i))/2 );
 			}
 		}
 		printf("\n");

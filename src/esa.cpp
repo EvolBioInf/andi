@@ -2,14 +2,23 @@
  * @file
  * @brief ESA functions
  *
- * This file contains various functions that operate on
- * an enhanced suffix array.
+ * This file contains various functions that operate on an enhanced suffix
+ * array. Some of these are taken straight from the book of Ohlebusch (2013);
+ * Others are modified for improved performance. For future reference here are
+ * some of the implemented changes.
+ *
+ * The name `getLCPInterval` is kind of missleading. It and `getInterval` both
+ * find LCP-intervals but once for prefixes and for characters respectively.
+ * A critical speed component for both functions is the number of RMQs done.
+ * To reduce the number of calls, the `m` property of `lcp_inter_t` is caching
+ * the correct value. This reduces the number of RMQ calls per input base
+ * to an average of 1.7. This is less than the expected number of calls for
+ * a binary search over for elements (log_2 (4) = 2). 
  */
 #include <stdlib.h>
 #include <RMQ.hpp>
 #include <string.h>
 #include "esa.h"
-#include "stdio.h"
 
 /**
  * Computes the SA given a string S. To do so it uses libdivsufsort.
@@ -189,11 +198,7 @@ static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 
 	saidx_t l, m;
 	
-	//m = rmq_lcp->query(i+1, j); // m is now any minimum in (i..j]
-	m = ij->m;
-	//l = LCP[m];
-	//fprintf(stderr, "l: %d ij->l: %d\n", l, ij->l);
-	//ij->l = l;
+	m = ij->m; // m is now any minimum in (i..j]
 	l = ij->l;
 	
 	/* We now use an abstract binary search. Think of `i` as the
@@ -254,6 +259,7 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	saidx_t *SA = C->SA;
 	const char *S = (const char *)C->S;
 	
+	// TODO: This should be cached in a future version
 	ij.m = C->rmq_lcp->query(1,C->len-1);
 	
 	// Loop over the query until a mismatch is found
@@ -289,6 +295,7 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 		}
 		
 		// TODO: Verify if this is the best solution
+		// You shall not pass the null byte.
 		if( k < l && (!S[p+k] || !query[k])){
 			res.l = k;
 			return res;
@@ -308,6 +315,7 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
  * @param query The query sequence.
  * @param qlen The length of the query. Should correspond to `strlen(query)`.
  * @returns The length of the prefix.
+ * @deprecated
  */
 saidx_t longestMatch( const esa_t *C, const char *query, int qlen){
 	return getLCPInterval( C, query, qlen).l;
@@ -316,6 +324,7 @@ saidx_t longestMatch( const esa_t *C, const char *query, int qlen){
 /**
  * exactMatch Ohlebusch Alg 5.2
  * @returns LCP Interval for query or [-1..-1] if not found
+ * @deprecated
  */
 interval exactMatch( const esa_t *C, const char *query){
 	interval ij;

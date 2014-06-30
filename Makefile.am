@@ -13,5 +13,5 @@ ChangeLog:
 
 .PHONY: code-docs
 code-docs:
-	doxygen
+	cd docs && $(MAKE) code-docs;
 

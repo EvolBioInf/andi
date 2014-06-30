@@ -46,7 +46,9 @@ typedef struct {
  * Variables of this type are often called `ij`.
  */
 typedef struct {
+	/** @brief lower bound */
 	saidx_t i;
+	/** @brief upper bound */
 	saidx_t j;
 } interval;
 
@@ -55,7 +57,7 @@ typedef struct {
  *
  * This struct is used to represent LCP-intervals. In addition to the rules
  * in ::interval regarding `i` and `j`, l should always be non-negative. It
- * can be used to hold the length of the commen prefix in an interval.
+ * can be used to hold the length of the common prefix in an interval.
  */
 typedef struct {
 	saidx_t l, i, j;
@@ -65,10 +67,7 @@ typedef struct {
 
 
 int compute_SA( esa_t *c);
-int compute_LCP( esa_t *c);
 int compute_LCP_PHI( esa_t *c);
-saidx_t longestMatch( const esa_t *C, const char *query, int qlen);
-interval  exactMatch( const esa_t *C, const char *query);
 
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen);
 

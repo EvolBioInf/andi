@@ -141,7 +141,6 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	size_t this_pos_S;
 	size_t this_length;
 	
-	// TODO: remove this from production code.
 	size_t num_right_anchors = 0;
 	
 	size_t threshhold = minAnchorLength( 1-sqrt(RANDOM_ANCHOR_PROP), gc, C->len);
@@ -218,8 +217,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	if( homo >= C->len ){
 		return 1.0;
 	}
-	
-	// TODO: remove this from production code.
+
 	if( FLAGS & F_VERBOSE ){
 		fprintf( stderr, "snps: %lu, homo: %lu\n", snps, homo);
 		fprintf( stderr, "number of right anchors: %lu\n", num_right_anchors);
@@ -270,8 +268,7 @@ double *distMatrix( seq_t* sequences, int n){
 				continue;
 			}
 			
-			// TODO: remove this from production code, or provide a nicer
-			// progress indicator.
+			// TODO: Provide a nicer progress indicator.
 			if( FLAGS & F_VERBOSE ){
 				#pragma omp critical
 				{

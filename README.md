@@ -25,7 +25,7 @@ Excessive build instructions are located in `INSTALL`. If the build was successf
 
 Code documentation is provided via doxygen.
 
-	$ make docs
+	$ make code-docs
 
 # Links and Additional Resources
 

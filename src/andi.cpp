@@ -165,12 +165,12 @@ int main( int argc, char *argv[]){
 			
 			/* In join mode we try to be clever about the sequence name. Given the file
 			 * path we extract just the file name. ie. path/file.ext -> file
+			 * This obviously fails on Windows.
 			 */
 			char *filename = argv[i];
-			char *left = strrchr( filename, '/') + 1;
-			if( left == NULL ){
-				left = filename;
-			}
+			char *left = strrchr( filename, '/');
+			left = (left == NULL) ? filename : left + 1;
+			
 			char *dot = strchrnul( left, '.');
 			
 			filename = strndup( left, dot-left );

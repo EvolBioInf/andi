@@ -1,12 +1,15 @@
 SUBDIRS = . libs/RMQ src docs
 
-noinst_DATA = README
+noinst_DATA = README ChangeLog
 
 README: README.md
 	cp README.md README
 	
 README.md:
 	cp README README.md
+
+ChangeLog:
+	git log --stat --date=short --abbrev-commit | grep --invert-match '^ [[:alnum:].]' | git stripspace > ChangeLog
 
 .PHONY: code-docs
 code-docs:

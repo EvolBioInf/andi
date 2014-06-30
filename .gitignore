@@ -19,6 +19,7 @@ aclocal.m4
 **/.deps/
 autom4te.cache/
 README
+ChangeLog
 missing
 configure
 

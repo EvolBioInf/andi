@@ -309,8 +309,9 @@ double *distMatrix( seq_t* sequences, int n){
  *
  * This function pretty prints the distance matrix. For small distances
  * scientific notation is used.
- * @param sequences An array of pointers to the sequences.
- * @param n The number of sequences.
+ * @param D - The distance matrix
+ * @param sequences - An array of pointers to the sequences.
+ * @param n - The number of sequences.
  */
 void printDistMatrix( double *D, seq_t* sequences, size_t n){
 

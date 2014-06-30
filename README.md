@@ -1,6 +1,6 @@
 # About
 
-This is the `andi` program for estimating genome diversity.
+This is the `andi` program for estimating the evolutionary distance between closely related genomes.
 
 # Build Instructions
 
@@ -39,7 +39,7 @@ The release of this software is accompanied by a paper from Haubold et al. (in p
 	* [10 previously published strains](http://guanine.evolbio.mpg.de/andi/st131_extra.tgz)
 3. 3085 Streptococcus pneumoniae strains ([paper](http://www.nature.com/ng/journal/v46/n3/full/ng.2895.html)): ftp://ftp.sanger.ac.uk/pub/pathogens/Streptococcus/pneumoniae/Maela_assemblies.tgz
 
-# License
+## License
 
 Copyright © 2014 Fabian Klötzl  
 License GPLv3+: GNU GPL version 3 or later.

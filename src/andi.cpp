@@ -218,7 +218,7 @@ int main( int argc, char *argv[]){
 }
 
 /**
- * @brief Joins all sequnces from a file into a single long sequence.
+ * @brief Joins all sequences from a file into a single long sequence.
  *
  * Apart from reading all sequences from a file, this function also
  * merges them into one long sequence.
@@ -281,7 +281,7 @@ void readFile( FILE *in, dsa_t *dsa){
 void usage(void){
 	const char str[]= {
 		"Usage: andi [-jrv] [-p FLOAT] FILES...\n"
-		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
+		"\tFILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
 		"  -j, --join      Treat all sequences from one file as a single genome\n"
 		"  -p <FLOAT>      Certainty that a pair of anchors was not found by chance; default: 0.95\n"

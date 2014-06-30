@@ -22,6 +22,11 @@
 double shuprop( size_t x, double g, size_t l);
 
 /**
+ * @brief Calculates the minimum anchor length.
+ *
+ * Given some parameters calculate the minimum length for anchors according
+ * to the distribution from Haubold et al. (2009).
+ *
  * @param p - The propability with which an anchor is allowed to be random.
  * @param g - The the relative amount of GC in the subject.
  * @param l - The length of the subject.

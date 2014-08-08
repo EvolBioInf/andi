@@ -41,11 +41,35 @@ void init_seq( seq_t *S);
  */
 typedef std::vector<seq_t> dsa_t;
 
-dsa_t *init_dsa();
-void   push_dsa( dsa_t *dsa, seq_t S);
-void   free_dsa( dsa_t *dsa);
-size_t size_dsa( dsa_t *dsa);
-seq_t* data_dsa( dsa_t *dsa);
+/** Create a new dynamic array for sequences. */
+inline dsa_t *init_dsa(){
+	return new std::vector<seq_t>();
+}
+
+/** Add a sequence to an array. */
+inline void push_dsa( dsa_t *dsa, seq_t S){
+	dsa->push_back( S);
+}
+
+/** Frees the array and all sequences stored within. */
+inline void free_dsa( dsa_t *dsa){
+	size_t i = 0;
+	for(i=0; i < dsa->size(); i++){
+		free_seq( &(dsa->at(i)));
+	}
+	delete dsa;
+}
+
+/** Returns the number of sequences stored within an array. */
+inline size_t size_dsa( dsa_t *dsa){
+	return dsa->size();
+}
+
+/** Get the raw C array. */
+inline seq_t* data_dsa( dsa_t *dsa){
+	return dsa->data();
+}
+
 seq_t join_dsa( dsa_t *dsa);
 
 #endif

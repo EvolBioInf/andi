@@ -15,35 +15,6 @@ void normalize( seq_t *S);
 
 using namespace std;
 
-/** Create a new dynamic array for sequences. */
-dsa_t *init_dsa(){
-	return new vector<seq_t>();
-}
-
-/** Add a sequence to an array. */
-void push_dsa( dsa_t *dsa, seq_t S){
-	dsa->push_back( S);
-}
-
-/** Frees the array and all sequences stored within. */
-void free_dsa( dsa_t *dsa){
-	size_t i = 0;
-	for(i=0; i < dsa->size(); i++){
-		free_seq( &(dsa->at(i)));
-	}
-	delete dsa;
-}
-
-/** Returns the number of sequences stored within an array. */
-size_t size_dsa( dsa_t *dsa){
-	return dsa->size();
-}
-
-/** Get the raw C array. */
-seq_t* data_dsa( dsa_t *dsa){
-	return dsa->data();
-}
-
 /**
  * @brief Convert an array of multiple sequences into a single sequence.
  * 
@@ -61,8 +32,8 @@ seq_t join_dsa( dsa_t *dsa){
 	
 	// Compute the total length
 	size_t total = 0;
-	for( auto it = dsa->begin(); it != dsa->end(); it++){
-		total += it->len + 1;
+	for( auto& it: *dsa){
+		total += it.len + 1;
 	}
 	
 	// A single malloc for the whole new sequence

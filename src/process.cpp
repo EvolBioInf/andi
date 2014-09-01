@@ -12,7 +12,7 @@
 #include "process.h"
 #include "sequence.h"
 
-#include <RMQ_succinct.hpp>
+#include <RMQ_n_1_improved.hpp>
 
 /**
  * This is a neat hack for dealing with matrices.
@@ -263,7 +263,8 @@ double *distMatrix( seq_t* sequences, int n){
 		result = compute_LCP_PHI( &E);
 		assert( result == 0);
 	
-		E.rmq_lcp = new RMQ_succinct(E.LCP, E.len);
+		//E.rmq_lcp = new RMQ_succinct(E.LCP, E.len);
+		E.rmq_lcp = new RMQ_n_1_improved(E.LCP, E.len);
 		
 		// now compare every other sequence to i
 		int j;

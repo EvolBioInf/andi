@@ -24,6 +24,7 @@ missing
 compile
 configure
 test
+ar-lib
 
 *.fasta
 cachegrind*

@@ -12,6 +12,7 @@ class RMQ {
 public:
 	// returns index of RMQ[i,j]
 	virtual DTidx query(DTidx, DTidx) = 0;
+	virtual ~RMQ() {};
 };
 
 #endif

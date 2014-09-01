@@ -28,6 +28,8 @@ test
 cachegrind*
 callgrind*
 
+andi.sublime-*
+
 # for legacy git only:
 libs/RMQ/.deps/
 libs/RMQ/Makefile

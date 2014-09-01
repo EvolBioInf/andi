@@ -155,7 +155,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	
 	// Iterate over the complete query.
 	while( this_pos_Q < query_length){
-		inter = getLCPInterval( C, query + this_pos_Q, query_length - this_pos_Q);
+		inter = getCachedLCPInterval( C, query + this_pos_Q, query_length - this_pos_Q);
 		this_length = inter.l;
 		if( this_length == 0) break;
 		

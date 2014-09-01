@@ -20,6 +20,52 @@
 #include <string.h>
 #include "esa.h"
 
+const int CACHE_LENGTH = 8;
+
+char code2char( ssize_t code){
+	switch( code & 0x3){
+		case 0: return 'A';
+		case 1: return 'C';
+		case 2: return 'G';
+		case 3: return 'T';
+	}
+	return '\0';
+}
+
+ssize_t char2code( const char c){
+	ssize_t result = -1;
+	switch( c){
+		case 'A' : result = 0; break;
+		case 'C' : result = 1; break;
+		case 'G' : result = 2; break;
+		case 'T' : result = 3; break;
+	}
+	return result;
+}
+
+void esa_fill_cache( esa_t *C){
+	lcp_inter_t* rmq_cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
+	if( !rmq_cache){
+		fprintf(stderr, "%s\n", "PANIK!");
+		exit(9);
+	}
+
+	C->rmq_cache = rmq_cache;
+
+	char str[CACHE_LENGTH+1];
+
+	size_t num = 0, max = 1 << (2*CACHE_LENGTH);
+	while( num < max){
+		for( ssize_t i = 0; i< CACHE_LENGTH; i++){
+			str[i] = code2char(num >> (2*i));
+		}
+
+		rmq_cache[num] = getLCPInterval( C, str, CACHE_LENGTH);
+		rmq_cache[num].m = C->rmq_lcp->query(rmq_cache[num].i+1, rmq_cache[num].j);
+		num++;
+	}
+}
+
 /** @brief Initializes an ESA.
  *
  * This function initializes an ESA with respect to the provided sequence.
@@ -47,6 +93,9 @@ int esa_init( esa_t *C, seq_t *S){
 
 	// TODO: check return value/ catch errors
 	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
+
+	esa_fill_cache(C);
+
 	return 0;
 }
 
@@ -56,6 +105,7 @@ void esa_free( esa_t *C){
 	free( C->SA);
 	free( C->ISA);
 	free( C->LCP);
+	free( C->rmq_cache);
 }
 
 /**
@@ -299,6 +349,72 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	
 	// TODO: This should be cached in a future version
 	ij.m = C->rmq_lcp->query(1,C->len-1);
+	
+	// Loop over the query until a mismatch is found
+	do {
+		getInterval( C, &ij, query[k]);
+		i = ij.i;
+		j = ij.j;
+		
+		// If our match cannot be extended further, return.
+		if( i == -1 && j == -1 ){
+			res.l = k;
+			return res;
+		}
+		
+		res.i = ij.i;
+		res.j = ij.j;
+
+		l = m;
+		if( i < j){
+			/* Instead of making another RMQ we can use the LCP interval calculated
+			 * in getInterval */
+			if( ij.l < l ){
+				l = ij.l;
+			}
+		}
+		
+		// Extend the match
+		for( p = SA[i]; k < l && S[p+k] && query[k]; k++){
+			if( S[p+k] != query[k] ){
+				res.l = k;
+				return res;
+			}
+		}
+		
+		// TODO: Verify if this is the best solution
+		// You shall not pass the null byte.
+		if( k < l && (!S[p+k] || !query[k])){
+			res.l = k;
+			return res;
+		}
+
+		k = l;
+	} while ( k < m);
+
+	res.l = m;
+	return res;
+}
+
+lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen){
+	if( qlen <= CACHE_LENGTH) return getLCPInterval( C, query, qlen);
+
+	ssize_t offset = 0, code;
+	for( size_t i = 0; i< CACHE_LENGTH; i++){
+		offset <<= 2;
+		code = char2code(query[i]);
+		if( code == -1) return getLCPInterval( C, query, qlen);
+		offset |= code;
+	}
+
+	lcp_inter_t res = {0,0,0,0};
+
+	saidx_t k = CACHE_LENGTH, l, i, j, p;
+	lcp_inter_t ij = C->rmq_cache[offset];
+	saidx_t m = qlen;
+	
+	saidx_t *SA = C->SA;
+	const char *S = (const char *)C->S;
 	
 	// Loop over the query until a mismatch is found
 	do {

@@ -12,31 +12,6 @@
 
 #include "sequence.h"
 
-
-/** 
- * @brief The ESA type.
- * 
- * This structure holds arrays and objects associated with an enhanced
- * suffix array (ESA).
- */
-typedef struct {
-	/** The base string from which the ESA was generated. */
-	const char *S;
-	/** The actual suffix array with indices into S. */
-	saidx_t *SA;
-	/** The inverse suffix array holds at position `i` the index at
-		which the suffix `S[i]` is positioned in the SA. */
-	saidx_t *ISA;
-	/** The LCP holds the number of letters up to which a suffix `S[SA[i]]`
-		equals `S[SA[i-1]]`. Hence the name longest common prefix. For `i = 0`
-		and `i = len` the LCP value is -1. */
-	saidx_t *LCP;
-	/** The length of the string S. */
-	saidx_t len;
-	/** A reference to an object for range minimum queries. */
-	RMQ *rmq_lcp;
-} esa_t;
-
 /**
  * @brief Represents intervals on natural numbers.
  *
@@ -68,23 +43,36 @@ typedef struct {
 	saidx_t m;
 } lcp_inter_t;
 
+/** 
+ * @brief The ESA type.
+ * 
+ * This structure holds arrays and objects associated with an enhanced
+ * suffix array (ESA).
+ */
+typedef struct {
+	/** The base string from which the ESA was generated. */
+	const char *S;
+	/** The actual suffix array with indices into S. */
+	saidx_t *SA;
+	/** The inverse suffix array holds at position `i` the index at
+		which the suffix `S[i]` is positioned in the SA. */
+	saidx_t *ISA;
+	/** The LCP holds the number of letters up to which a suffix `S[SA[i]]`
+		equals `S[SA[i-1]]`. Hence the name longest common prefix. For `i = 0`
+		and `i = len` the LCP value is -1. */
+	saidx_t *LCP;
+	/** The length of the string S. */
+	saidx_t len;
+	/** A reference to an object for range minimum queries. */
+	RMQ *rmq_lcp;
+	lcp_inter_t *rmq_cache;
+} esa_t;
 
 int compute_SA( esa_t *c);
 int compute_LCP_PHI( esa_t *c);
 
+lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen);
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen);
-
-/*
-int esa_init( esa_t *C){
-	C->S = NULL;
-	C->SA = NULL;
-	C->ISA = NULL;
-	C->LCP = NULL;
-	C->len = 0;
-	C->rmq_lcp = NULL;
-	return 0;
-} */
-
 int esa_init( esa_t *C, seq_t *S);
 void esa_free( esa_t *C);
 

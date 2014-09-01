@@ -142,7 +142,7 @@ int main( int argc, char *argv[]){
 		version();
 	}
 	
-	dsa_t *dsa = dsa_init();
+	dsa_t *dsa = dsa_new();
 	FILE *in = NULL;
 	
 	if( FLAGS & F_JOIN ){
@@ -233,7 +233,7 @@ int main( int argc, char *argv[]){
 void joinedRead( FILE *in, dsa_t *dsa, char *name){
 	if( !in || !dsa) return;
 
-	dsa_t *single = dsa_init();
+	dsa_t *single = dsa_new();
 	readFile( in, single);
 	
 	if( dsa_size( single) == 0 ){

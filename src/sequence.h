@@ -42,7 +42,7 @@ void init_seq( seq_t *S);
 typedef std::vector<seq_t> dsa_t;
 
 /** Create a new dynamic array for sequences. */
-inline dsa_t *dsa_init(){
+inline dsa_t *dsa_new(){
 	return new std::vector<seq_t>();
 }
 

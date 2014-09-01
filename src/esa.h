@@ -8,6 +8,9 @@
 
 #include <divsufsort.h>
 #include <RMQ.hpp>
+#include <RMQ_n_1_improved.hpp>
+
+#include "sequence.h"
 
 
 /** 
@@ -70,6 +73,20 @@ int compute_SA( esa_t *c);
 int compute_LCP_PHI( esa_t *c);
 
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen);
+
+/*
+int esa_init( esa_t *C){
+	C->S = NULL;
+	C->SA = NULL;
+	C->ISA = NULL;
+	C->LCP = NULL;
+	C->len = 0;
+	C->rmq_lcp = NULL;
+	return 0;
+} */
+
+int esa_init( esa_t *C, seq_t *S);
+void esa_free( esa_t *C);
 
 #endif
 

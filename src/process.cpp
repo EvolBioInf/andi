@@ -250,22 +250,11 @@ double *distMatrix( seq_t* sequences, int n){
 
 	#pragma omp parallel for num_threads( THREADS)
 	for(i=0;i<n;i++){
-		esa_t E = {NULL,NULL,NULL,NULL,0,NULL};
-		
-		// initialize the enhanced suffix array
-		E.S = (const char*) sequences[i].RS;
-		E.len = sequences[i].RSlen;
-		
-		int result;
+		esa_t E;
+		if( esa_init( &E, &(sequences[i])) != 0){
+			continue;
+		}
 
-		result = compute_SA( &E);
-		assert( result == 0); // zero errors
-		result = compute_LCP_PHI( &E);
-		assert( result == 0);
-	
-		//E.rmq_lcp = new RMQ_succinct(E.LCP, E.len);
-		E.rmq_lcp = new RMQ_n_1_improved(E.LCP, E.len);
-		
 		// now compare every other sequence to i
 		int j;
 		for(j=0; j<n; j++){
@@ -295,11 +284,8 @@ double *distMatrix( seq_t* sequences, int n){
 			}
 			D(i,j) = d;
 		}
-		
-		delete E.rmq_lcp;
-		free( E.SA);
-		free( E.ISA);
-		free( E.LCP);
+
+		esa_free(&E);
 	}
 	
 	return D;

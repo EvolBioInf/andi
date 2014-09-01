@@ -20,6 +20,44 @@
 #include <string.h>
 #include "esa.h"
 
+/** @brief Initializes an ESA.
+ *
+ * This function initializes an ESA with respect to the provided sequence.
+ */
+int esa_init( esa_t *C, seq_t *S){
+	C->S = NULL;
+	C->SA = NULL;
+	C->ISA = NULL;
+	C->LCP = NULL;
+	C->len = 0;
+	C->rmq_lcp = NULL;
+
+	int result;
+
+	C->S = (const char*) S->RS;
+	C->len = S->RSlen;
+
+	if( C->S == NULL ) return 1;
+
+	result = compute_SA(C);
+	if(result) return result;
+
+	result = compute_LCP_PHI(C);
+	if(result) return result;
+
+	// TODO: check return value/ catch errors
+	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
+	return 0;
+}
+
+/** @brief Free the private data of an ESA. */
+void esa_free( esa_t *C){
+	delete C->rmq_lcp;
+	free( C->SA);
+	free( C->ISA);
+	free( C->LCP);
+}
+
 /**
  * Computes the SA given a string S. To do so it uses libdivsufsort.
  * @param C The enhanced suffix array to use. Reads C->S, fills C->SA.

@@ -142,7 +142,7 @@ int main( int argc, char *argv[]){
 		version();
 	}
 	
-	dsa_t *dsa = init_dsa();
+	dsa_t *dsa = dsa_init();
 	FILE *in = NULL;
 	
 	if( FLAGS & F_JOIN ){
@@ -198,14 +198,14 @@ int main( int argc, char *argv[]){
 		}
 	}
 	
-	size_t n = size_dsa( dsa);
+	size_t n = dsa_size( dsa);
 	
 	if( FLAGS & F_VERBOSE){
 		fprintf( stderr, "Comparing %lu sequences\n", n);
 		fflush( stderr);
 	}
 	
-	seq_t *sequences = data_dsa( dsa);
+	seq_t *sequences = dsa_data( dsa);
 	// compute distance matrix
 	if( n >= 2){
 		calcDistMatrix(sequences, n);
@@ -213,7 +213,7 @@ int main( int argc, char *argv[]){
 		fprintf( stderr, "I am truly sorry, but with less than two sequences there is nothing to compare.\n");
 	}
 
-	free_dsa( dsa);
+	dsa_free( dsa);
 	return 0;
 }
 
@@ -233,17 +233,17 @@ int main( int argc, char *argv[]){
 void joinedRead( FILE *in, dsa_t *dsa, char *name){
 	if( !in || !dsa) return;
 
-	dsa_t *single = init_dsa();
+	dsa_t *single = dsa_init();
 	readFile( in, single);
 	
-	if( size_dsa( single) == 0 ){
+	if( dsa_size( single) == 0 ){
 		return;
 	}
 	
-	seq_t joined = join_dsa( single);
+	seq_t joined = dsa_join( single);
 	joined.name = name;
-	push_dsa( dsa, joined);
-	free_dsa( single);
+	dsa_push( dsa, joined);
+	dsa_free( single);
 }
 
 
@@ -269,7 +269,7 @@ void readFile( FILE *in, dsa_t *dsa){
 			continue;
 		}
 		
-		push_dsa( dsa, top);
+		dsa_push( dsa, top);
 	}
 	
 	kseq_destroy(seq);

@@ -24,7 +24,7 @@ using namespace std;
  *
  * @returns A new sequence represention the union of the array.
  */
-seq_t join_dsa( dsa_t *dsa){
+seq_t dsa_join( dsa_t *dsa){
 	seq_t joined = { NULL, NULL, 0, 0, NULL, 0.0};
 	if( dsa->size() == 0){
 		return joined;

@@ -60,7 +60,7 @@ size_t minAnchorLength( double p, double g, size_t l){
  * @returns (n choose k)
  */
 size_t binomial_coefficient( size_t n, size_t k){
-	if( n <= 0 || k < 0 || k > n){
+	if( n <= 0 || k > n){
 		return 0;
 	}
 	

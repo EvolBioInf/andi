@@ -20,9 +20,122 @@
 #include <string.h>
 #include "esa.h"
 
+ lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a);
+void esa_fill_cache_rec( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+
+/** @brief The prefix length up to which RMQs are cached. */
+const int CACHE_LENGTH = 8;
+
+/** @brief Map a code to the character. */
+char code2char( ssize_t code){
+	switch( code & 0x3){
+		case 0: return 'A';
+		case 1: return 'C';
+		case 2: return 'G';
+		case 3: return 'T';
+	}
+	return '\0';
+}
+
+/** @brief Map a character to a two bit code. */
+ssize_t char2code( const char c){
+	ssize_t result = -1;
+	switch( c){
+		case 'A' : result = 0; break;
+		case 'C' : result = 1; break;
+		case 'G' : result = 2; break;
+		case 'T' : result = 3; break;
+	}
+	return result;
+}
+
+/** @brief Fill the RMQ cache.
+ *
+ * When looking up LCP intervals of matches we constantly do the same RMQs on
+ * the LCP array. Since a RMQ takes about 45 cycles we can speed up things by
+ * caching the intervals for some prefix length (`CACHE_LENGTH`).
+ *
+ * @param C - The ESA.
+ * @returns 0 iff successful
+ */
+int esa_fill_cache( esa_t *C){
+	lcp_inter_t* rmq_cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
+
+	if( !rmq_cache){
+		return 1;
+	}
+
+	C->rmq_cache = rmq_cache;
+
+	char str[CACHE_LENGTH+1];
+
+	size_t num = 0, max = 1 << (2*CACHE_LENGTH);
+	while( num < max){
+		for( ssize_t i = 0; i< CACHE_LENGTH; i++){
+			str[i] = code2char(num >> (2*i));
+		}
+
+		rmq_cache[num] = getLCPInterval( C, str, CACHE_LENGTH);
+		rmq_cache[num].m = C->rmq_lcp->query(rmq_cache[num].i+1, rmq_cache[num].j);
+		num++;
+	}
+
+	return 0;
+}
+
+int esa_fill_cache_rec_base( esa_t *C){
+	lcp_inter_t* rmq_cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
+
+	if( !rmq_cache){
+		return 1;
+	}
+
+	C->rmq_cache = rmq_cache;
+
+	char str[CACHE_LENGTH+1];
+	str[CACHE_LENGTH] = '\0';
+	lcp_inter_t ij = { 0, 0, C->len-1, 0};
+	ij.m = C->rmq_lcp->query(1,C->len-1);
+	esa_fill_cache_rec( C, str, 0, &ij);
+
+	return 0;
+}
+
+void esa_fill_cache_rec( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
+	if( pos == CACHE_LENGTH){
+		// fill the cache of the current string
+		size_t code = 0;
+		for( size_t i = 0; i < CACHE_LENGTH; ++i ){
+			code <<= 2;
+			code |= char2code(str[i]);
+		}
+
+		C->rmq_cache[code] = *in;
+
+		if( in->i != in->j){
+			C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
+		}
+
+		return;
+	}
+
+	lcp_inter_t ij;
+
+	for( int code = 0; code < 4; ++code){
+		str[pos] = code2char(code);
+		ij = *in;
+		getInterval(C,&ij,str[pos]);
+		esa_fill_cache_rec(C,str,pos+1,&ij);
+	}
+}
+
 /** @brief Initializes an ESA.
  *
  * This function initializes an ESA with respect to the provided sequence.
+ * @param C - The ESA to initialize.
+ * @param S - The sequence
+ * @returns 0 iff successful
  */
 int esa_init( esa_t *C, seq_t *S){
 	C->S = NULL;
@@ -47,6 +160,10 @@ int esa_init( esa_t *C, seq_t *S){
 
 	// TODO: check return value/ catch errors
 	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
+
+	//esa_fill_cache(C);
+	esa_fill_cache_rec_base(C);
+
 	return 0;
 }
 
@@ -56,6 +173,7 @@ void esa_free( esa_t *C){
 	free( C->SA);
 	free( C->ISA);
 	free( C->LCP);
+	free( C->rmq_cache);
 }
 
 /**
@@ -303,6 +421,83 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	
 	// TODO: This should be cached in a future version
 	ij.m = C->rmq_lcp->query(1,C->len-1);
+	
+	// Loop over the query until a mismatch is found
+	do {
+		getInterval( C, &ij, query[k]);
+		i = ij.i;
+		j = ij.j;
+		
+		// If our match cannot be extended further, return.
+		if( i == -1 && j == -1 ){
+			res.l = k;
+			return res;
+		}
+		
+		res.i = ij.i;
+		res.j = ij.j;
+
+		l = m;
+		if( i < j){
+			/* Instead of making another RMQ we can use the LCP interval calculated
+			 * in getInterval */
+			if( ij.l < l ){
+				l = ij.l;
+			}
+		}
+		
+		// Extend the match
+		for( p = SA[i]; k < l && S[p+k] && query[k]; k++){
+			if( S[p+k] != query[k] ){
+				res.l = k;
+				return res;
+			}
+		}
+		
+		// TODO: Verify if this is the best solution
+		// You shall not pass the null byte.
+		if( k < l && (!S[p+k] || !query[k])){
+			res.l = k;
+			return res;
+		}
+
+		k = l;
+	} while ( k < m);
+
+	res.l = m;
+	return res;
+}
+
+lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen){
+	if( qlen <= CACHE_LENGTH) return getLCPInterval( C, query, qlen);
+
+	ssize_t offset = 0, code;
+	for( size_t i = 0; i< CACHE_LENGTH; i++){
+		offset <<= 2;
+		code = char2code(query[i]);
+		if( code == -1) return getLCPInterval( C, query, qlen);
+		offset |= code;
+	}
+
+	lcp_inter_t ij = C->rmq_cache[offset];
+
+	return getLCPIntervalFrom(C,query, qlen, CACHE_LENGTH, ij);
+}
+
+lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
+
+	// fail early on singleton intervals.
+	if( ij.i == ij.j){
+		return ij;
+	}
+
+	saidx_t l, i, j, p;
+	saidx_t m = qlen;
+
+	lcp_inter_t res = {0,0,0,0};
+	
+	saidx_t *SA = C->SA;
+	const char *S = (const char *)C->S;
 	
 	// Loop over the query until a mismatch is found
 	do {

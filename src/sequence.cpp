@@ -32,8 +32,8 @@ seq_t dsa_join( dsa_t *dsa){
 	
 	// Compute the total length
 	size_t total = 0;
-	for( auto& it: *dsa){
-		total += it.len + 1;
+	for( auto it = dsa->begin(); it != dsa->end(); ++it){
+		total += it->len + 1;
 	}
 	
 	// A single malloc for the whole new sequence

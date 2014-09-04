@@ -428,6 +428,12 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
 
 	saidx_t k = CACHE_LENGTH, l, i, j, p;
 	lcp_inter_t ij = C->rmq_cache[offset];
+
+	// fail early on singleton intervals.
+	if( ij.i == ij.j){
+		return ij;
+	}
+
 	saidx_t m = qlen;
 	
 	saidx_t *SA = C->SA;

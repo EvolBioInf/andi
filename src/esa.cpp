@@ -169,7 +169,11 @@ int compute_LCP_PHI( esa_t *C){
 	// Allocate temporary arrays
 	saidx_t *PHI = (saidx_t *) malloc( len * sizeof(saidx_t));
 	saidx_t *PLCP = (saidx_t *) malloc( len * sizeof(saidx_t));
-	if( !PHI || !PLCP) return 2;
+	if( !PHI || !PLCP){
+		free(PHI);
+		free(PLCP);
+		return 2;
+	}
 	
 	PHI[SA[0]] = -1;
 	ssize_t i, k;

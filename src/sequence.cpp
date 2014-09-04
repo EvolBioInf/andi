@@ -130,9 +130,13 @@ char *catcomp( char *s , size_t len){
 	
 	char *rev = revcomp( s, len);
 	
-	rev = (char*) realloc( rev, 2 * len + 2);
-	if( !rev) return NULL;
+	char *temp = (char*) realloc( rev, 2 * len + 2);
+	if( !temp){
+		free(rev);
+		return NULL;
+	}
 	
+	rev = temp;
 	rev[len] = '#';
 	
 	memcpy( rev+len+1, s, len+1);

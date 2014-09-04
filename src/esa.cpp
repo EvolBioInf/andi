@@ -20,8 +20,10 @@
 #include <string.h>
 #include "esa.h"
 
+/** @brief The prefix length up to which RMQs are cached. */
 const int CACHE_LENGTH = 8;
 
+/** @brief Map a code to the character. */
 char code2char( ssize_t code){
 	switch( code & 0x3){
 		case 0: return 'A';
@@ -32,6 +34,7 @@ char code2char( ssize_t code){
 	return '\0';
 }
 
+/** @brief Map a character to a two bit code. */
 ssize_t char2code( const char c){
 	ssize_t result = -1;
 	switch( c){
@@ -43,11 +46,20 @@ ssize_t char2code( const char c){
 	return result;
 }
 
-void esa_fill_cache( esa_t *C){
+/** @brief Fill the RMQ cache.
+ *
+ * When looking up LCP intervals of matches we constantly do the same RMQs on
+ * the LCP array. Since a RMQ takes about 45 cycles we can speed up things by
+ * caching the intervals for some prefix length (`CACHE_LENGTH`).
+ *
+ * @param C - The ESA.
+ * @returns 0 iff successful
+ */
+int esa_fill_cache( esa_t *C){
 	lcp_inter_t* rmq_cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
+
 	if( !rmq_cache){
-		fprintf(stderr, "%s\n", "PANIK!");
-		exit(9);
+		return 1;
 	}
 
 	C->rmq_cache = rmq_cache;
@@ -64,11 +76,16 @@ void esa_fill_cache( esa_t *C){
 		rmq_cache[num].m = C->rmq_lcp->query(rmq_cache[num].i+1, rmq_cache[num].j);
 		num++;
 	}
+
+	return 0;
 }
 
 /** @brief Initializes an ESA.
  *
  * This function initializes an ESA with respect to the provided sequence.
+ * @param C - The ESA to initialize.
+ * @param S - The sequence
+ * @returns 0 iff successful
  */
 int esa_init( esa_t *C, seq_t *S){
 	C->S = NULL;

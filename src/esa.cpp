@@ -96,6 +96,7 @@ int esa_fill_cache_rec_base( esa_t *C){
 	char str[CACHE_LENGTH+1];
 	str[CACHE_LENGTH] = '\0';
 	lcp_inter_t ij = { 0, 0, C->len-1, 0};
+	ij.m = C->rmq_lcp->query(1,C->len-1);
 	esa_fill_cache_rec( C, str, 0, &ij);
 
 	return 0;
@@ -109,8 +110,13 @@ void esa_fill_cache_rec( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 			code <<= 2;
 			code |= char2code(str[i]);
 		}
+
 		C->rmq_cache[code] = *in;
-		C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
+
+		if( in->i != in->j){
+			C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
+		}
+
 		return;
 	}
 

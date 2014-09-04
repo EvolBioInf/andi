@@ -20,6 +20,10 @@
 #include <string.h>
 #include "esa.h"
 
+ lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a);
+void esa_fill_cache_rec( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+
 /** @brief The prefix length up to which RMQs are cached. */
 const int CACHE_LENGTH = 8;
 
@@ -80,6 +84,46 @@ int esa_fill_cache( esa_t *C){
 	return 0;
 }
 
+int esa_fill_cache_rec_base( esa_t *C){
+	lcp_inter_t* rmq_cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
+
+	if( !rmq_cache){
+		return 1;
+	}
+
+	C->rmq_cache = rmq_cache;
+
+	char str[CACHE_LENGTH+1];
+	str[CACHE_LENGTH] = '\0';
+	lcp_inter_t ij = { 0, 0, C->len-1, 0};
+	esa_fill_cache_rec( C, str, 0, &ij);
+
+	return 0;
+}
+
+void esa_fill_cache_rec( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
+	if( pos == CACHE_LENGTH){
+		// fill the cache of the current string
+		size_t code = 0;
+		for( size_t i = 0; i < CACHE_LENGTH; ++i ){
+			code <<= 2;
+			code |= char2code(str[i]);
+		}
+		C->rmq_cache[code] = *in;
+		C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
+		return;
+	}
+
+	lcp_inter_t ij;
+
+	for( int code = 0; code < 4; ++code){
+		str[pos] = code2char(code);
+		ij = *in;
+		getInterval(C,&ij,str[pos]);
+		esa_fill_cache_rec(C,str,pos+1,&ij);
+	}
+}
+
 /** @brief Initializes an ESA.
  *
  * This function initializes an ESA with respect to the provided sequence.
@@ -111,7 +155,8 @@ int esa_init( esa_t *C, seq_t *S){
 	// TODO: check return value/ catch errors
 	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
 
-	esa_fill_cache(C);
+	//esa_fill_cache(C);
+	esa_fill_cache_rec_base(C);
 
 	return 0;
 }
@@ -424,17 +469,22 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
 		offset |= code;
 	}
 
-	lcp_inter_t res = {0,0,0,0};
-
-	saidx_t k = CACHE_LENGTH, l, i, j, p;
 	lcp_inter_t ij = C->rmq_cache[offset];
+
+	return getLCPIntervalFrom(C,query, qlen, CACHE_LENGTH, ij);
+}
+
+lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
 
 	// fail early on singleton intervals.
 	if( ij.i == ij.j){
 		return ij;
 	}
 
+	saidx_t l, i, j, p;
 	saidx_t m = qlen;
+
+	lcp_inter_t res = {0,0,0,0};
 	
 	saidx_t *SA = C->SA;
 	const char *S = (const char *)C->S;

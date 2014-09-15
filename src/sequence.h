@@ -35,6 +35,7 @@ typedef struct {
 
 void seq_free( seq_t *S);
 void seq_init( seq_t *S);
+int seq_init( seq_t *S, const char *seq, const char *name);
 
 /**
  * A dynamicly growing structure for sequences.

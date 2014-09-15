@@ -260,14 +260,7 @@ void readFile( FILE *in, dsa_t *dsa){
 	kseq_t *seq = kseq_init(fileno(in));
 	
 	while( ( l = kseq_read(seq)) >= 0){
-		top.S = strdup( seq->seq.s);
-		top.name = strdup( seq->name.s);
-		top.len = strlen( top.S);
-		
-		if( !top.S || !top.name ){
-			seq_free( &top);
-			continue;
-		}
+		seq_init( &top, seq->seq.s, seq->name.s);
 		
 		dsa_push( dsa, top);
 	}

@@ -258,12 +258,16 @@ void joinedRead( FILE *in, dsa_t *dsa, char *name){
 void readFile( FILE *in, dsa_t *dsa){
 	if( !in || !dsa) return;
 	int l;
+	int check;
 	seq_t top = { NULL, NULL, 0, 0, NULL, 0.0};
 	
 	kseq_t *seq = kseq_init(fileno(in));
 	
 	while( ( l = kseq_read(seq)) >= 0){
-		seq_init( &top, seq->seq.s, seq->name.s);
+		check = seq_init( &top, seq->seq.s, seq->name.s);
+
+		// skip broken sequences
+		if( check != 0) continue;
 		
 		dsa_push( dsa, top);
 	}

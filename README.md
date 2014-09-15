@@ -8,7 +8,8 @@ For the latest [stable release](https://github.com/EvolBioInf/andi/releases) of 
 
 ## Prerequisites
 
-This program has the following dependencies: [kseq.h](http://lh3lh3.users.sourceforge.net/kseq.shtml), RMQ_improved and [libdivsufsort](https://code.google.com/p/libdivsufsort/). The former two are included in the `lib` directory. Please make sure you installed the latter before attempting a build. If you did get the source, not as a tarball, but straight from the git repository, you will also need autoconf, automake and the libtool.
+This program has the following dependencies: [kseq.h](http://lh3lh3.users.sourceforge.net/kseq.shtml), RMQ_improved and [libdivsufsort](https://code.google.com/p/libdivsufsort/). The former two are included in the `lib` directory. Please make sure you installed the latter before attempting a build. If you did get the source, not as a tarball, but straight from the git repository, you will also need autoconf, automake and the libtool. Run `autoreconf -i` to generate the configure script and continue with the next step.
+
 
 ## Compiling
 

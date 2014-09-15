@@ -177,61 +177,6 @@ int esa_init_SA(esa_t *C){
 }
 
 /**
- * Computes the LCP and ISA given SA and S. This function uses the method from Kasai et al.
- * @param C The enhanced suffix array.
- * @returns 0 iff sucessful
- * @deprecated Use esa_init_LCP( esa_t *C) instead.
- */
-int compute_LCP( esa_t *C){
-	const char *S = C->S;
-	saidx_t *SA  = C->SA;
-	saidx_t len  = C->len;
-	
-	if( !C || S == NULL || SA == NULL || len == 0){
-		return 1;
-	}
-	
-	if( C->ISA == NULL){
-		C->ISA = (saidx_t*) malloc( len*sizeof(saidx_t));
-		if( C->ISA == NULL ){
-			return 2;
-		}
-	}
-	if( C->LCP == NULL){
-		C->LCP = (saidx_t*) malloc((len+1)*sizeof(saidx_t));
-		if( C->LCP == NULL ){
-			return 3;
-		}
-	}
-	
-	saidx_t *ISA = C->ISA;
-	saidx_t *LCP = C->LCP;
-
-	LCP[0] = -1;
-	LCP[len] = -1;
-	
-	int i,j,k,l;
-	for( i=0; i< len; i++){
-		ISA[SA[i]] = i;
-	}
-	
-	l=0;
-	for( i=0; i< len; i++){
-		j = ISA[i];
-		if( j> 0) {
-			k = SA[j-1];
-			while( S[k+l] == S[i+l] ){
-				l++;
-			}
-			LCP[j] = l;
-			l--;
-			if (l<0) l = 0;
-		}
-	}
-	return 0;
-}
-
-/**
  * This function implements an alternative way of computing an LCP
  * array for a given suffix array. It uses an intermediate `phi`
  * array, hence the name. It's a bit faster than the other version.
@@ -302,7 +247,6 @@ int esa_init_LCP( esa_t *C){
 	free(PLCP);
 	return 0;
 }
-
 
 /**
  * Given the LCP interval for a string `w` this function calculates the 
@@ -520,33 +464,5 @@ lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, 
 
 	res.l = m;
 	return res;
-}
-
-/**
- * This function computes the length of the longest prefix of `query`
- * which can be found in the subject sequence.
- * @param C The enhanced suffix array for the subject.
- * @param query The query sequence.
- * @param qlen The length of the query. Should correspond to `strlen(query)`.
- * @returns The length of the prefix.
- * @deprecated
- */
-saidx_t longestMatch( const esa_t *C, const char *query, int qlen){
-	return getLCPInterval( C, query, qlen).l;
-}
-
-/**
- * exactMatch Ohlebusch Alg 5.2
- * @returns LCP Interval for query or [-1..-1] if not found
- * @deprecated
- */
-interval exactMatch( const esa_t *C, const char *query){
-	interval ij;
-	lcp_inter_t kl = getLCPInterval( C, query, strlen(query));
-	
-	ij.i = kl.i;
-	ij.j = kl.j;
-	
-	return ij;
 }
 

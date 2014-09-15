@@ -175,8 +175,11 @@ int main( int argc, char *argv[]){
 			
 			filename = strndup( left, dot-left );
 
-			joinedRead( in, dsa, filename);
+			if( filename){
+				joinedRead( in, dsa, filename);
+			}
 
+			free(filename);
 			fclose(in);
 		}
 		

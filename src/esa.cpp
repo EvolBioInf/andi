@@ -342,51 +342,8 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	
 	// TODO: This should be cached in a future version
 	ij.m = C->rmq_lcp->query(1,C->len-1);
-	
-	// Loop over the query until a mismatch is found
-	do {
-		getInterval( C, &ij, query[k]);
-		i = ij.i;
-		j = ij.j;
-		
-		// If our match cannot be extended further, return.
-		if( i == -1 && j == -1 ){
-			res.l = k;
-			return res;
-		}
-		
-		res.i = ij.i;
-		res.j = ij.j;
 
-		l = m;
-		if( i < j){
-			/* Instead of making another RMQ we can use the LCP interval calculated
-			 * in getInterval */
-			if( ij.l < l ){
-				l = ij.l;
-			}
-		}
-		
-		// Extend the match
-		for( p = SA[i]; k < l && S[p+k] && query[k]; k++){
-			if( S[p+k] != query[k] ){
-				res.l = k;
-				return res;
-			}
-		}
-		
-		// TODO: Verify if this is the best solution
-		// You shall not pass the null byte.
-		if( k < l && (!S[p+k] || !query[k])){
-			res.l = k;
-			return res;
-		}
-
-		k = l;
-	} while ( k < m);
-
-	res.l = m;
-	return res;
+	return getLCPIntervalFrom(C, query, qlen, 0, ij);
 }
 
 lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen){

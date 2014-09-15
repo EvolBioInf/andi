@@ -33,8 +33,8 @@ typedef struct {
 	double gc;
 } seq_t;
 
-void free_seq( seq_t *S);
-void init_seq( seq_t *S);
+void seq_free( seq_t *S);
+void seq_init( seq_t *S);
 
 /**
  * A dynamicly growing structure for sequences.
@@ -55,7 +55,7 @@ inline void dsa_push( dsa_t *dsa, seq_t S){
 inline void dsa_free( dsa_t *dsa){
 	size_t i = 0;
 	for(i=0; i < dsa->size(); i++){
-		free_seq( &(dsa->at(i)));
+		seq_free( &(dsa->at(i)));
 	}
 	delete dsa;
 }

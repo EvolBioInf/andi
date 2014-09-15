@@ -265,7 +265,7 @@ void readFile( FILE *in, dsa_t *dsa){
 		top.len = strlen( top.S);
 		
 		if( !top.S || !top.name ){
-			free_seq( &top);
+			seq_free( &top);
 			continue;
 		}
 		

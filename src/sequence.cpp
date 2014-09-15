@@ -66,7 +66,7 @@ seq_t dsa_join( dsa_t *dsa){
  * @brief Frees the memory of a given sequence.
  * @param S - The sequence to free.
  */
-void free_seq( seq_t *S){
+void seq_free( seq_t *S){
 	free( S->S);
 	free( S->RS);
 	free( S->name);
@@ -167,7 +167,7 @@ double calc_gc( seq_t *S){
  *
  * This function prepares a sequence for further processing.
  */
-void init_seq( seq_t *S){
+void seq_init( seq_t *S){
 	normalize( S);
 	
 	if( !S->len){

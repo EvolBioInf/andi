@@ -346,7 +346,7 @@ void calcDistMatrix( seq_t* sequences, int n){
 			exit(1);
 		}
 		
-		init_seq( &sequences[i]);
+		seq_init( &sequences[i]);
 	}
 	
 	// Warn about non ACGT residues.

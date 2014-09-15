@@ -36,7 +36,7 @@
 /* Global variables */
 int FLAGS = 0;
 int THREADS = 1;
-double RANDOM_ANCHOR_PROP = 0.95;
+double RANDOM_ANCHOR_PROP = 0.05;
 
 
 #ifdef __cplusplus
@@ -284,7 +284,7 @@ void usage(void){
 		"\tFILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
 		"  -j, --join      Treat all sequences from one file as a single genome\n"
-		"  -p <FLOAT>      Certainty that a pair of anchors was not found by chance; default: 0.95\n"
+		"  -p <FLOAT>      Significance of an anchor pair; default: 0.05\n"
 		"  -r, --raw       Calculates raw distances; default: Jukes-Cantor corrected\n"
 		"  -v, --verbose   Prints additional information\n"
 #ifdef _OPENMP

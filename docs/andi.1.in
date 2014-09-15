@@ -15,7 +15,7 @@ The output is a symmetrical distance matrix with each entry representing diverge
 Use this mode if each of your \fIFASTA\fR files represents one assembly with numerous contigs. \fBandi\fR will then treat all of the contained sequences as a single genome. In this mode at least one file must be provided via command line arguments. For the output the filename is used to identify each sequence.
 .TP
 \fB\-p\fR <FLOAT>
-Certainty that a pair of anchors was not found by chance; default: 0.95
+Significance of an anchor pair; default: 0.05
 .TP
 \fB\-r\fR, \fB\-\-raw\fR
 Calculates raw distances; default: Jukes\-Cantor corrected

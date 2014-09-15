@@ -68,9 +68,6 @@ typedef struct {
 	lcp_inter_t *rmq_cache;
 } esa_t;
 
-int compute_SA( esa_t *c);
-int compute_LCP_PHI( esa_t *c);
-
 lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen);
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen);
 int esa_init( esa_t *C, seq_t *S);

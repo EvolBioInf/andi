@@ -20,9 +20,12 @@
 #include <string.h>
 #include "esa.h"
 
- lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
 static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a);
-void esa_fill_cache_rec( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+
+static int esa_init_SA( esa_t *c);
+static int esa_init_LCP( esa_t *c);
 
 /** @brief The prefix length up to which RMQs are cached. */
 const int CACHE_LENGTH = 8;
@@ -59,32 +62,7 @@ ssize_t char2code( const char c){
  * @param C - The ESA.
  * @returns 0 iff successful
  */
-int esa_fill_cache( esa_t *C){
-	lcp_inter_t* rmq_cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
-
-	if( !rmq_cache){
-		return 1;
-	}
-
-	C->rmq_cache = rmq_cache;
-
-	char str[CACHE_LENGTH+1];
-
-	size_t num = 0, max = 1 << (2*CACHE_LENGTH);
-	while( num < max){
-		for( ssize_t i = 0; i< CACHE_LENGTH; i++){
-			str[i] = code2char(num >> (2*i));
-		}
-
-		rmq_cache[num] = getLCPInterval( C, str, CACHE_LENGTH);
-		rmq_cache[num].m = C->rmq_lcp->query(rmq_cache[num].i+1, rmq_cache[num].j);
-		num++;
-	}
-
-	return 0;
-}
-
-int esa_fill_cache_rec_base( esa_t *C){
+int esa_init_cache( esa_t *C){
 	lcp_inter_t* rmq_cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
 
 	if( !rmq_cache){
@@ -97,12 +75,12 @@ int esa_fill_cache_rec_base( esa_t *C){
 	str[CACHE_LENGTH] = '\0';
 	lcp_inter_t ij = { 0, 0, C->len-1, 0};
 	ij.m = C->rmq_lcp->query(1,C->len-1);
-	esa_fill_cache_rec( C, str, 0, &ij);
+	esa_init_cache_dfs( C, str, 0, &ij);
 
 	return 0;
 }
 
-void esa_fill_cache_rec( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
+void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
 	if( pos == CACHE_LENGTH){
 		// fill the cache of the current string
 		size_t code = 0;
@@ -126,7 +104,7 @@ void esa_fill_cache_rec( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 		str[pos] = code2char(code);
 		ij = *in;
 		getInterval(C,&ij,str[pos]);
-		esa_fill_cache_rec(C,str,pos+1,&ij);
+		esa_init_cache_dfs(C,str,pos+1,&ij);
 	}
 }
 
@@ -152,17 +130,16 @@ int esa_init( esa_t *C, seq_t *S){
 
 	if( C->S == NULL ) return 1;
 
-	result = compute_SA(C);
+	result = esa_init_SA(C);
 	if(result) return result;
 
-	result = compute_LCP_PHI(C);
+	result = esa_init_LCP(C);
 	if(result) return result;
 
 	// TODO: check return value/ catch errors
 	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
 
-	//esa_fill_cache(C);
-	esa_fill_cache_rec_base(C);
+	esa_init_cache(C);
 
 	return 0;
 }
@@ -181,7 +158,7 @@ void esa_free( esa_t *C){
  * @param C The enhanced suffix array to use. Reads C->S, fills C->SA.
  * @returns 0 iff successful
  */
-int compute_SA(esa_t *C){
+int esa_init_SA(esa_t *C){
 	// assert c.S
 	if( !C || C->S == NULL){
 		return 1;
@@ -203,7 +180,7 @@ int compute_SA(esa_t *C){
  * Computes the LCP and ISA given SA and S. This function uses the method from Kasai et al.
  * @param C The enhanced suffix array.
  * @returns 0 iff sucessful
- * @deprecated Use compute_LCP_PHI( esa_t *C) instead.
+ * @deprecated Use esa_init_LCP( esa_t *C) instead.
  */
 int compute_LCP( esa_t *C){
 	const char *S = C->S;
@@ -261,7 +238,7 @@ int compute_LCP( esa_t *C){
  * @param C The enhanced suffix array to compute the LCP from.
  * @returns 0 iff successful
  */
-int compute_LCP_PHI( esa_t *C){
+int esa_init_LCP( esa_t *C){
 	const char *S = C->S;
 	saidx_t *SA  = C->SA;
 	saidx_t len  = C->len;

@@ -13,7 +13,17 @@
  * To reduce the number of calls, the `m` property of `lcp_inter_t` is caching
  * the correct value. This reduces the number of RMQ calls per input base
  * to an average of 1.7. This is less than the expected number of calls for
- * a binary search over for elements (log_2 (4) = 2). 
+ * a binary search over for elements (log_2 (4) = 2).
+ *
+ * An additional RMQ-saving strategy was introduced in commit 7ba1d363189… and
+ * optimized in 716958a01…. Since for every new match the very same RMQs are
+ * called a cache is introduced: A "hash" over the first `CACHE_LENGTH` characters
+ * of a new query determines an index into the cache. This cache is filled at
+ * the initilization time of the ESA. Hence for multiple comparisions this is
+ * done only once. The filling itself is done via a depth first search over the
+ * imaginary suffix tree. This strategy saves about 20% of time when comparing
+ * only two sequences and provides an additional speedup a factor of 3 to 4 when
+ * applied to big data sets.
  */
 #include <stdlib.h>
 #include <RMQ.hpp>
@@ -53,7 +63,7 @@ ssize_t char2code( const char c){
 	return result;
 }
 
-/** @brief Fill the RMQ cache.
+/** @brief Fills the RMQ cache.
  *
  * When looking up LCP intervals of matches we constantly do the same RMQs on
  * the LCP array. Since a RMQ takes about 45 cycles we can speed up things by
@@ -80,6 +90,12 @@ int esa_init_cache( esa_t *C){
 	return 0;
 }
 
+/** @brief Fills the RMQ cache — one char at a time.
+ *
+ * Recursively traverse the virtual sufix tree created by the SA, LCP and RMQs,
+ * using a depth first search. by doing this cache the current LCP interval and
+ * improve the performance of getting the next value for the cache.
+ */
 void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
 	if( pos == CACHE_LENGTH){
 		// fill the cache of the current string
@@ -333,12 +349,7 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 		return res;
 	}
 	
-	saidx_t k = 0, l, i, j, p;
 	lcp_inter_t ij = { 0, 0, C->len-1, 0};
-	saidx_t m = qlen;
-	
-	saidx_t *SA = C->SA;
-	const char *S = (const char *)C->S;
 	
 	// TODO: This should be cached in a future version
 	ij.m = C->rmq_lcp->query(1,C->len-1);
@@ -346,6 +357,15 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	return getLCPIntervalFrom(C, query, qlen, 0, ij);
 }
 
+/** @brief Compute the LCP interval of a query. For a certain prefix length of the
+ * query its LCP interval is retrieved from a cache. Hence this is faster than the
+ * naive `getInterval`.
+ *
+ * @param C - The enhanced suffix array for the subject.
+ * @param query - The query sequence.
+ * @param qlen - The length of the query. Should correspond to `strlen(query)`.
+ * @returns The LCP interval for the longest prefix.
+ */
 lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	if( qlen <= CACHE_LENGTH) return getLCPInterval( C, query, qlen);
 
@@ -362,6 +382,15 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
 	return getLCPIntervalFrom(C,query, qlen, CACHE_LENGTH, ij);
 }
 
+/** @brief Compute the LCP interval of a query from a certain starting interval.
+ *
+ * @param C - The enhanced suffix array for the subject.
+ * @param query - The query sequence.
+ * @param qlen - The length of the query. Should correspond to `strlen(query)`.
+ * @param k - The starting index into the query.
+ * @param ij - The LCP interval for the string `query[0..k]`.
+ * @returns The LCP interval for the longest prefix.
+ */
 lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
 
 	// fail early on singleton intervals.

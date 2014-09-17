@@ -206,6 +206,7 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	
 	// Very special case: The sequences are identical
 	if( last_length >= query_length ){
+		retval.coverage = 1.0;
 		return retval;
 	}
 	
@@ -235,12 +236,6 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		retval.coverage = 1.0;
 		return retval;
 	}
-
-	/*
-	if( FLAGS & F_VERBOSE ){
-		fprintf( stderr, "snps: %lu, homo: %lu\n", snps, homo);
-		fprintf( stderr, "number of right anchors: %lu\n", num_right_anchors);
-	} */
 	
 	retval.distance = (double)snps/(double)homo;
 	retval.coverage = (double)homo/(double)query_length;

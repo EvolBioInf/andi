@@ -4,3 +4,7 @@ andi_CPPFLAGS = $(OPENMP_CXXFLAGS) -std=gnu++0x -fpermissive  -I$(top_srcdir)/li
 andi_CXXFLAGS = $(OPENMP_CXXFLAGS) -W -Wall
 andi_LDADD = $(top_srcdir)/libs/RMQ/libRMQ_improved.a
 
+.PHONY: prof
+prof: CXXFLAGS= -g -pg -O3
+prof: andi
+

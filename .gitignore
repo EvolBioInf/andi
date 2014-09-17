@@ -1,3 +1,4 @@
+# Binary and automatically generated files
 *.o
 *.a
 andi
@@ -24,12 +25,13 @@ ChangeLog
 missing
 compile
 configure
-test
 ar-lib
 
+# test files
 *.fasta
 cachegrind*
 callgrind*
+test
 
 andi.sublime-*
 
@@ -37,4 +39,8 @@ andi.sublime-*
 libs/RMQ/.deps/
 libs/RMQ/Makefile
 Makefile
+
+# Profiling:
+gmon.out
+profile
 

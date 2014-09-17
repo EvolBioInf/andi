@@ -12,6 +12,10 @@
 #include "process.h"
 #include "sequence.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #include <RMQ_n_1_improved.hpp>
 
 typedef struct data_s {
@@ -259,15 +263,17 @@ data_t *distMatrix( seq_t* sequences, int n){
 	
 	int i;
 
-	#pragma omp parallel for num_threads( THREADS)
 	for(i=0;i<n;i++){
 		esa_t E;
+		omp_set_num_threads(THREADS);
+
 		if( esa_init( &E, &(sequences[i])) != 0){
 			continue;
 		}
 
 		// now compare every other sequence to i
 		int j;
+		#pragma omp parallel for num_threads( THREADS)
 		for(j=0; j<n; j++){
 			if( j == i) {
 				D(i,j).distance = 0.0;

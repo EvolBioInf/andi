@@ -14,6 +14,11 @@
 
 #include <RMQ_n_1_improved.hpp>
 
+typedef struct data_s {
+	double distance;
+	double coverage;
+} data_t;
+
 /**
  * This is a neat hack for dealing with matrices.
  */
@@ -130,7 +135,7 @@ double shuprop( size_t x, double p, size_t l){
  * @param query - The actual query string.
  * @param query_length - The length of the query string. Needed for speed reasons.
  */
-double dist_anchor( const esa_t *C, const char *query, size_t query_length, double gc){
+data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, double gc){
 	size_t snps = 0; // Total number of found SNPs
 	size_t homo = 0; // Total number of homologous nucleotides.
 	
@@ -149,10 +154,12 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	size_t num_right_anchors = 0;
 	
 	size_t threshhold = minAnchorLength( 1-sqrt(1-RANDOM_ANCHOR_PROP), gc, C->len);
-	if( FLAGS & F_VERBOSE){
+	if( FLAGS & F_EXTRA_VERBOSE){
 		fprintf(stderr, "threshhold: %ld\n", threshhold);
 	}
-	
+
+	data_t retval = {0.0,0.0};
+
 	// Iterate over the complete query.
 	while( this_pos_Q < query_length){
 		inter = getCachedLCPInterval( C, query + this_pos_Q, query_length - this_pos_Q);
@@ -199,7 +206,7 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	
 	// Very special case: The sequences are identical
 	if( last_length >= query_length ){
-		return 0.0;
+		return retval;
 	}
 	
 	// We might miss a few nucleotides if the last anchor was also a right anchor.
@@ -209,26 +216,35 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	
 	// Nearly identical sequences
 	if( homo == query_length){
-		return (double)snps/(double)homo;
+		retval.distance = (double)snps/(double)homo;
+		retval.coverage = 1.0;
+		return retval;
 	}
 	
 	if ( num_right_anchors <= 1 || snps <= 2 || homo <= 3){
 		// Insignificant results. All abort the fail train.
-		return log(-1.0);
+
+		retval.distance = log(-1.0);
+		return retval;
 	}
 	
 	// Abort if we have more homologous nucleotides than just nucleotides. This might
 	// happen with sequences of different lengths.
 	if( homo >= (size_t) C->len ){
-		return log(-1.0);
+		retval.distance = log(-1.0);
+		retval.coverage = 1.0;
+		return retval;
 	}
 
+	/*
 	if( FLAGS & F_VERBOSE ){
 		fprintf( stderr, "snps: %lu, homo: %lu\n", snps, homo);
 		fprintf( stderr, "number of right anchors: %lu\n", num_right_anchors);
-	}
+	} */
 	
-	return (double)snps/(double)homo;
+	retval.distance = (double)snps/(double)homo;
+	retval.coverage = (double)homo/(double)query_length;
+	return retval;
 }
 
 /**
@@ -240,11 +256,11 @@ double dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-double *distMatrix( seq_t* sequences, int n){
-	double *D = (double*)malloc( n * n * sizeof(double));
+data_t *distMatrix( seq_t* sequences, int n){
+	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
 	assert(D);
 	
-	double d;
+	data_t datum;
 	
 	int i;
 
@@ -259,12 +275,13 @@ double *distMatrix( seq_t* sequences, int n){
 		int j;
 		for(j=0; j<n; j++){
 			if( j == i) {
-				D(i,j) = 0.0;
+				D(i,j).distance = 0.0;
+				D(i,j).coverage = 0.0;
 				continue;
 			}
 			
 			// TODO: Provide a nicer progress indicator.
-			if( FLAGS & F_VERBOSE ){
+			if( FLAGS & F_EXTRA_VERBOSE ){
 				#pragma omp critical
 				{
 					fprintf( stderr, "comparing %d and %d\n", i, j);
@@ -273,16 +290,16 @@ double *distMatrix( seq_t* sequences, int n){
 
 			size_t ql = sequences[j].len;
 			
-			d = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
+			datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
 			
 			if( !(FLAGS & F_RAW)){
-				d = -0.75 * log(1.0- (4.0 / 3.0) * d ); // jukes cantor
+				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
 			}
 			// fix negative zero
-			if( d <= 0.0 ){
-				d = 0.0;
+			if( datum.distance <= 0.0 ){
+				datum.distance = 0.0;
 			}
-			D(i,j) = d;
+			D(i,j) = datum;
 		}
 
 		esa_free(&E);
@@ -300,14 +317,14 @@ double *distMatrix( seq_t* sequences, int n){
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
  */
-void printDistMatrix( double *D, seq_t* sequences, size_t n){
+void printDistMatrix( data_t *D, seq_t *sequences, size_t n){
 
 	int use_scientific = 0;
 	size_t i,j;
 	
 	for( i=0; i<n && !use_scientific; i++){
 		for( j=0; j<n; j++){
-			if( D(i,j) > 0 && D(i,j) < 0.001 ){
+			if( D(i,j).distance > 0 && D(i,j).distance < 0.001 ){
 				use_scientific = 1;
 				break;
 			}
@@ -320,11 +337,23 @@ void printDistMatrix( double *D, seq_t* sequences, size_t n){
 		printf("%-9.9s", sequences[i].name);
 		
 		for( j=0;j<n;j++){
+			double avg = (D(i,j).distance + D(j,i).distance)/2;
 			if( use_scientific){
-				printf(" %1.4e", (D(i,j)+D(j,i))/2 );
+				printf(" %1.4e", avg);
 			} else {
-				printf(" %1.4f", (D(i,j)+D(j,i))/2 );
+				printf(" %1.4f", avg);
 			}
+		}
+		printf("\n");
+	}
+}
+
+void printCovMatrix( data_t *D, size_t n){
+	size_t i,j;
+	printf("\nCoverage:\n");
+	for(i=0; i<n; i++){
+		for(j=0; j<n; j++){
+			printf("%1.4e ", D(i,j).coverage);
 		}
 		printf("\n");
 	}
@@ -359,10 +388,15 @@ void calcDistMatrix( seq_t* sequences, int n){
 	}
 	
 	// compute the distances
-	double *D = distMatrix( sequences, n);
+	data_t *D = distMatrix( sequences, n);
 	
 	// print the results
 	printDistMatrix( D, sequences, n);
+
+	// print additional information.
+	if( FLAGS & F_VERBOSE){
+		printCovMatrix( D, n);
+	}
 	
 	free(D);
 }

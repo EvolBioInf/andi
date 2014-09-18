@@ -184,6 +184,9 @@ void seq_init( seq_t *S){
  * @returns 0 iff successful.
  */
 int seq_init( seq_t *S, const char *seq, const char *name){
+	if( !S || !seq || !name) {
+		return 1;
+	}
 	S->S = S->RS = S->name = NULL;
 	S->len = S->RSlen = 0;
 	S->gc = 0.0;

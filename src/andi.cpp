@@ -244,7 +244,7 @@ void joinedRead( FILE *in, dsa_t *dsa, char *name){
 	}
 	
 	seq_t joined = dsa_join( single);
-	joined.name = name;
+	joined.name = strdup(name);
 	dsa_push( dsa, joined);
 	dsa_free( single);
 }

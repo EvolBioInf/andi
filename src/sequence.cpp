@@ -170,9 +170,8 @@ double calc_gc( seq_t *S){
 void seq_init( seq_t *S){
 	normalize( S);
 	
-	if( !S->len){
-		S->len = strlen(S->S);
-	}
+	// recalculate the length because `normalize` might have stripped some characters.
+	S->len = strlen(S->S);
 	calc_gc(S);
 	
 	S->RS = catcomp(S->S, S->len);

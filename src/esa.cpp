@@ -33,6 +33,7 @@
 lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
 static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a);
 static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 
 static int esa_init_SA( esa_t *c);
 static int esa_init_LCP( esa_t *c);
@@ -99,27 +100,12 @@ int esa_init_cache( esa_t *C){
 void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
 	// we are not yet done, but the current strings do not exist in the subject.
 	if( pos < CACHE_LENGTH && in->i == -1 && in->j == -1){
-		for( int code = 0; code < 4; ++code){
-			str[pos] = code2char(code);
-			esa_init_cache_dfs( C, str, pos + 1, in);
-		}
+		esa_init_cache_fill(C,str,pos,in);
 		return;
 	}
 
 	if( pos >= CACHE_LENGTH){
-		// fill the cache of the current string
-		size_t code = 0;
-		for( size_t i = 0; i < CACHE_LENGTH; ++i ){
-			code <<= 2;
-			code |= char2code(str[i]);
-		}
-
-		C->rmq_cache[code] = *in;
-
-		if( in->i != in->j){
-			C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
-		}
-
+		esa_init_cache_fill(C,str,pos,in);
 		return;
 	}
 
@@ -132,18 +118,51 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 
 		// fail early
 		if( ij.i == -1 && ij.j == -1){
-			esa_init_cache_dfs( C, str, pos + 1, &ij);
+			esa_init_cache_fill(C, str, pos + 1, &ij);
 			continue;
 		}
 
-		if ( ij.l >= (ssize_t)(pos + 1)){
-			// fast forward
+
+		if ( ij.l > (ssize_t)(pos + 1)){
+
+			/*
+			if( ij.l < CACHE_LENGTH){
+				// fast forward
+				auto k = pos + 1;
+				for(;k < ij.l; k++){
+					str[k] = C->S[C->SA[ij.i]+k];
+				}
+				esa_init_cache_dfs(C, str, k, &ij);
+				continue;
+			} // */
+
 			ij.i = ij.j = -1;
-			esa_init_cache_dfs(C, str, pos+1, &ij);
+			esa_init_cache_fill(C, str, pos+1, &ij);
 			continue;
-		}
+		} // */
 
 		esa_init_cache_dfs(C,str,pos+1,&ij);
+	}
+}
+
+void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
+	if( pos < CACHE_LENGTH){
+		for( int code = 0; code < 4; ++code){
+			str[pos] = code2char(code);
+			esa_init_cache_fill( C, str, pos + 1, in);
+		}
+	} else {
+		size_t code = 0;
+		for( size_t i = 0; i < CACHE_LENGTH; ++i ){
+			code <<= 2;
+			code |= char2code(str[i]);
+		}
+
+		C->rmq_cache[code] = *in;
+
+		if( in->i != in->j){
+			C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
+		}
 	}
 }
 
@@ -406,7 +425,7 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
 		return getLCPInterval( C, query, qlen);
 	}
 
-	return getLCPIntervalFrom(C,query, qlen, CACHE_LENGTH, ij);
+	return getLCPIntervalFrom(C, query, qlen, ij.l+1, ij);
 }
 
 /** @brief Compute the LCP interval of a query from a certain starting interval.

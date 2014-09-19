@@ -125,7 +125,6 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 
 		if ( ij.l > (ssize_t)(pos + 1)){
 
-			/*
 			if( ij.l < CACHE_LENGTH){
 				// fast forward
 				auto k = pos + 1;

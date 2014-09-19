@@ -97,7 +97,16 @@ int esa_init_cache( esa_t *C){
  * improve the performance of getting the next value for the cache.
  */
 void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
-	if( pos == CACHE_LENGTH){
+	// we are not yet done, but the current strings do not exist in the subject.
+	if( pos < CACHE_LENGTH && in->i == -1 && in->j == -1){
+		for( int code = 0; code < 4; ++code){
+			str[pos] = code2char(code);
+			esa_init_cache_dfs( C, str, pos + 1, in);
+		}
+		return;
+	}
+
+	if( pos >= CACHE_LENGTH){
 		// fill the cache of the current string
 		size_t code = 0;
 		for( size_t i = 0; i < CACHE_LENGTH; ++i ){
@@ -119,7 +128,21 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 	for( int code = 0; code < 4; ++code){
 		str[pos] = code2char(code);
 		ij = *in;
-		getInterval(C,&ij,str[pos]);
+		getInterval(C, &ij, str[pos]);
+
+		// fail early
+		if( ij.i == -1 && ij.j == -1){
+			esa_init_cache_dfs( C, str, pos + 1, &ij);
+			continue;
+		}
+
+		if ( ij.l >= (ssize_t)(pos + 1)){
+			// fast forward
+			ij.i = ij.j = -1;
+			esa_init_cache_dfs(C, str, pos+1, &ij);
+			continue;
+		}
+
 		esa_init_cache_dfs(C,str,pos+1,&ij);
 	}
 }
@@ -378,6 +401,10 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
 	}
 
 	lcp_inter_t ij = C->rmq_cache[offset];
+
+	if( ij.j == -1 && ij.j == -1){
+		return getLCPInterval( C, query, qlen);
+	}
 
 	return getLCPIntervalFrom(C,query, qlen, CACHE_LENGTH, ij);
 }

@@ -199,7 +199,8 @@ int seq_init( seq_t *S, const char *seq, const char *name){
 		return 1;
 	}
 
-	S->len = strlen(S->S);
+	S->len = strlen((const char*) seq);
+
 	return 0;
 }
 

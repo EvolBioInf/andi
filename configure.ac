@@ -1,5 +1,5 @@
 AC_INIT([andi], [0.7-beta])
-AM_INIT_AUTOMAKE([-Wall foreign])
+AM_INIT_AUTOMAKE([-Wall foreign subdir-objects])
 
 AC_PROG_CXX
 AC_PROG_MAKE_SET
@@ -44,6 +44,7 @@ AC_CHECK_FUNCS([strrchr])
 AC_CONFIG_FILES([
  Makefile
  src/Makefile
+ test/Makefile
  libs/RMQ/Makefile
  docs/Makefile
  docs/andi.1

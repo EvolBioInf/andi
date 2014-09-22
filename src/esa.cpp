@@ -126,8 +126,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 
 			if( ij.l < CACHE_LENGTH){
 				// fill with dummy value
-				lcp_inter_t dummy = {-1,-1,-1,-1};
-				esa_init_cache_fill(C, str, pos+1, &dummy);
+				esa_init_cache_fill(C, str, pos+1, in);
 
 				// fast forward
 				auto k = pos + 1;

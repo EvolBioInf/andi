@@ -122,10 +122,13 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 			continue;
 		}
 
-
 		if ( ij.l > (ssize_t)(pos + 1)){
 
 			if( ij.l < CACHE_LENGTH){
+				// fill with dummy value
+				lcp_inter_t dummy = {-1,-1,-1,-1};
+				esa_init_cache_fill(C, str, pos+1, &dummy);
+
 				// fast forward
 				auto k = pos + 1;
 				for(;k < ij.l; k++){
@@ -133,12 +136,11 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 				}
 				esa_init_cache_dfs(C, str, k, &ij);
 				continue;
-			} // */
+			}
 
-			ij.i = ij.j = -1;
-			esa_init_cache_fill(C, str, pos+1, &ij);
+			esa_init_cache_fill(C, str, pos+1, in);
 			continue;
-		} // */
+		}
 
 		esa_init_cache_dfs(C,str,pos+1,&ij);
 	}
@@ -424,7 +426,7 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
 		return getLCPInterval( C, query, qlen);
 	}
 
-	return getLCPIntervalFrom(C, query, qlen, ij.l+1, ij);
+	return getLCPIntervalFrom(C, query, qlen, ij.l, ij);
 }
 
 /** @brief Compute the LCP interval of a query from a certain starting interval.
@@ -438,15 +440,33 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
  */
 lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
 
+	if( ij.i == -1 && ij.j == -1){
+		return ij;
+	}
+
 	// fail early on singleton intervals.
 	if( ij.i == ij.j){
+
+		// try to extend the match. See line 499 below.
+		saidx_t p = C->SA[ij.i];
+		size_t k = ij.l;
+		const char *S = (const char *)C->S;
+
+		for(k = 0 ; k< qlen && S[p+k]; k++ ){
+			if( S[p+k] != query[k]){
+				ij.l = k;
+				return ij;
+			}
+		}
+
+		ij.l = k;
 		return ij;
 	}
 
 	saidx_t l, i, j, p;
 	saidx_t m = qlen;
 
-	lcp_inter_t res = {0,0,0,0};
+	lcp_inter_t res = ij;
 	
 	saidx_t *SA = C->SA;
 	const char *S = (const char *)C->S;

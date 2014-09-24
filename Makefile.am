@@ -1,9 +1,9 @@
 SUBDIRS = . libs/RMQ src docs test
 
-TESTS = test/test_esa
+TESTS = test/test_esa test/test_seq
 
-test/test_esa: all
-	$(MAKE) -C test
+$(TESTS): all
+#	$(MAKE) -C test
 
 noinst_DATA = README ChangeLog
 

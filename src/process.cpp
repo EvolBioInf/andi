@@ -251,11 +251,11 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-data_t *distMatrix( seq_t* sequences, int n){
+data_t *distMatrix( seq_t* sequences, size_t n){
 	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
 	assert(D);
 	
-	int i;
+	size_t i;
 
 	#pragma omp parallel for num_threads( THREADS)
 	for(i=0;i<n;i++){
@@ -265,7 +265,7 @@ data_t *distMatrix( seq_t* sequences, int n){
 		}
 
 		// now compare every other sequence to i
-		int j;
+		size_t j;
 		for(j=0; j<n; j++){
 			if( j == i) {
 				D(i,j).distance = 0.0;

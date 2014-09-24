@@ -255,8 +255,6 @@ data_t *distMatrix( seq_t* sequences, int n){
 	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
 	assert(D);
 	
-	data_t datum;
-	
 	int i;
 
 	#pragma omp parallel for num_threads( THREADS)
@@ -285,7 +283,7 @@ data_t *distMatrix( seq_t* sequences, int n){
 
 			size_t ql = sequences[j].len;
 			
-			datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
+			data_t datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
 			
 			if( !(FLAGS & F_RAW)){
 				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor

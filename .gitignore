@@ -37,6 +37,12 @@ test-driver
 test_esa
 test_esa.trs
 
+# Coverage
+*.gcda
+*.gcno
+*.gcov
+
+
 andi.sublime-*
 
 # for legacy git only:

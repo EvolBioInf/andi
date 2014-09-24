@@ -35,7 +35,8 @@ callgrind*
 test.trs
 test-driver
 test_esa
-test_esa.trs
+test_seq
+*.trs
 
 # Coverage
 *.gcda

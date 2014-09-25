@@ -39,7 +39,7 @@ static int esa_init_SA( esa_t *c);
 static int esa_init_LCP( esa_t *c);
 
 /** @brief The prefix length up to which RMQs are cached. */
-const int CACHE_LENGTH = 8;
+const size_t CACHE_LENGTH = 8;
 
 /** @brief Map a code to the character. */
 char code2char( ssize_t code){
@@ -124,13 +124,13 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 
 		if ( ij.l > (ssize_t)(pos + 1)){
 
-			if( ij.l < CACHE_LENGTH){
+			if( (size_t)ij.l < CACHE_LENGTH){
 				// fill with dummy value
 				esa_init_cache_fill(C, str, pos+1, in);
 
 				// fast forward
 				auto k = pos + 1;
-				for(;k < ij.l; k++){
+				for(;k < (size_t)ij.l; k++){
 					str[k] = C->S[C->SA[ij.i]+k];
 				}
 				esa_init_cache_dfs(C, str, k, &ij);

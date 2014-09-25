@@ -253,7 +253,11 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
  */
 data_t *distMatrix( seq_t* sequences, size_t n){
 	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
-	assert(D);
+
+	if( !D){
+		fprintf(stderr, "Error: Could not allocate enough memory for the comparison matrix. Did you forget --join?\n" );
+		exit(EXIT_FAILURE);	
+	}
 	
 	size_t i;
 

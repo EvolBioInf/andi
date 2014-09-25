@@ -411,12 +411,14 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	if( qlen <= CACHE_LENGTH) return getLCPInterval( C, query, qlen);
 
-	ssize_t offset = 0, code;
+	ssize_t offset = 0;
 	for( size_t i = 0; i< CACHE_LENGTH; i++){
 		offset <<= 2;
-		code = char2code(query[i]);
-		if( code == -1) return getLCPInterval( C, query, qlen);
-		offset |= code;
+		offset |= char2code(query[i]);
+	}
+
+	if( offset < 0){
+		return getLCPInterval( C, query, qlen);
 	}
 
 	lcp_inter_t ij = C->rmq_cache[offset];

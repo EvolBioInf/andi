@@ -26,12 +26,23 @@ missing
 compile
 configure
 ar-lib
+src/.dirstamp
 
 # test files
 *.fasta
 cachegrind*
 callgrind*
-test
+test.trs
+test-driver
+test_esa
+test_seq
+*.trs
+
+# Coverage
+*.gcda
+*.gcno
+*.gcov
+
 
 andi.sublime-*
 

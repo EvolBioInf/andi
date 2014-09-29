@@ -255,13 +255,15 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-data_t *distMatrix( seq_t* sequences, int n){
+data_t *distMatrix( seq_t* sequences, size_t n){
 	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
-	assert(D);
+
+	if( !D){
+		fprintf(stderr, "Error: Could not allocate enough memory for the comparison matrix. Did you forget --join?\n" );
+		exit(EXIT_FAILURE);	
+	}
 	
-	data_t datum;
-	
-	int i;
+	size_t i;
 
 	for(i=0;i<n;i++){
 		esa_t E;
@@ -272,7 +274,7 @@ data_t *distMatrix( seq_t* sequences, int n){
 		}
 
 		// now compare every other sequence to i
-		int j;
+		size_t j;
 		#pragma omp parallel for num_threads( THREADS)
 		for(j=0; j<n; j++){
 			if( j == i) {
@@ -291,7 +293,7 @@ data_t *distMatrix( seq_t* sequences, int n){
 
 			size_t ql = sequences[j].len;
 			
-			datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
+			data_t datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
 			
 			if( !(FLAGS & F_RAW)){
 				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
@@ -376,7 +378,7 @@ void calcDistMatrix( seq_t* sequences, int n){
 			exit(1);
 		}
 		
-		seq_init( &sequences[i]);
+		seq_subject_init( &sequences[i]);
 	}
 	
 	// Warn about non ACGT residues.

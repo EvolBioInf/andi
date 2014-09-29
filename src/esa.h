@@ -73,5 +73,11 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen);
 int esa_init( esa_t *C, seq_t *S);
 void esa_free( esa_t *C);
 
+#ifdef DEBUG
+
+char code2char( ssize_t code);
+
+#endif //DEBUG
+
 #endif
 

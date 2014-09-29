@@ -162,21 +162,24 @@ double calc_gc( seq_t *S){
 	return S->gc = (double)GC/S->len;
 }
 
-/**
- * @brief Initializes a sequence.
- *
- * This function prepares a sequence for further processing.
- */
-void seq_init( seq_t *S){
+/** @brief Prepares a sequences to be used as the subject in a comparision. */
+void seq_subject_init( seq_t *S){
 	normalize( S);
 	
-	if( !S->len){
-		S->len = strlen(S->S);
-	}
+	// recalculate the length because `normalize` might have stripped some characters.
+	S->len = strlen(S->S);
 	calc_gc(S);
 	
 	S->RS = catcomp(S->S, S->len);
 	S->RSlen = 2 * S->len + 1;
+}
+
+/** @brief Frees some memory unused for when a sequence is only used as query. */
+void seq_subject_free( seq_t *S){
+	free(S->RS);
+	S->RS = NULL;
+	S->RSlen = 0;
+	S->gc = 0.0;
 }
 
 /** @brief Initializes a sequences
@@ -184,6 +187,9 @@ void seq_init( seq_t *S){
  * @returns 0 iff successful.
  */
 int seq_init( seq_t *S, const char *seq, const char *name){
+	if( !S || !seq || !name) {
+		return 1;
+	}
 	S->S = S->RS = S->name = NULL;
 	S->len = S->RSlen = 0;
 	S->gc = 0.0;
@@ -197,7 +203,8 @@ int seq_init( seq_t *S, const char *seq, const char *name){
 		return 1;
 	}
 
-	S->len = strlen(S->S);
+	S->len = strlen((const char*) seq);
+
 	return 0;
 }
 

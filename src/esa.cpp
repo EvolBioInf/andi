@@ -33,12 +33,13 @@
 lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
 static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a);
 static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 
 static int esa_init_SA( esa_t *c);
 static int esa_init_LCP( esa_t *c);
 
 /** @brief The prefix length up to which RMQs are cached. */
-const int CACHE_LENGTH = 8;
+const size_t CACHE_LENGTH = 8;
 
 /** @brief Map a code to the character. */
 char code2char( ssize_t code){
@@ -97,8 +98,60 @@ int esa_init_cache( esa_t *C){
  * improve the performance of getting the next value for the cache.
  */
 void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
-	if( pos == CACHE_LENGTH){
-		// fill the cache of the current string
+	// we are not yet done, but the current strings do not exist in the subject.
+	if( pos < CACHE_LENGTH && in->i == -1 && in->j == -1){
+		esa_init_cache_fill(C,str,pos,in);
+		return;
+	}
+
+	if( pos >= CACHE_LENGTH){
+		esa_init_cache_fill(C,str,pos,in);
+		return;
+	}
+
+	lcp_inter_t ij;
+
+	for( int code = 0; code < 4; ++code){
+		str[pos] = code2char(code);
+		ij = *in;
+		getInterval(C, &ij, str[pos]);
+
+		// fail early
+		if( ij.i == -1 && ij.j == -1){
+			esa_init_cache_fill(C, str, pos + 1, &ij);
+			continue;
+		}
+
+		if ( ij.l > (ssize_t)(pos + 1)){
+
+			if( (size_t)ij.l < CACHE_LENGTH){
+				// fill with dummy value
+				esa_init_cache_fill(C, str, pos+1, in);
+
+				// fast forward
+				auto k = pos + 1;
+				for(;k < (size_t)ij.l; k++){
+					str[k] = C->S[C->SA[ij.i]+k];
+				}
+				esa_init_cache_dfs(C, str, k, &ij);
+				continue;
+			}
+
+			esa_init_cache_fill(C, str, pos+1, in);
+			continue;
+		}
+
+		esa_init_cache_dfs(C,str,pos+1,&ij);
+	}
+}
+
+void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
+	if( pos < CACHE_LENGTH){
+		for( int code = 0; code < 4; ++code){
+			str[pos] = code2char(code);
+			esa_init_cache_fill( C, str, pos + 1, in);
+		}
+	} else {
 		size_t code = 0;
 		for( size_t i = 0; i < CACHE_LENGTH; ++i ){
 			code <<= 2;
@@ -110,17 +163,6 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 		if( in->i != in->j){
 			C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
 		}
-
-		return;
-	}
-
-	lcp_inter_t ij;
-
-	for( int code = 0; code < 4; ++code){
-		str[pos] = code2char(code);
-		ij = *in;
-		getInterval(C,&ij,str[pos]);
-		esa_init_cache_dfs(C,str,pos+1,&ij);
 	}
 }
 
@@ -369,17 +411,23 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	if( qlen <= CACHE_LENGTH) return getLCPInterval( C, query, qlen);
 
-	ssize_t offset = 0, code;
+	ssize_t offset = 0;
 	for( size_t i = 0; i< CACHE_LENGTH; i++){
 		offset <<= 2;
-		code = char2code(query[i]);
-		if( code == -1) return getLCPInterval( C, query, qlen);
-		offset |= code;
+		offset |= char2code(query[i]);
+	}
+
+	if( offset < 0){
+		return getLCPInterval( C, query, qlen);
 	}
 
 	lcp_inter_t ij = C->rmq_cache[offset];
 
-	return getLCPIntervalFrom(C,query, qlen, CACHE_LENGTH, ij);
+	if( ij.j == -1 && ij.j == -1){
+		return getLCPInterval( C, query, qlen);
+	}
+
+	return getLCPIntervalFrom(C, query, qlen, ij.l, ij);
 }
 
 /** @brief Compute the LCP interval of a query from a certain starting interval.
@@ -393,15 +441,33 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
  */
 lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
 
+	if( ij.i == -1 && ij.j == -1){
+		return ij;
+	}
+
 	// fail early on singleton intervals.
 	if( ij.i == ij.j){
+
+		// try to extend the match. See line 499 below.
+		saidx_t p = C->SA[ij.i];
+		size_t k = ij.l;
+		const char *S = (const char *)C->S;
+
+		for(k = 0 ; k< qlen && S[p+k]; k++ ){
+			if( S[p+k] != query[k]){
+				ij.l = k;
+				return ij;
+			}
+		}
+
+		ij.l = k;
 		return ij;
 	}
 
 	saidx_t l, i, j, p;
 	saidx_t m = qlen;
 
-	lcp_inter_t res = {0,0,0,0};
+	lcp_inter_t res = ij;
 	
 	saidx_t *SA = C->SA;
 	const char *S = (const char *)C->S;

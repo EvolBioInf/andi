@@ -1,5 +1,5 @@
-AC_INIT([andi], [0.6-beta])
-AM_INIT_AUTOMAKE([-Wall foreign])
+AC_INIT([andi], [0.7-beta])
+AM_INIT_AUTOMAKE([-Wall foreign subdir-objects])
 
 AC_PROG_CXX
 AC_PROG_MAKE_SET
@@ -26,6 +26,8 @@ fi
 
 AC_OPENMP
 
+PKG_CHECK_MODULES([GLIB], [glib-2.0])
+
 AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h])
 
 AC_C_INLINE
@@ -44,6 +46,7 @@ AC_CHECK_FUNCS([strrchr])
 AC_CONFIG_FILES([
  Makefile
  src/Makefile
+ test/Makefile
  libs/RMQ/Makefile
  docs/Makefile
  docs/andi.1

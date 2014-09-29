@@ -44,7 +44,7 @@ void test_esa_setup( esa_fixture *ef, gconstpointer test_data){
 	};
 
 	g_assert( seq_init( ef->S, seq, "S0" ) == 0);
-	seq_init( ef->S);
+	seq_subject_init( ef->S);
 	g_assert( ef->S->RS != NULL);
 	int check = esa_init( ef->C, ef->S);
 	g_assert( check == 0);

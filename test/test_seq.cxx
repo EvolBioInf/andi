@@ -24,7 +24,7 @@ void test_seq_full(){
 	seq_t S;
 
 	seq_init( &S, "ACGTTGCA", "name");
-	seq_init( &S);
+	seq_subject_init( &S);
 
 	g_assert_cmpstr(S.RS, ==, "TGCAACGT#ACGTTGCA");
 	g_assert_cmpuint(S.RSlen, ==, 8*2+1);
@@ -37,7 +37,7 @@ void test_seq_nonacgt(){
 	seq_t S;
 
 	seq_init( &S, "11ACGTNN7682394689NNTGCA11", "name");
-	seq_init( &S);
+	seq_subject_init( &S);
 
 	g_assert_cmpstr(S.S, ==, "ACGTTGCA");
 	g_assert_cmpuint(S.len, ==, 8 );
@@ -52,7 +52,7 @@ void test_seq_nonacgt(){
 	FLAGS = F_NONE;
 
 	seq_init( &S, "@ACGT_!0TGCA        ", "name");
-	seq_init( &S);
+	seq_subject_init( &S);
 
 	g_assert_cmpstr(S.S, ==, "ACGT!TGCA");
 	g_assert_cmpuint(S.len, ==, 9 );

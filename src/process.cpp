@@ -322,7 +322,10 @@ data_t *distMatrixLM( seq_t* sequences, size_t n){
 
 	for(i=0;i<n;i++){
 		esa_t E;
+
+#ifdef _OPENMP
 		omp_set_num_threads(THREADS);
+#endif
 
 		if( esa_init( &E, &(sequences[i])) != 0){
 			continue;

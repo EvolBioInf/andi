@@ -260,9 +260,73 @@ data_t *distMatrix( seq_t* sequences, size_t n){
 
 	if( !D){
 		fprintf(stderr, "Error: Could not allocate enough memory for the comparison matrix. Did you forget --join?\n" );
-		exit(EXIT_FAILURE);	
+		exit(EXIT_FAILURE);
 	}
-	
+
+	size_t i;
+
+	#pragma omp parallel for num_threads( THREADS)
+	for(i=0;i<n;i++){
+		esa_t E;
+
+		if( esa_init( &E, &(sequences[i])) != 0){
+			continue;
+		}
+
+		// now compare every other sequence to i
+		size_t j;
+		for(j=0; j<n; j++){
+			if( j == i) {
+				D(i,j).distance = 0.0;
+				D(i,j).coverage = 0.0;
+				continue;
+			}
+
+			// TODO: Provide a nicer progress indicator.
+			if( FLAGS & F_EXTRA_VERBOSE ){
+				#pragma omp critical
+				{
+					fprintf( stderr, "comparing %lu and %lu\n", i, j);
+				}
+			}
+
+			size_t ql = sequences[j].len;
+
+			data_t datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
+
+			if( !(FLAGS & F_RAW)){
+				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
+			}
+			// fix negative zero
+			if( datum.distance <= 0.0 ){
+				datum.distance = 0.0;
+			}
+			D(i,j) = datum;
+		}
+
+		esa_free(&E);
+	}
+
+	return D;
+}
+
+/**
+ * @brief Computes the distance matrix.
+ *
+ * The distMatrixLM() populates the D matrix with computed distances. It allocates D and
+ * filles it with useful values, but the caller has to free it!
+ * @return The distance matrix
+ * @param sequences An array of pointers to the sequences.
+ * @param n The number of sequences.
+ */
+data_t *distMatrixLM( seq_t* sequences, size_t n){
+	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
+
+	if( !D){
+		fprintf(stderr, "Error: Could not allocate enough memory for the comparison matrix. Did you forget --join?\n" );
+		exit(EXIT_FAILURE);
+	}
+
 	size_t i;
 
 	for(i=0;i<n;i++){
@@ -282,19 +346,19 @@ data_t *distMatrix( seq_t* sequences, size_t n){
 				D(i,j).coverage = 0.0;
 				continue;
 			}
-			
+
 			// TODO: Provide a nicer progress indicator.
 			if( FLAGS & F_EXTRA_VERBOSE ){
 				#pragma omp critical
 				{
-					fprintf( stderr, "comparing %d and %d\n", i, j);
+					fprintf( stderr, "comparing %lu and %lu\n", i, j);
 				}
 			}
 
 			size_t ql = sequences[j].len;
-			
+
 			data_t datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
-			
+
 			if( !(FLAGS & F_RAW)){
 				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
 			}
@@ -307,7 +371,7 @@ data_t *distMatrix( seq_t* sequences, size_t n){
 
 		esa_free(&E);
 	}
-	
+
 	return D;
 }
 
@@ -391,7 +455,7 @@ void calcDistMatrix( seq_t* sequences, int n){
 	}
 	
 	// compute the distances
-	data_t *D = distMatrix( sequences, n);
+	data_t *D = FLAGS & F_LOW_MEMORY ? distMatrixLM( sequences, n) : distMatrix( sequences, n);
 	
 	// print the results
 	printDistMatrix( D, sequences, n);

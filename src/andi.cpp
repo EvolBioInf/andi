@@ -74,6 +74,7 @@ int main( int argc, char *argv[]){
 		{"raw", no_argument, NULL, 'r'},
 		{"verbose", no_argument, NULL, 'v'},
 		{"join", no_argument, NULL, 'j'},
+		{"low-memory", no_argument, NULL, 'm'},
 		{0,0,0,0}
 	};
 	
@@ -82,11 +83,11 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "jvhrt:p:", long_options, &option_index);
+		c = getopt_long( argc, argv, "jvhrt:p:m", long_options, &option_index);
 		
 		if( c == -1){
 			break;
-		} 
+		}
 	
 		switch (c){
 			case 0:
@@ -113,6 +114,9 @@ int main( int argc, char *argv[]){
 					}
 					RANDOM_ANCHOR_PROP = prop;
 				}
+				break;
+			case 'm':
+				FLAGS |= F_LOW_MEMORY;
 				break;
 			case 'j':
 				FLAGS |= F_JOIN;

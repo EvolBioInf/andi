@@ -26,10 +26,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <unistd.h>
 #include <getopt.h>
 #include "global.h"
 #include "process.h"
+#include "io.h"
 
 #include "sequence.h"
 
@@ -38,23 +38,7 @@ int FLAGS = 0;
 int THREADS = 1;
 double RANDOM_ANCHOR_PROP = 0.05;
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <kseq.h>
-
-// was: KSEQ_INIT(FILE*, read)
-
-KSEQ_INIT(int, read)
-
-#ifdef __cplusplus
-}
-#endif
-
 void usage(void);
-void readFile( FILE *in, dsa_t *dsa);
-void joinedRead( FILE *in, dsa_t *dsa, char *name);
 void version(void);
 
 /**
@@ -105,11 +89,10 @@ int main( int argc, char *argv[]){
 				{
 					double prop = atof( optarg);
 					if( prop < 0.0 || prop > 1.0 ){
-						const char str[] = {
+						WARN(
 							"Warning: A propability should be a value between 0 and 1; "
-							"Ignoring -p argument.\n"
-						};
-						fprintf( stderr, "%s", str);
+							"Ignoring -p %f argument.", prop
+						);
 						break;
 					}
 					RANDOM_ANCHOR_PROP = prop;
@@ -126,9 +109,7 @@ int main( int argc, char *argv[]){
 				{
 					int threads = atoi( optarg);
 					if( threads < 1 ){
-						fprintf( stderr, 
-							"Warning: The number of threads should be positive; Ignoring -t argument.\n"
-						);
+						WARN("The number of threads should be positive; Ignoring -t %d argument.", threads);
 						break;
 					}
 					THREADS = threads;
@@ -152,8 +133,7 @@ int main( int argc, char *argv[]){
 	if( FLAGS & F_JOIN ){
 		// atleast one file name must be given
 		if( optind == argc ){
-			fprintf( stderr, "Error: in join mode at least one filename needs to be supplied\n");
-			exit(EXIT_FAILURE);
+			FAIL("In join mode at least one filename needs to be supplied.");
 		}
 		
 		// only one file
@@ -217,66 +197,11 @@ int main( int argc, char *argv[]){
 	if( n >= 2){
 		calcDistMatrix(sequences, n);
 	} else {
-		fprintf( stderr, "I am truly sorry, but with less than two sequences there is nothing to compare.\n");
+		WARN("I am truly sorry, but with less than two sequences (%lu given) there is nothing to compare.", n);
 	}
 
 	dsa_free( dsa);
 	return 0;
-}
-
-/**
- * @brief Joins all sequences from a file into a single long sequence.
- *
- * Apart from reading all sequences from a file, this function also
- * merges them into one long sequence.
- *
- * "I didn't learn joined up handwriting for nothing, you know."
- * ~ Gilderoy Lockhart
- *
- * @param in - The file pointer to read from.
- * @param dsa - An array that holds found sequences.
- * @param name - The name of the file to be used for the name of the sequence.
- */
-void joinedRead( FILE *in, dsa_t *dsa, char *name){
-	if( !in || !dsa) return;
-
-	dsa_t *single = dsa_new();
-	readFile( in, single);
-	
-	if( dsa_size( single) == 0 ){
-		return;
-	}
-	
-	seq_t joined = dsa_join( single);
-	joined.name = strdup(name);
-	dsa_push( dsa, joined);
-	dsa_free( single);
-}
-
-
-/**
- * This function reads sequences from a file.
- * @param in - The file pointer to read from.
- * @param dsa - An array that holds found sequences.
- */
-void readFile( FILE *in, dsa_t *dsa){
-	if( !in || !dsa) return;
-	int l;
-	int check;
-	seq_t top = { NULL, NULL, 0, 0, NULL, 0.0};
-	
-	kseq_t *seq = kseq_init(fileno(in));
-	
-	while( ( l = kseq_read(seq)) >= 0){
-		check = seq_init( &top, seq->seq.s, seq->name.s);
-
-		// skip broken sequences
-		if( check != 0) continue;
-		
-		dsa_push( dsa, top);
-	}
-	
-	kseq_destroy(seq);
 }
 
 /**

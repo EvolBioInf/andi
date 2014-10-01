@@ -5,12 +5,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <stdio.h>
 #include <math.h>
 #include "esa.h"
 #include "global.h"
 #include "process.h"
 #include "sequence.h"
+#include "io.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -18,15 +18,8 @@
 
 #include <RMQ_n_1_improved.hpp>
 
-typedef struct data_s {
-	double distance;
-	double coverage;
-} data_t;
 
-/**
- * This is a neat hack for dealing with matrices.
- */
-#define D( X, Y) (D[ (X)*n + (Y) ])
+
 
 double shuprop( size_t x, double g, size_t l);
 
@@ -259,8 +252,7 @@ data_t *distMatrix( seq_t* sequences, size_t n){
 	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
 
 	if( !D){
-		fprintf(stderr, "Error: Could not allocate enough memory for the comparison matrix. Did you forget --join?\n" );
-		exit(EXIT_FAILURE);
+		FAIL("Could not allocate enough memory for the comparison matrix. Try using --join or --low-memory.\n");
 	}
 
 	size_t i;
@@ -323,8 +315,7 @@ data_t *distMatrixLM( seq_t* sequences, size_t n){
 	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
 
 	if( !D){
-		fprintf(stderr, "Error: Could not allocate enough memory for the comparison matrix. Did you forget --join?\n" );
-		exit(EXIT_FAILURE);
+		FAIL("Could not allocate enough memory for the comparison matrix. Try using --join.");
 	}
 
 	size_t i;
@@ -376,57 +367,6 @@ data_t *distMatrixLM( seq_t* sequences, size_t n){
 }
 
 /**
- * @brief Prints the distance matrix.
- *
- * This function pretty prints the distance matrix. For small distances
- * scientific notation is used.
- * @param D - The distance matrix
- * @param sequences - An array of pointers to the sequences.
- * @param n - The number of sequences.
- */
-void printDistMatrix( data_t *D, seq_t *sequences, size_t n){
-
-	int use_scientific = 0;
-	size_t i,j;
-	
-	for( i=0; i<n && !use_scientific; i++){
-		for( j=0; j<n; j++){
-			if( D(i,j).distance > 0 && D(i,j).distance < 0.001 ){
-				use_scientific = 1;
-				break;
-			}
-		}
-	}
-	
-	printf("%lu\n", n);
-	for( i=0;i<n;i++){
-		// Print exactly nine characters of the name. Padd wih spaces if necessary.
-		printf("%-9.9s", sequences[i].name);
-		
-		for( j=0;j<n;j++){
-			double avg = (D(i,j).distance + D(j,i).distance)/2;
-			if( use_scientific){
-				printf(" %1.4e", avg);
-			} else {
-				printf(" %1.4f", avg);
-			}
-		}
-		printf("\n");
-	}
-}
-
-void printCovMatrix( data_t *D, size_t n){
-	size_t i,j;
-	printf("\nCoverage:\n");
-	for(i=0; i<n; i++){
-		for(j=0; j<n; j++){
-			printf("%1.4e ", D(i,j).coverage);
-		}
-		printf("\n");
-	}
-}
-
-/**
  * @brief Calculates and prints the distance matrix
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
@@ -438,8 +378,7 @@ void calcDistMatrix( seq_t* sequences, int n){
 	#pragma omp parallel for num_threads( THREADS)
 	for( i=0;i<n;i++){
 		if( sequences[i].S == NULL){
-			fprintf(stderr, "missing sequence %d\n", i);
-			exit(1);
+			FAIL("Missing sequence.");
 		}
 		
 		seq_subject_init( &sequences[i]);

@@ -212,15 +212,16 @@ void usage(void){
 		"Usage: andi [-jrv] [-p FLOAT] FILES...\n"
 		"\tFILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
-		"  -j, --join      Treat all sequences from one file as a single genome\n"
-		"  -p <FLOAT>      Significance of an anchor pair; default: 0.05\n"
-		"  -r, --raw       Calculates raw distances; default: Jukes-Cantor corrected\n"
-		"  -v, --verbose   Prints additional information\n"
+		"  -j, --join        Treat all sequences from one file as a single genome\n"
+		"  -m, --low-memory  Use less memory at the cost of speed\n"
+		"  -p <FLOAT>        Significance of an anchor pair; default: 0.05\n"
+		"  -r, --raw         Calculates raw distances; default: Jukes-Cantor corrected\n"
+		"  -v, --verbose     Prints additional information\n"
 #ifdef _OPENMP
-		"  -t <INT>        The number of threads to be used; default: 1\n"
+		"  -t <INT>          The number of threads to be used; default: 1\n"
 #endif
-		"  -h, --help      display this help and exit\n"
-		"      --version   output version information and acknowledgements\n"
+		"  -h, --help        Display this help and exit\n"
+		"      --version     Output version information and acknowledgements\n"
 	};
 
 	printf("%s", str);

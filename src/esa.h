@@ -66,10 +66,13 @@ typedef struct {
 	/** A reference to an object for range minimum queries. */
 	RMQ *rmq_lcp;
 	lcp_inter_t *rmq_cache;
+	saidx_t *CLD;
 } esa_t;
 
 lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen);
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen);
+lcp_inter_t getNoRMQLCPInterval( const esa_t *C, const char *query, size_t qlen);
+lcp_inter_t getNoRMQCachedLCPInterval( const esa_t *C, const char *query, size_t qlen);
 int esa_init( esa_t *C, seq_t *S);
 void esa_free( esa_t *C);
 

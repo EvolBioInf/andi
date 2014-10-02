@@ -35,12 +35,18 @@ static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a);
 static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 
+lcp_inter_t *getNoRMQInterval( const esa_t *C, lcp_inter_t *ij, char a);
+lcp_inter_t getNoRMQLCPInterval( const esa_t *C, const char *query, size_t qlen);
+lcp_inter_t getNoRMQLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+
+
+
 static int esa_init_SA( esa_t *c);
 static int esa_init_LCP( esa_t *c);
 int esa_init_CLD( esa_t *C);
 
 /** @brief The prefix length up to which RMQs are cached. */
-const size_t CACHE_LENGTH = 8;
+const size_t CACHE_LENGTH = 4;
 
 /** @brief Map a code to the character. */
 char code2char( ssize_t code){
@@ -86,7 +92,7 @@ int esa_init_cache( esa_t *C){
 	char str[CACHE_LENGTH+1];
 	str[CACHE_LENGTH] = '\0';
 	lcp_inter_t ij = { 0, 0, C->len-1, 0};
-	ij.m = C->rmq_lcp->query(1,C->len-1);
+	//ij.m = C->rmq_lcp->query(1,C->len-1);
 	esa_init_cache_dfs( C, str, 0, &ij);
 
 	return 0;
@@ -115,7 +121,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 	for( int code = 0; code < 4; ++code){
 		str[pos] = code2char(code);
 		ij = *in;
-		getInterval(C, &ij, str[pos]);
+		getNoRMQInterval(C, &ij, str[pos]);
 
 		// fail early
 		if( ij.i == -1 && ij.j == -1){
@@ -161,9 +167,9 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 
 		C->rmq_cache[code] = *in;
 
-		if( in->i != in->j){
+		/* if( in->i != in->j){
 			C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
-		}
+		} */
 	}
 }
 
@@ -199,7 +205,7 @@ int esa_init( esa_t *C, seq_t *S){
 	esa_init_CLD(C);
 
 	// TODO: check return value/ catch errors
-	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
+	//C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
 
 	esa_init_cache(C);
 
@@ -243,10 +249,10 @@ int esa_init_SA(esa_t *C){
 #define L(CLD, i) ((CLD)[(i)-1])
 
 int esa_init_CLD( esa_t *C){
-	if( !C){
+	if( !C || !C->LCP){
 		return 1;
 	}
-	saidx_t* CLD =  C->CLD = (saidx_t*) malloc(C->len * sizeof(saidx_t));
+	saidx_t* CLD =  C->CLD = (saidx_t*) malloc((C->len+1) * sizeof(saidx_t));
 	if( !C->CLD) {
 		return 2;
 	}
@@ -257,11 +263,11 @@ int esa_init_CLD( esa_t *C){
 		saidx_t idx, lcp;
 	} pair_t;
 
-	pair_t *stack = (pair_t*) malloc(C->len * sizeof(saidx_t));
+	pair_t *stack = (pair_t*) malloc((C->len+1) * sizeof(pair_t));
 	pair_t *top = stack;
 	pair_t last;
 
-	R(CLD,0) = C->len;
+	R(CLD,0) = C->len + 1;
 
 	top->idx = 0;
 	top->lcp = -1;
@@ -466,7 +472,7 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
  * @returns The LCP interval for the longest prefix.
  */
 lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen){
-	if( qlen <= CACHE_LENGTH) return getLCPInterval( C, query, qlen);
+	if( qlen <= CACHE_LENGTH) return getNoRMQLCPInterval( C, query, qlen);
 
 	ssize_t offset = 0;
 	for( size_t i = 0; i< CACHE_LENGTH; i++){
@@ -475,16 +481,16 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
 	}
 
 	if( offset < 0){
-		return getLCPInterval( C, query, qlen);
+		return getNoRMQLCPInterval( C, query, qlen);
 	}
 
 	lcp_inter_t ij = C->rmq_cache[offset];
 
 	if( ij.j == -1 && ij.j == -1){
-		return getLCPInterval( C, query, qlen);
+		return getNoRMQLCPInterval( C, query, qlen);
 	}
 
-	return getLCPIntervalFrom(C, query, qlen, ij.l, ij);
+	return getNoRMQLCPIntervalFrom(C, query, qlen, ij.l, ij);
 }
 
 /** @brief Compute the LCP interval of a query from a certain starting interval.
@@ -610,7 +616,9 @@ lcp_inter_t *getNoRMQInterval( const esa_t *C, lcp_inter_t *ij, char a){
 		if( S[ SA[k] + l] == a ){
 			ij->i = k;
 			ij->j = m-1;
-			ij->l = LCP[C->rmq_lcp->query(k+1, m-1)]; //LCP[]
+			ij->m = LCP[ij->i] <= LCP[ij->j+1] ? L(CLD, m) : R(CLD,k) ;
+			ij->l = LCP[ij->m];
+			//ij->l = LCP[C->rmq_lcp->query(k+1, m-1)]; //LCP[]
 			return ij;
 		}
 		k = m;
@@ -723,11 +731,8 @@ lcp_inter_t getNoRMQLCPInterval( const esa_t *C, const char *query, size_t qlen)
 		res.i = res.j = res.l = -1;
 		return res;
 	}
-	
+
 	lcp_inter_t ij = { 0, 0, C->len-1, 0};
-	
-	// TODO: This should be cached in a future version
-	ij.m = C->rmq_lcp->query(1,C->len-1);
 
 	return getNoRMQLCPIntervalFrom(C, query, qlen, 0, ij);
 }

@@ -26,10 +26,17 @@ void assert_equal_cache_nocache( const esa_t *C, const char *str, size_t qlen){
 }
 
 void assert_equal_normq_nocache( const esa_t *C, const char *str, size_t qlen){
-	lcp_inter_t a = getCachedLCPInterval(C, str, qlen);
+	lcp_inter_t a = getLCPInterval(C, str, qlen);
 	lcp_inter_t b = getNoRMQLCPInterval(C, str, qlen);
 	assert_equal_lcp( &a, &b);
 }
+
+void assert_equal_normqcached_nocache( const esa_t *C, const char *str, size_t qlen){
+	lcp_inter_t a = getLCPInterval(C, str, qlen);
+	lcp_inter_t b = getNoRMQCachedLCPInterval(C, str, qlen);
+	assert_equal_lcp( &a, &b);
+}
+
 
 void test_esa_setup( esa_fixture *ef, gconstpointer test_data){
 	ef->C = (esa_t *) malloc( sizeof(esa_t));
@@ -124,6 +131,42 @@ void test_esa_normq( esa_fixture *ef, gconstpointer test_data){
 	//g_assert_cmpint(count, >=, 1 << (2*8));
 }
 
+void test_esa_normq_cached( esa_fixture *ef, gconstpointer test_data){
+	esa_t *C = ef->C;
+	g_assert( C->SA);
+	lcp_inter_t a, b;
+
+	a = getNoRMQCachedLCPInterval(C, "A", 1);
+	b = getLCPInterval(C, "A", 1);
+	assert_equal_lcp( &a, &b);
+
+	a = getNoRMQCachedLCPInterval(C, "C", 1);
+	b = getLCPInterval(C, "C", 1);
+	assert_equal_lcp( &a, &b);
+
+	a = getNoRMQCachedLCPInterval(C, "CT", 2);
+	b = getLCPInterval(C, "CT", 2);
+	assert_equal_lcp( &a, &b);
+
+	a = getNoRMQCachedLCPInterval(C, "AAGACTGG", 8);
+	b = getLCPInterval(C, "AAGACTGG", 8);
+	assert_equal_lcp( &a, &b);
+	
+	a = getNoRMQCachedLCPInterval(C, "AATTAAAA", 8);
+	b = getLCPInterval(C, "AATTAAAA", 8);
+	assert_equal_lcp( &a, &b);
+
+	a = getNoRMQCachedLCPInterval(C, "ACCGAGAA", 8);
+	b = getLCPInterval(C, "ACCGAGAA", 8);
+	assert_equal_lcp( &a, &b);
+
+	a = getNoRMQCachedLCPInterval(C, "AAAAAAAAAAAA", 12);
+	b = getLCPInterval(C, "AAAAAAAAAAAA", 12);
+	assert_equal_lcp( &a, &b);
+
+	//g_assert_cmpint(count, >=, 1 << (2*8));
+}
+
 size_t MAX_DEPTH = 10;
 
 void test_esa_prefix_dfs( esa_t *C, char *str, size_t depth);
@@ -159,10 +202,31 @@ void test_esa_normq_prefix_dfs( esa_t *C, char *str, size_t depth){
 	if( depth < MAX_DEPTH){
 		for( int code = 0; code < 4; ++code){
 			str[depth] = code2char(code);
-			test_esa_prefix_dfs( C, str, depth + 1);
+			test_esa_normq_prefix_dfs( C, str, depth + 1);
 		}
 	} else {
 		assert_equal_normq_nocache(C, str, depth);
+	}
+}
+
+
+void test_esa_normqcached_prefix_dfs( esa_t *C, char *str, size_t depth);
+
+void test_esa_normqcached_prefix( esa_fixture *ef, gconstpointer test_data){
+	esa_t *C = ef->C;
+	char str[MAX_DEPTH+1];
+	str[MAX_DEPTH] = '\0';
+	test_esa_normqcached_prefix_dfs( C, str, 0);
+}
+
+void test_esa_normqcached_prefix_dfs( esa_t *C, char *str, size_t depth){
+	if( depth < MAX_DEPTH){
+		for( int code = 0; code < 4; ++code){
+			str[depth] = code2char(code);
+			test_esa_normqcached_prefix_dfs( C, str, depth + 1);
+		}
+	} else {
+		assert_equal_normqcached_nocache(C, str, depth);
 	}
 }
 
@@ -173,6 +237,8 @@ int main(int argc, char *argv[])
 	g_test_add("/esa/cache", esa_fixture, NULL, test_esa_setup, test_esa_prefix, test_esa_teardown);
 	g_test_add("/esa/no rmq", esa_fixture, NULL, test_esa_setup, test_esa_normq, test_esa_teardown);
 	g_test_add("/esa/no rmq full", esa_fixture, NULL, test_esa_setup, test_esa_normq_prefix, test_esa_teardown);
+	g_test_add("/esa/no rmq, cached", esa_fixture, NULL, test_esa_setup, test_esa_normq_cached, test_esa_teardown);
+	g_test_add("/esa/no rmq, cached, full", esa_fixture, NULL, test_esa_setup, test_esa_normqcached_prefix, test_esa_teardown);
 	
 
 	return g_test_run();

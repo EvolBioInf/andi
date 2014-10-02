@@ -46,7 +46,7 @@ static int esa_init_LCP( esa_t *c);
 int esa_init_CLD( esa_t *C);
 
 /** @brief The prefix length up to which RMQs are cached. */
-const size_t CACHE_LENGTH = 4;
+const size_t CACHE_LENGTH = 8;
 
 /** @brief Map a code to the character. */
 char code2char( ssize_t code){
@@ -205,7 +205,9 @@ int esa_init( esa_t *C, seq_t *S){
 	esa_init_CLD(C);
 
 	// TODO: check return value/ catch errors
-	//C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
+#ifdef DEBUG
+	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
+#endif
 
 	esa_init_cache(C);
 

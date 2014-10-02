@@ -160,8 +160,9 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	// Iterate over the complete query.
 	while( this_pos_Q < query_length){
 		inter = getCachedLCPInterval( C, query + this_pos_Q, query_length - this_pos_Q);
+		
+		if( inter.l <= 0) break;
 		this_length = inter.l;
-		if( this_length == 0) break;
 		
 		if( inter.i == inter.j && this_length >= threshhold)
 		{

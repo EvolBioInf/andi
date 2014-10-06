@@ -29,6 +29,7 @@
 #include <RMQ.hpp>
 #include <string.h>
 #include "esa.h"
+#include <assert.h>
 
 lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
 static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a);
@@ -152,11 +153,12 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 			esa_init_cache_fill( C, str, pos + 1, in);
 		}
 	} else {
-		size_t code = 0;
+		ssize_t code = 0;
 		for( size_t i = 0; i < CACHE_LENGTH; ++i ){
 			code <<= 2;
 			code |= char2code(str[i]);
 		}
+		assert(code >= 0);
 
 		C->rmq_cache[code] = *in;
 

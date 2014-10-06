@@ -202,7 +202,8 @@ int esa_init( esa_t *C, seq_t *S){
 	result = esa_init_LCP(C);
 	if(result) return result;
 
-	esa_init_CLD(C);
+	result = esa_init_CLD(C);
+	if(result) return result;
 
 	// TODO: check return value/ catch errors
 #ifdef DEBUG

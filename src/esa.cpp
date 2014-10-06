@@ -729,7 +729,7 @@ lcp_inter_t getNoRMQLCPInterval( const esa_t *C, const char *query, size_t qlen)
 	lcp_inter_t res = {0,0,0,0};
 
 	// sanity checks
-	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->rmq_lcp ){
+	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->CLD ){
 		res.i = res.j = res.l = -1;
 		return res;
 	}

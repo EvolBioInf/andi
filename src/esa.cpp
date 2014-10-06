@@ -210,7 +210,8 @@ int esa_init( esa_t *C, seq_t *S){
 	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
 #endif
 
-	esa_init_cache(C);
+	result = esa_init_cache(C);
+	if(result) return result;
 
 	return 0;
 }

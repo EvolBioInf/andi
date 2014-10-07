@@ -30,16 +30,12 @@
 #include <string.h>
 #include "esa.h"
 
-lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
-static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a);
 static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 
 lcp_inter_t *getNoRMQInterval( const esa_t *C, lcp_inter_t *ij, char a);
 lcp_inter_t getNoRMQLCPInterval( const esa_t *C, const char *query, size_t qlen);
 lcp_inter_t getNoRMQLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
-
-
 
 static int esa_init_SA( esa_t *c);
 static int esa_init_LCP( esa_t *c);
@@ -166,10 +162,6 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 		}
 
 		C->rmq_cache[code] = *in;
-
-		/* if( in->i != in->j){
-			C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
-		} */
 	}
 }
 
@@ -204,11 +196,6 @@ int esa_init( esa_t *C, seq_t *S){
 
 	result = esa_init_CLD(C);
 	if(result) return result;
-
-	// TODO: check return value/ catch errors
-#ifdef DEBUG
-	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
-#endif
 
 	result = esa_init_cache(C);
 	if(result) return result;
@@ -371,218 +358,6 @@ int esa_init_LCP( esa_t *C){
 	free(PHI);
 	free(PLCP);
 	return 0;
-}
-
-/**
- * Given the LCP interval for a string `w` this function calculates the 
- * LCP interval for `wa` where `a` is a single character.
- * The empty interval is represented by ij.i == -1 and ij.j == -1.
- * @param C This is the enhanced suffix array of the subject sequence.
- * @param ij The prefix `w` is given implicitly by the ij LCP interval.
- * @param a The next character in the query sequence.
- * @returns A reference to the new LCP interval.
- */
-static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
-	saidx_t i = ij->i;
-	saidx_t j = ij->j;
-
-
-	const saidx_t *SA = C->SA;
-	const saidx_t *LCP = C->LCP;
-	const char *S = C->S;
-	RMQ *rmq_lcp = C->rmq_lcp;
-	
-	// check for singleton or empty interval
-	if( i == j ){
-		if( S[SA[i]] == a){
-			ij->i = ij->j = i;
-		} else {
-			ij->i = ij->j = -1;
-		}
-		return ij;
-	}
-
-	saidx_t l, m;
-	
-	m = ij->m; // m is now any minimum in (i..j]
-	l = ij->l;
-	
-	/* We now use an abstract binary search. Think of `i` as the
-	 * lower and `j` as the upper boundary. Then `m` is the new
-	 * middle. */
-	do {
-		// check if `m` will be a new lower or upper bound.
-		if( S[ SA[m] + l] <= a ){
-			i = m;
-		} else {
-			j = m - 1;
-		}
-		
-		if( i == j ){
-			break; // `a` not found, exit early
-		}
-		
-		// find the next LCP boundary
-		m = rmq_lcp->query(i+1, j);
-	} while( LCP[m] == l);
-
-	// final sanity check
-	if( S[SA[i] + l] == a){
-		ij->i = i;
-		ij->j = j;
-		/* Also return the length of the LCP interval including `a` and
-		 * possibly even more characters. Note: l + 1 <= LCP[m] */
-		ij->l = LCP[m];
-		ij->m = m;
-	} else {
-		ij->i = ij->j = -1;
-	}
-	
-	return ij;
-}
-
-/**
- * This function computes the LCPInterval for the longest prefix of `query` which
- * can be found in the subject sequence. Compare Ohlebusch getInterval Alg 5.2 p.119
- * @param C The enhanced suffix array for the subject.
- * @param query The query sequence.
- * @param qlen The length of the query. Should correspond to `strlen(query)`.
- * @returns The LCP interval for the longest prefix.
- */
-lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
-	lcp_inter_t res = {0,0,0,0};
-
-	// sanity checks
-	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->rmq_lcp ){
-		res.i = res.j = res.l = -1;
-		return res;
-	}
-	
-	lcp_inter_t ij = { 0, 0, C->len-1, 0};
-	
-	// TODO: This should be cached in a future version
-	ij.m = C->rmq_lcp->query(1,C->len-1);
-
-	return getLCPIntervalFrom(C, query, qlen, 0, ij);
-}
-
-/** @brief Compute the LCP interval of a query. For a certain prefix length of the
- * query its LCP interval is retrieved from a cache. Hence this is faster than the
- * naive `getInterval`.
- *
- * @param C - The enhanced suffix array for the subject.
- * @param query - The query sequence.
- * @param qlen - The length of the query. Should correspond to `strlen(query)`.
- * @returns The LCP interval for the longest prefix.
- */
-lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen){
-	if( qlen <= CACHE_LENGTH) return getNoRMQLCPInterval( C, query, qlen);
-
-	ssize_t offset = 0;
-	for( size_t i = 0; i< CACHE_LENGTH; i++){
-		offset <<= 2;
-		offset |= char2code(query[i]);
-	}
-
-	if( offset < 0){
-		return getNoRMQLCPInterval( C, query, qlen);
-	}
-
-	lcp_inter_t ij = C->rmq_cache[offset];
-
-	if( ij.j == -1 && ij.j == -1){
-		return getNoRMQLCPInterval( C, query, qlen);
-	}
-
-	return getNoRMQLCPIntervalFrom(C, query, qlen, ij.l, ij);
-}
-
-/** @brief Compute the LCP interval of a query from a certain starting interval.
- *
- * @param C - The enhanced suffix array for the subject.
- * @param query - The query sequence.
- * @param qlen - The length of the query. Should correspond to `strlen(query)`.
- * @param k - The starting index into the query.
- * @param ij - The LCP interval for the string `query[0..k]`.
- * @returns The LCP interval for the longest prefix.
- */
-lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
-
-	if( ij.i == -1 && ij.j == -1){
-		return ij;
-	}
-
-	// fail early on singleton intervals.
-	if( ij.i == ij.j){
-
-		// try to extend the match. See line 499 below.
-		saidx_t p = C->SA[ij.i];
-		size_t k = ij.l;
-		const char *S = (const char *)C->S;
-
-		for(k = 0 ; k< qlen && S[p+k]; k++ ){
-			if( S[p+k] != query[k]){
-				ij.l = k;
-				return ij;
-			}
-		}
-
-		ij.l = k;
-		return ij;
-	}
-
-	saidx_t l, i, j, p;
-	saidx_t m = qlen;
-
-	lcp_inter_t res = ij;
-	
-	saidx_t *SA = C->SA;
-	const char *S = (const char *)C->S;
-	
-	// Loop over the query until a mismatch is found
-	do {
-		getInterval( C, &ij, query[k]);
-		i = ij.i;
-		j = ij.j;
-		
-		// If our match cannot be extended further, return.
-		if( i == -1 && j == -1 ){
-			res.l = k;
-			return res;
-		}
-		
-		res.i = ij.i;
-		res.j = ij.j;
-
-		l = m;
-		if( i < j){
-			/* Instead of making another RMQ we can use the LCP interval calculated
-			 * in getInterval */
-			if( ij.l < l ){
-				l = ij.l;
-			}
-		}
-		
-		// Extend the match
-		for( p = SA[i]; k < l && S[p+k] && query[k]; k++){
-			if( S[p+k] != query[k] ){
-				res.l = k;
-				return res;
-			}
-		}
-		
-		// TODO: Verify if this is the best solution
-		// You shall not pass the null byte.
-		if( k < l && (!S[p+k] || !query[k])){
-			res.l = k;
-			return res;
-		}
-
-		k = l;
-	} while ( k < m);
-
-	res.l = m;
-	return res;
 }
 
 lcp_inter_t *getNoRMQInterval( const esa_t *C, lcp_inter_t *ij, char a){

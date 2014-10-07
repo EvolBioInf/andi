@@ -26,7 +26,6 @@
  * applied to big data sets.
  */
 #include <stdlib.h>
-#include <RMQ.hpp>
 #include <string.h>
 #include "esa.h"
 
@@ -178,7 +177,6 @@ int esa_init( esa_t *C, seq_t *S){
 	C->ISA = NULL;
 	C->LCP = NULL;
 	C->len = 0;
-	C->rmq_lcp = NULL;
 	C->CLD = NULL;
 
 	int result;
@@ -205,7 +203,6 @@ int esa_init( esa_t *C, seq_t *S){
 
 /** @brief Free the private data of an ESA. */
 void esa_free( esa_t *C){
-	delete C->rmq_lcp;
 	free( C->SA);
 	free( C->ISA);
 	free( C->LCP);

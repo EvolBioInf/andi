@@ -2,6 +2,7 @@
 #define _IO_H_
 
 #include "sequence.h"
+#include <stdio.h>
 
 typedef struct data_s {
 	double distance;

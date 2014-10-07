@@ -7,9 +7,6 @@
 #define _ESA_H_
 
 #include <divsufsort.h>
-#include <RMQ.hpp>
-#include <RMQ_n_1_improved.hpp>
-
 #include "sequence.h"
 
 /**
@@ -63,8 +60,6 @@ typedef struct {
 	saidx_t *LCP;
 	/** The length of the string S. */
 	saidx_t len;
-	/** A reference to an object for range minimum queries. */
-	RMQ *rmq_lcp;
 	lcp_inter_t *rmq_cache;
 	saidx_t *CLD;
 } esa_t;

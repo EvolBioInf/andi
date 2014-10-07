@@ -47,7 +47,6 @@ AC_CONFIG_FILES([
  Makefile
  src/Makefile
  test/Makefile
- libs/RMQ/Makefile
  docs/Makefile
  docs/andi.1
 ])

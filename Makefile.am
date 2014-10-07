@@ -1,4 +1,4 @@
-SUBDIRS = . libs/RMQ src docs test
+SUBDIRS = . src docs test
 
 TESTS = test/test_esa test/test_seq
 

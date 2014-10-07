@@ -274,7 +274,7 @@ int esa_init_SA(esa_t *C){
 #define R(CLD, i) ((CLD)[(i)])
 #define L(CLD, i) ((CLD)[(i)-1])
 
-/** @brief Initializes the CLD array.
+/** @brief Initializes the CLD (child) array.
  *
  * See Ohlebusch.
  *
@@ -284,7 +284,7 @@ int esa_init_CLD( esa_t *C){
 	if( !C || !C->LCP){
 		return 1;
 	}
-	saidx_t* CLD =  C->CLD = (saidx_t*) malloc((C->len+1) * sizeof(saidx_t));
+	saidx_t* CLD = C->CLD = (saidx_t*) malloc((C->len+1) * sizeof(saidx_t));
 	if( !C->CLD) {
 		return 2;
 	}
@@ -296,33 +296,38 @@ int esa_init_CLD( esa_t *C){
 	} pair_t;
 
 	pair_t *stack = (pair_t*) malloc((C->len+1) * sizeof(pair_t));
-	pair_t *top = stack;
+	pair_t *top = stack; // points at the topmost filled element
 	pair_t last;
 
 	R(CLD,0) = C->len + 1;
 
 	top->idx = 0;
 	top->lcp = -1;
-	top++;
-	ssize_t k = 1;
-	for(; k < C->len + 1; k++){
-		while( LCP[k] < (top-1)->lcp){
-			last = *(--top);
 
-			while( (top-1)->lcp == last.lcp){
-				R(CLD,(top-1)->idx) = last.idx;
-				last = *--top;
+	// iterate over all elements
+	for( ssize_t k = 1; k < C->len + 1; k++){
+		while( LCP[k] < top->lcp){
+			// top->lcp is a leaf
+			last = *top--;
+
+			// link all elements of same lcp value in a chain
+			while( top->lcp == last.lcp){
+				R(CLD,top->idx) = last.idx;
+				last = *top--;
 			}
 
-			if( LCP[k] < (top-1)->lcp){
-				R(CLD, (top-1)->idx) = last.idx;
+			// store the l-index of last
+			if( LCP[k] < top->lcp){
+				R(CLD, top->idx) = last.idx;
 			} else {
 				L(CLD, k) = last.idx;
 			}
 		}
+
+		// continue one level deeper
+		top++;
 		top->idx = k;
 		top->lcp = LCP[k];
-		top++;
 	}
 
 	free( stack);

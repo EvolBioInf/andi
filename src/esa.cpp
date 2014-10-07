@@ -68,9 +68,10 @@ ssize_t char2code( const char c){
 
 /** @brief Fills the RMQ cache.
  *
- * When looking up LCP intervals of matches we constantly do the same RMQs on
- * the LCP array. Since a RMQ takes about 45 cycles we can speed up things by
- * caching the intervals for some prefix length (`CACHE_LENGTH`).
+ * Traversing the virtual suffix tree, created by SA, LCP and CLD is rather slow.
+ * Hence we create a cache, holding the LCP-interval for a prefix of a certain
+ * length ::CACHE_LENGTH. This function it the entrypoint for the cache filling
+ * routine.
  *
  * @param C - The ESA.
  * @returns 0 iff successful
@@ -93,11 +94,16 @@ int esa_init_cache( esa_t *C){
 	return 0;
 }
 
-/** @brief Fills the RMQ cache — one char at a time.
+/** @brief Fills the cache — one char at a time.
  *
- * Recursively traverse the virtual sufix tree created by the SA, LCP and RMQs,
- * using a depth first search. by doing this cache the current LCP interval and
- * improve the performance of getting the next value for the cache.
+ * This function is a depth first search on the virtual suffix array and fills
+ * the cache. Or rather it calls it self until some value to cache is calculated.
+ * This function is a recursive version of get_inteval but with more edge cases.
+ *
+ * @param C - The ESA.
+ * @param str - The current prefix.
+ * @param pos - The length of the prefix.
+ * @param in - The LCP-interval of prefix[0..pos-1].
  */
 void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
 	// we are not yet done, but the current strings do not exist in the subject.
@@ -106,6 +112,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 		return;
 	}
 
+	// we are past the caching length
 	if( pos >= CACHE_LENGTH){
 		esa_init_cache_fill(C,str,pos,in);
 		return;
@@ -113,6 +120,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 
 	lcp_inter_t ij;
 
+	// iterate over all nucleotides
 	for( int code = 0; code < 4; ++code){
 		str[pos] = code2char(code);
 		ij = *in;
@@ -124,9 +132,12 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 			continue;
 		}
 
+		// The LCP-interval is deeper than expected
 		if ( ij.l > (ssize_t)(pos + 1)){
 
+			// Check if it still fits into the cache
 			if( (size_t)ij.l < CACHE_LENGTH){
+
 				// fill with dummy value
 				esa_init_cache_fill(C, str, pos+1, in);
 
@@ -139,6 +150,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 				continue;
 			}
 
+			// If the lcp-interval exceeds the cache depth, stop here and fill
 			esa_init_cache_fill(C, str, pos+1, in);
 			continue;
 		}

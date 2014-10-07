@@ -7,7 +7,7 @@
  * Others are modified for improved performance. For future reference here are
  * some of the implemented changes.
  *
- * The name `getLCPInterval` is kind of missleading. It and `getInterval` both
+ * The name `getLCPInterval` is kind of misleading. It and `getInterval` both
  * find LCP-intervals but once for prefixes and for characters respectively.
  * A critical speed component for both functions is the number of RMQs done.
  * To reduce the number of calls, the `m` property of `lcp_inter_t` is caching
@@ -19,7 +19,7 @@
  * optimized in 716958a01…. Since for every new match the very same RMQs are
  * called a cache is introduced: A "hash" over the first `CACHE_LENGTH` characters
  * of a new query determines an index into the cache. This cache is filled at
- * the initilization time of the ESA. Hence for multiple comparisions this is
+ * the initialization time of the ESA. Hence for multiple comparisons this is
  * done only once. The filling itself is done via a depth first search over the
  * imaginary suffix tree. This strategy saves about 20% of time when comparing
  * only two sequences and provides an additional speedup a factor of 3 to 4 when
@@ -34,7 +34,7 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 
 lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a);
 lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen);
-lcp_inter_t get_matchFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
 
 static int esa_init_SA( esa_t *c);
 static int esa_init_LCP( esa_t *c);
@@ -70,7 +70,7 @@ ssize_t char2code( const char c){
  *
  * Traversing the virtual suffix tree, created by SA, LCP and CLD is rather slow.
  * Hence we create a cache, holding the LCP-interval for a prefix of a certain
- * length ::CACHE_LENGTH. This function it the entrypoint for the cache filling
+ * length ::CACHE_LENGTH. This function it the entry point for the cache filling
  * routine.
  *
  * @param C - The ESA.
@@ -146,11 +146,15 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 				// fast forward
 				auto k = pos + 1;
 				for(;k < (size_t)ij.l; k++){
+					// In some very edgy edge cases the lcp-interval `ij` contains
+					// a `;` or another non-acgt character. Since we cannot cache
+					// those, break.
 					char c = C->S[C->SA[ij.i]+k];
 					if( char2code(c) < 0){
 						non_acgt = 1;
 						break;
 					}
+
 					str[k] = c;
 				}
 
@@ -168,10 +172,21 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 			continue;
 		}
 
+		// Continue one level deeper
 		esa_init_cache_dfs(C,str,pos+1,&ij);
 	}
 }
 
+/** @brief Fills the cache with a given value.
+ *
+ * Given a prefix and a value this function fills the cache beyond this point
+ * the value.
+ *
+ * @param C - The ESA.
+ * @param str - The current prefix.
+ * @param pos - The length of the prefix.
+ * @param in - The LCP-interval of prefix[0..pos-1].
+ */
 void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
 	if( pos < CACHE_LENGTH){
 		for( int code = 0; code < 4; ++code){
@@ -259,6 +274,12 @@ int esa_init_SA(esa_t *C){
 #define R(CLD, i) ((CLD)[(i)])
 #define L(CLD, i) ((CLD)[(i)-1])
 
+/** @brief Initializes the CLD array.
+ *
+ * See Ohlebusch.
+ *
+ * @param C - The ESA
+ */
 int esa_init_CLD( esa_t *C){
 	if( !C || !C->LCP){
 		return 1;
@@ -380,11 +401,17 @@ int esa_init_LCP( esa_t *C){
 	return 0;
 }
 
+/** @brief For the lcp-interval of string `w` compute the interval for `wa`
+ *
+ * @param C - The ESA.
+ * @param ij - The lcp-interval for `w`.
+ * @param a - The next character.
+ * @returns The lcp-interval one level deeper.
+ */
 lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 	int i = ij->i;
 	int j = ij->j;
 	int m;
-	
 
 	const saidx_t *SA = C->SA;
 	const saidx_t *LCP = C->LCP;
@@ -442,7 +469,8 @@ lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 	return ij;
 }
 
-lcp_inter_t get_matchFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
+/** @brief Get the match from a certain starting LCP interval. */
+lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
 
 	if( ij.i == -1 && ij.j == -1){
 		return ij;
@@ -521,7 +549,16 @@ lcp_inter_t get_matchFrom( const esa_t *C, const char *query, size_t qlen, saidx
 	return res;
 }
 
-
+/** @brief Get a match.
+ *
+ * Given an ESA (C) and a string q find the longest prefix of q that matches some
+ * where in C. Of that match the lcp-interval is returned.
+ *
+ * @param C - The ESA.
+ * @param query - The query string — duh.
+ * @param qlen - The length of the query.
+ * @returns the lcp interval of the match.
+ */
 lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen){
 	lcp_inter_t res = {0,0,0,0};
 
@@ -533,7 +570,7 @@ lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen){
 
 	lcp_inter_t ij = { 0, 0, C->len-1, 0};
 
-	return get_matchFrom(C, query, qlen, 0, ij);
+	return get_match_from(C, query, qlen, 0, ij);
 }
 
 
@@ -565,5 +602,5 @@ lcp_inter_t get_match_cached( const esa_t *C, const char *query, size_t qlen){
 		return get_match( C, query, qlen);
 	}
 
-	return get_matchFrom(C, query, qlen, ij.l, ij);
+	return get_match_from(C, query, qlen, ij.l, ij);
 }

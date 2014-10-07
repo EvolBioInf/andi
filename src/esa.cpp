@@ -141,12 +141,25 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 				// fill with dummy value
 				esa_init_cache_fill(C, str, pos+1, in);
 
+				char non_acgt = 0;
+
 				// fast forward
 				auto k = pos + 1;
 				for(;k < (size_t)ij.l; k++){
-					str[k] = C->S[C->SA[ij.i]+k];
+					char c = C->S[C->SA[ij.i]+k];
+					if( char2code(c) < 0){
+						non_acgt = 1;
+						break;
+					}
+					str[k] = c;
 				}
-				esa_init_cache_dfs(C, str, k, &ij);
+
+				if( non_acgt) {
+					esa_init_cache_fill(C, str, k, &ij);
+				} else {
+					esa_init_cache_dfs(C, str, k, &ij);
+				}
+
 				continue;
 			}
 
@@ -166,7 +179,7 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 			esa_init_cache_fill( C, str, pos + 1, in);
 		}
 	} else {
-		size_t code = 0;
+		ssize_t code = 0;
 		for( size_t i = 0; i < CACHE_LENGTH; ++i ){
 			code <<= 2;
 			code |= char2code(str[i]);

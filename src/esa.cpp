@@ -174,7 +174,6 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 int esa_init( esa_t *C, seq_t *S){
 	C->S = NULL;
 	C->SA = NULL;
-	C->ISA = NULL;
 	C->LCP = NULL;
 	C->len = 0;
 	C->CLD = NULL;
@@ -204,7 +203,6 @@ int esa_init( esa_t *C, seq_t *S){
 /** @brief Free the private data of an ESA. */
 void esa_free( esa_t *C){
 	free( C->SA);
-	free( C->ISA);
 	free( C->LCP);
 	free( C->rmq_cache);
 	free( C->CLD);

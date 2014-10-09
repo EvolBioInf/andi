@@ -244,10 +244,7 @@ void version(void){
 		" Fast and accurate estimation of evolutionary distances between genomes. In preparation.\n"
 		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algoritms. Sequence Analysis, "
 		"Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.\n"
-		"3) RMQ: Fischer, J. and Heun, V. (2007). A new succinct representation of "
-		"RMQ-information and improvements in the enhanced suffix array. "
-		"Chen, B. Paterson, M., and Zhang, G. (Eds): ESCAPE 2007, LCNS 4614, pp. 459-470.\n"
-		"4) SA construction: Mori, Y. (2005). Short description of improved two-stage suffix "
+		"3) SA construction: Mori, Y. (2005). Short description of improved two-stage suffix "
 		"sorting alorithm. http://homepage3.nifty.com/wpage/software/itssort.txt\n"
 	};
 	printf("%s", str);

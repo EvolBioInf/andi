@@ -249,63 +249,8 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-double *distMatrix( seq_t* sequences, size_t n, data_t *M){
-	double *D = (double*) malloc( n * n * sizeof(double));
-
-	if( !D){
-		FAIL("Could not allocate enough memory for the comparison matrix. Try using --join or --low-memory.\n");
-	}
-
-	size_t i;
-
-	#pragma omp parallel for num_threads( THREADS)
-	for(i=0;i<n;i++){
-		esa_t E;
-
-		if( esa_init( &E, &(sequences[i])) != 0){
-			continue;
-		}
-
-		// now compare every other sequence to i
-		size_t j;
-		for(j=0; j<n; j++){
-			if( j == i) {
-				D(i,j) = 0.0;
-				if( M) M(i,j).coverage = 0.0;
-				continue;
-			}
-
-			// TODO: Provide a nicer progress indicator.
-			if( FLAGS & F_EXTRA_VERBOSE ){
-				#pragma omp critical
-				{
-					fprintf( stderr, "comparing %lu and %lu\n", i, j);
-				}
-			}
-
-			size_t ql = sequences[j].len;
-
-			data_t datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
-
-			if( !(FLAGS & F_RAW)){
-				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
-			}
-			// fix negative zero
-			if( datum.distance <= 0.0 ){
-				datum.distance = 0.0;
-			}
-
-			D(i,j) = datum.distance;
-			if( M){
-				M(i,j) = datum;
-			}
-		}
-
-		esa_free(&E);
-	}
-
-	return D;
-}
+#define FAST
+#include "dist_hack.h"
 
 /**
  * @brief Computes the distance matrix.
@@ -316,67 +261,8 @@ double *distMatrix( seq_t* sequences, size_t n, data_t *M){
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-double *distMatrixLM( seq_t* sequences, size_t n, data_t *M){
-	double *D = (double*) malloc( n * n * sizeof(double));
-
-	if( !D){
-		FAIL("Could not allocate enough memory for the comparison matrix. Try using --join.");
-	}
-
-	size_t i;
-
-	for(i=0;i<n;i++){
-		esa_t E;
-
-#ifdef _OPENMP
-		omp_set_num_threads(THREADS);
-#endif
-
-		if( esa_init( &E, &(sequences[i])) != 0){
-			continue;
-		}
-
-		// now compare every other sequence to i
-		size_t j;
-		#pragma omp parallel for num_threads( THREADS)
-		for(j=0; j<n; j++){
-			if( j == i) {
-				D(i,j) = 0.0;
-				if( M) M(i,j).coverage = 0.0;
-				continue;
-			}
-
-			// TODO: Provide a nicer progress indicator.
-			if( FLAGS & F_EXTRA_VERBOSE ){
-				#pragma omp critical
-				{
-					fprintf( stderr, "comparing %lu and %lu\n", i, j);
-				}
-			}
-
-			size_t ql = sequences[j].len;
-
-			data_t datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
-
-			if( !(FLAGS & F_RAW)){
-				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
-			}
-			// fix negative zero
-			if( datum.distance <= 0.0 ){
-				datum.distance = 0.0;
-			}
-
-			D(i,j) = datum.distance;
-			if( M){
-				M(i,j) = datum;
-			}
-		}
-
-		esa_free(&E);
-	}
-
-	return D;
-}
+#undef FAST
+#include "dist_hack.h"
 
 /**
  * @brief Calculates and prints the distance matrix

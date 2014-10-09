@@ -18,11 +18,12 @@ typedef struct data_s {
  * This is a neat hack for dealing with matrices.
  */
 #define D( X, Y) (D[ (X)*n + (Y) ])
+#define M( X, Y) (M[ (X)*n + (Y) ])
 
 void readFile( FILE *in, dsa_t *dsa);
 void joinedRead( FILE *in, dsa_t *dsa, char *name);
 
-void printDistMatrix( data_t *D, seq_t *sequences, size_t n);
+void printDistMatrix( double *D, seq_t *sequences, size_t n);
 void printCovMatrix( data_t *D, size_t n);
 
 /** @brief Exit early on a critical error.

@@ -249,8 +249,8 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-data_t *distMatrix( seq_t* sequences, size_t n){
-	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
+double *distMatrix( seq_t* sequences, size_t n, data_t *M){
+	double *D = (double*) malloc( n * n * sizeof(double));
 
 	if( !D){
 		FAIL("Could not allocate enough memory for the comparison matrix. Try using --join or --low-memory.\n");
@@ -270,8 +270,8 @@ data_t *distMatrix( seq_t* sequences, size_t n){
 		size_t j;
 		for(j=0; j<n; j++){
 			if( j == i) {
-				D(i,j).distance = 0.0;
-				D(i,j).coverage = 0.0;
+				D(i,j) = 0.0;
+				if( M) M(i,j).coverage = 0.0;
 				continue;
 			}
 
@@ -294,7 +294,11 @@ data_t *distMatrix( seq_t* sequences, size_t n){
 			if( datum.distance <= 0.0 ){
 				datum.distance = 0.0;
 			}
-			D(i,j) = datum;
+
+			D(i,j) = datum.distance;
+			if( M){
+				M(i,j) = datum;
+			}
 		}
 
 		esa_free(&E);
@@ -312,8 +316,8 @@ data_t *distMatrix( seq_t* sequences, size_t n){
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-data_t *distMatrixLM( seq_t* sequences, size_t n){
-	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
+double *distMatrixLM( seq_t* sequences, size_t n, data_t *M){
+	double *D = (double*) malloc( n * n * sizeof(double));
 
 	if( !D){
 		FAIL("Could not allocate enough memory for the comparison matrix. Try using --join.");
@@ -337,8 +341,8 @@ data_t *distMatrixLM( seq_t* sequences, size_t n){
 		#pragma omp parallel for num_threads( THREADS)
 		for(j=0; j<n; j++){
 			if( j == i) {
-				D(i,j).distance = 0.0;
-				D(i,j).coverage = 0.0;
+				D(i,j) = 0.0;
+				if( M) M(i,j).coverage = 0.0;
 				continue;
 			}
 
@@ -361,7 +365,11 @@ data_t *distMatrixLM( seq_t* sequences, size_t n){
 			if( datum.distance <= 0.0 ){
 				datum.distance = 0.0;
 			}
-			D(i,j) = datum;
+
+			D(i,j) = datum.distance;
+			if( M){
+				M(i,j) = datum;
+			}
 		}
 
 		esa_free(&E);
@@ -396,19 +404,30 @@ void calcDistMatrix( seq_t* sequences, int n){
 		};
 		fprintf( stderr, "%s", str);
 	}
+
+	data_t *M = NULL;
 	
+	if( FLAGS & F_VERBOSE){
+		M = (data_t*) malloc(n*n*sizeof(data_t));
+		if( !M){
+			WARN("Could't allocate enough memory for verbose mode; Continuing without.%s","");
+			FLAGS &= ~F_VERBOSE;
+		}
+	}
+
 	// compute the distances
-	data_t *D = FLAGS & F_LOW_MEMORY ? distMatrixLM( sequences, n) : distMatrix( sequences, n);
+	double *D = FLAGS & F_LOW_MEMORY ? distMatrixLM( sequences, n, M) : distMatrix( sequences, n, M);
 	
 	// print the results
 	printDistMatrix( D, sequences, n);
 
 	// print additional information.
 	if( FLAGS & F_VERBOSE){
-		printCovMatrix( D, n);
+		printCovMatrix( M, n);
 	}
 	
 	free(D);
+	free(M);
 }
 
 

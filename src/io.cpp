@@ -84,14 +84,14 @@ void readFile( FILE *in, dsa_t *dsa){
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
  */
-void printDistMatrix( data_t *D, seq_t *sequences, size_t n){
+void printDistMatrix( double *D, seq_t *sequences, size_t n){
 
 	int use_scientific = 0;
 	size_t i,j;
 
 	for( i=0; i<n && !use_scientific; i++){
 		for( j=0; j<n; j++){
-			if( D(i,j).distance > 0 && D(i,j).distance < 0.001 ){
+			if( D(i,j) > 0 && D(i,j) < 0.001 ){
 				use_scientific = 1;
 				break;
 			}
@@ -104,7 +104,7 @@ void printDistMatrix( data_t *D, seq_t *sequences, size_t n){
 		printf("%-9.9s", sequences[i].name);
 		
 		for( j=0;j<n;j++){
-			double avg = (D(i,j).distance + D(j,i).distance)/2;
+			double avg = (D(i,j) + D(j,i))/2;
 			if( use_scientific){
 				printf(" %1.4e", avg);
 			} else {

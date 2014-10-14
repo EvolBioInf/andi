@@ -39,7 +39,7 @@ static int esa_init_SA( esa_t *c);
 static int esa_init_LCP( esa_t *c);
 
 /** @brief The prefix length up to which RMQs are cached. */
-const size_t CACHE_LENGTH = 8;
+const size_t CACHE_LENGTH = 10;
 
 /** @brief Map a code to the character. */
 char code2char( ssize_t code){

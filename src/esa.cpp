@@ -416,7 +416,6 @@ int esa_init_LCP( esa_t *C){
 lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 	int i = ij->i;
 	int j = ij->j;
-	int m;
 
 	const saidx_t *SA = C->SA;
 	const saidx_t *LCP = C->LCP;
@@ -433,23 +432,16 @@ lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 		return ij;
 	}
 
-	if( LCP[i] <= LCP[j+1]){
-		m = L(CLD, j+1);
-	} else {
-		m = R(CLD, i);
-	}
-
+	int m = ij->m;
 	ssize_t k = ij->i;
-	int l = LCP[m];
-
+	int l = ij->l;
 
 	do {
 		if( S[ SA[k] + l] == a ){
 			ij->i = k;
 			ij->j = m-1;
-			ij->m = LCP[ij->i] <= LCP[ij->j+1] ? L(CLD, m) : R(CLD,k) ;
+			ij->m = LCP[k] <= LCP[m] ? L(CLD, m) : R(CLD,k) ;
 			ij->l = LCP[ij->m];
-			//ij->l = LCP[C->rmq_lcp->query(k+1, m-1)]; //LCP[]
 			return ij;
 		}
 		k = m;
@@ -489,7 +481,7 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 		size_t k = ij.l;
 		const char *S = (const char *)C->S;
 
-		for(k = 0 ; k< qlen && S[p+k]; k++ ){
+		for(/*k = 0*/ ; k< qlen && S[p+k]; k++ ){
 			if( S[p+k] != query[k]){
 				ij.l = k;
 				return ij;
@@ -574,6 +566,9 @@ lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen){
 	}
 
 	lcp_inter_t ij = { 0, 0, C->len-1, 0};
+
+	ij.m = L(C->CLD, C->len);
+	ij.l = C->LCP[ij.m];
 
 	return get_match_from(C, query, qlen, 0, ij);
 }

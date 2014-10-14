@@ -66,6 +66,9 @@ ssize_t char2code( const char c){
 	return result;
 }
 
+#define R(CLD, i) ((CLD)[(i)])
+#define L(CLD, i) ((CLD)[(i)-1])
+
 /** @brief Fills the RMQ cache.
  *
  * Traversing the virtual suffix tree, created by SA, LCP and CLD is rather slow.
@@ -87,8 +90,11 @@ int esa_init_cache( esa_t *C){
 
 	char str[CACHE_LENGTH+1];
 	str[CACHE_LENGTH] = '\0';
+
 	lcp_inter_t ij = { 0, 0, C->len-1, 0};
-	//ij.m = C->rmq_lcp->query(1,C->len-1);
+	ij.m = L(C->CLD, C->len);
+	ij.l = C->LCP[ij.m];
+
 	esa_init_cache_dfs( C, str, 0, &ij);
 
 	return 0;
@@ -270,9 +276,6 @@ int esa_init_SA(esa_t *C){
 	
 	return result;
 }
-
-#define R(CLD, i) ((CLD)[(i)])
-#define L(CLD, i) ((CLD)[(i)-1])
 
 /** @brief Initializes the CLD (child) array.
  *

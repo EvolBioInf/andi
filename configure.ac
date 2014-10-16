@@ -28,7 +28,7 @@ AC_OPENMP
 
 PKG_CHECK_MODULES([GLIB], [glib-2.0])
 
-AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h stdint.h inttypes.h])
 
 AC_C_INLINE
 AC_TYPE_SIZE_T

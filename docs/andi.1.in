@@ -8,11 +8,14 @@ andi \- estimates evolutionary distance
 .TP
 \fBandi\fR estimates the evolutionary distance between closely related genomes. For this \fBandi\fR reads the input sequences from \fIFASTA\fR files and computes the pairwise anchor distance. The idea behind this is explained in a paper by Haubold et al. (see below).
 .SH OUTPUT
-The output is a symmetrical distance matrix with each entry representing divergence with a value beween 0 and 1. A distance of zero means that two sequences are identical whereas other values are estimates for the nucleotide mutation rate. For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were to short (<200bp) or too diverce (K>0.5) for our method to work properly.
+The output is a symmetrical distance matrix with each entry representing divergence with a value beween 0 and 1. A distance of zero means that two sequences are identical whereas other values are estimates for the nucleotide mutation rate. For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were too short (<200bp) or too diverce (K>0.5) for our method to work properly.
 .SH OPTIONS
 .TP
 \fB\-j\fR, \fB\-\-join\fR
 Use this mode if each of your \fIFASTA\fR files represents one assembly with numerous contigs. \fBandi\fR will then treat all of the contained sequences as a single genome. In this mode at least one file must be provided via command line arguments. For the output the filename is used to identify each sequence.
+.TP
+\fB\-m\fR, \fB\-\-low-memory\fR
+In multithreaded mode, \fBandi\fR requires memory linear to the amount of threads. The low memory mode changes this to a constant demand independent from the used number of threads. Unfortunately this comes at a significant runtime cost.
 .TP
 \fB\-p\fR <FLOAT>
 Significance of an anchor pair; default: 0.05
@@ -29,10 +32,10 @@ The number of threads to be used; default: 1
 Multithreading is only available if \fBandi\fR was compiled with OpenMP support.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
-display this help and exit
+Prints the synopsis and an explanation of available options.
 .TP
 \fB\-\-version\fR
-output version information and acknowledgements
+Outputs version information and acknowledgements
 .SH COPYRIGHT
 Copyright \(co 2014 Fabian Klötzl
 License GPLv3+: GNU GPL version 3 or later.
@@ -53,6 +56,3 @@ The full license text is available at <http://gnu.org/licenses/gpl.html>.
 .SS Reporting Bugs
 Please report bugs to <kloetzl@evolbio.mpg.de> or at <https://github.com/EvolBioInf/andi>.
 .SS
-Known Bugs
-There is a slight memory leak in the RMQ lib used. But it is relatively small (some KB) compared to the overall memory consumption (a few GB).
-

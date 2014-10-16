@@ -1,5 +1,5 @@
 AC_INIT([andi], [0.7-beta])
-AM_INIT_AUTOMAKE([-Wall foreign subdir-objects])
+AM_INIT_AUTOMAKE([-Wall foreign ])
 
 AC_PROG_CXX
 AC_PROG_MAKE_SET

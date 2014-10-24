@@ -5,7 +5,7 @@
  * read files etc.
  * 
  * @brief The main file
- * @author Fabian Kloetzl
+ * @author Fabian Klötzl
  
  * @section License
  
@@ -26,35 +26,19 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <unistd.h>
 #include <getopt.h>
 #include "global.h"
 #include "process.h"
+#include "io.h"
 
 #include "sequence.h"
 
 /* Global variables */
 int FLAGS = 0;
 int THREADS = 1;
-double RANDOM_ANCHOR_PROP = 0.6;
-
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-#include <kseq.h>
-
-// was: KSEQ_INIT(FILE*, read)
-
-KSEQ_INIT(int, read)
-
-#ifdef __cplusplus
-}
-#endif
+double RANDOM_ANCHOR_PROP = 0.05;
 
 void usage(void);
-void readFile( FILE *in, dyn_seq_arr *dsa);
-void joinedRead( FILE *in, dyn_seq_arr *dsa);
 void version(void);
 
 /**
@@ -74,6 +58,7 @@ int main( int argc, char *argv[]){
 		{"raw", no_argument, NULL, 'r'},
 		{"verbose", no_argument, NULL, 'v'},
 		{"join", no_argument, NULL, 'j'},
+		{"low-memory", no_argument, NULL, 'm'},
 		{0,0,0,0}
 	};
 	
@@ -82,11 +67,11 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "jvhrt:p:s", long_options, &option_index);
+		c = getopt_long( argc, argv, "jvhrt:p:m", long_options, &option_index);
 		
 		if( c == -1){
 			break;
-		} 
+		}
 	
 		switch (c){
 			case 0:
@@ -101,14 +86,34 @@ int main( int argc, char *argv[]){
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
 				break;
 			case 'p':
-				RANDOM_ANCHOR_PROP = atof( optarg);
+				{
+					double prop = atof( optarg);
+					if( prop < 0.0 || prop > 1.0 ){
+						WARN(
+							"Warning: A propability should be a value between 0 and 1; "
+							"Ignoring -p %f argument.", prop
+						);
+						break;
+					}
+					RANDOM_ANCHOR_PROP = prop;
+				}
+				break;
+			case 'm':
+				FLAGS |= F_LOW_MEMORY;
 				break;
 			case 'j':
 				FLAGS |= F_JOIN;
 				break;
 #ifdef _OPENMP
 			case 't':
-				THREADS = atoi( optarg);
+				{
+					int threads = atoi( optarg);
+					if( threads < 1 ){
+						WARN("The number of threads should be positive; Ignoring -t %d argument.", threads);
+						break;
+					}
+					THREADS = threads;
+				}
 				break;
 #endif
 			case '?': /* intentional fallthrough */
@@ -122,31 +127,43 @@ int main( int argc, char *argv[]){
 		version();
 	}
 	
-	dyn_seq_arr dsa = { NULL, 0, 0 };
-	ensure_dyn_seq_arr( &dsa);
-	
+	dsa_t *dsa = dsa_new();
 	FILE *in = NULL;
 	
 	if( FLAGS & F_JOIN ){
 		// atleast one file name must be given
 		if( optind == argc ){
-			fprintf( stderr, "Error: in join mode at least one filename needs to be supplied\n");
-			exit(EXIT_FAILURE);
+			FAIL("In join mode at least one filename needs to be supplied.");
 		}
 		
 		// only one file
 		if( optind + 1 == argc ){
 			in = stdin;
-			joinedRead( in, &dsa);
+			joinedRead( in, dsa, strdup("stdin"));
 		}
 		
 		// parse all files
 		for( i=optind; i< argc; i++){
 			in = fopen( argv[i], "r");
 			if( !in) continue;
+			
+			/* In join mode we try to be clever about the sequence name. Given the file
+			 * path we extract just the file name. ie. path/file.ext -> file
+			 * This obviously fails on Windows.
+			 */
+			char *filename = argv[i];
+			char *left = strrchr( filename, '/');
+			left = (left == NULL) ? filename : left + 1;
+			
+			char *dot = strchrnul( left, '.');
+			
+			filename = strndup( left, dot-left );
 
-			joinedRead( in, &dsa);
+			if( filename){
+				joinedRead( in, dsa, filename);
+			}
 
+			free(filename);
 			fclose(in);
 		}
 		
@@ -154,7 +171,7 @@ int main( int argc, char *argv[]){
 		// if no files are supplied, read from stdin
 		if( optind == argc){
 			in = stdin;
-			readFile( in, &dsa );
+			readFile( in, dsa );
 		}
 	
 		// parse all files
@@ -162,104 +179,29 @@ int main( int argc, char *argv[]){
 			in = fopen( argv[i], "r");
 			if( !in) continue;
 
-			readFile( in, &dsa);
+			readFile( in, dsa);
 
 			fclose(in);
 		}
 	}
 	
+	size_t n = dsa_size( dsa);
+	
 	if( FLAGS & F_VERBOSE){
-		fprintf( stderr, "Comparing %lu sequences\n", dsa.n);
+		fprintf( stderr, "Comparing %lu sequences\n", n);
 		fflush( stderr);
 	}
 	
-	seq_t *sequences = dsa.seqs;
+	seq_t *sequences = dsa_data( dsa);
 	// compute distance matrix
-	if( dsa.n >= 2){
-		calcDistMatrix(sequences, dsa.n);
+	if( n >= 2){
+		calcDistMatrix(sequences, n);
 	} else {
-		fprintf( stderr, "I am truly sorry, but with less than two sequences there is nothing to compare.\n");
+		WARN("I am truly sorry, but with less than two sequences (%lu given) there is nothing to compare.", n);
 	}
 
-	for( i=0; i< (int)dsa.n; i++){
-		freeSeq( &sequences[i]);
-	}
-	free( sequences);
+	dsa_free( dsa);
 	return 0;
-}
-
-/**
- * "I didn't learn joined up handwriting for nothing, you know."
- * ~ Gilderoy Lockhart
- */
-void joinedRead( FILE *in, dyn_seq_arr *dsa){
-	if( ensure_dyn_seq_arr( dsa) == NULL ){
-		return;
-	}
-	
-	dyn_seq_arr single = { NULL, 0, 0};
-	readFile( in, &single);
-	
-	if( single.n == 0 ){
-		return;
-	}
-	
-	size_t i = 0, n = dsa->n;
-	dsa->seqs[n].name = strdup( single.seqs[0].name);
-	dsa->seqs[n].S = (char *) calloc(1,1);
-	dsa->seqs[n].RS = NULL;
-	
-	char *ptr;
-	int check;
-	
-	for(; i< single.n; i++){
-		check = asprintf( &ptr, "%s!%s", dsa->seqs[n].S, single.seqs[i].S);
-		if( check == -1 ){
-			freeSeq( &single.seqs[i]);
-		} else {
-			free( dsa->seqs[n].S);
-			dsa->seqs[n].S = ptr;
-			freeSeq( &single.seqs[i]);
-		}
-		
-	}
-	
-	free( single.seqs);
-	dsa->n++;
-}
-
-
-/**
- * This function reads sequences from a file.
- * @param in - The file pointer to read from.
- * @param nextSequence A pointer to the next free beginning of a sequence.
- */
-void readFile( FILE *in, dyn_seq_arr *dsa){
-	int l;
-	
-	kseq_t *seq = kseq_init(fileno(in));
-	
-	while( ( l = kseq_read(seq)) >= 0){
-		if( ensure_dyn_seq_arr( dsa) == NULL ){
-			continue;
-		}
-
-		dsa->seqs[dsa->n].S = strdup( seq->seq.s);
-		if( dsa->seqs[dsa->n].S == NULL ){
-			continue;
-		}
-		
-		dsa->seqs[dsa->n].name = strdup( seq->name.s);
-		if( dsa->seqs[dsa->n].name == NULL ){
-			free( dsa->seqs[dsa->n].S);
-			continue;
-		}
-
-		dsa->seqs[dsa->n].RS = NULL;
-		dsa->n++;
-	}
-	
-	kseq_destroy(seq);
 }
 
 /**
@@ -268,17 +210,18 @@ void readFile( FILE *in, dyn_seq_arr *dsa){
 void usage(void){
 	const char str[]= {
 		"Usage: andi [-jrv] [-p FLOAT] FILES...\n"
-		"\tFILES... can be any sequence of fasta files. If no files are supplied, stdin is used instead.\n"
+		"\tFILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
-		"  -j, --join      Treat all sequences from one file as a single genome\n"
-		"  -p <FLOAT>      Propability for a random anchor; default: 0.95\n"
-		"  -r, --raw       Calculates raw distances; default: Jukes-Cantor corrected\n"
-		"  -v, --verbose   Prints additional information\n"
+		"  -j, --join        Treat all sequences from one file as a single genome\n"
+		"  -m, --low-memory  Use less memory at the cost of speed\n"
+		"  -p <FLOAT>        Significance of an anchor pair; default: 0.05\n"
+		"  -r, --raw         Calculates raw distances; default: Jukes-Cantor corrected\n"
+		"  -v, --verbose     Prints additional information\n"
 #ifdef _OPENMP
-		"  -t <INT>        The number of threads to be used; default: 1\n"
+		"  -t <INT>          The number of threads to be used; default: 1\n"
 #endif
-		"  -h, --help      display this help and exit\n"
-		"      --version   output version information and acknowledgements\n"
+		"  -h, --help        Display this help and exit\n"
+		"      --version     Output version information and acknowledgements\n"
 	};
 
 	printf("%s", str);
@@ -292,12 +235,12 @@ void usage(void){
 void version(void){
 	const char str[]= {
 		"andi " VERSION  "\n"
-		"Copyright (C) 2014 Fabian Kloetzl\n"
+		"Copyright (C) 2014 Fabian Klötzl\n"
 		"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 		"This is free software: you are free to change and redistribute it.\n"
 		"There is NO WARRANTY, to the extent permitted by law.\n\n"
 		"Acknowledgements:\n"
-		"1) Andi: Haubold, B. Kl\"otzl, F. and Pfaffelhuber, P. (2014)."
+		"1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014)."
 		" Fast and accurate estimation of evolutionary distances between genomes. In preparation.\n"
 		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algoritms. Sequence Analysis, "
 		"Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.\n"

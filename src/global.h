@@ -38,7 +38,8 @@ enum {
 	F_VERBOSE = 2,
 	F_EXTRA_VERBOSE = 4,
 	F_NON_ACGT = 8,
-	F_JOIN = 16
+	F_JOIN = 16,
+	F_LOW_MEMORY = 32
 };
 
 #endif

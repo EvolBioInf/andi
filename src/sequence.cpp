@@ -7,46 +7,72 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <vector>
 #include "sequence.h"
 #include "global.h"
 
 void normalize( seq_t *S);
 
+using namespace std;
+
+/**
+ * @brief Convert an array of multiple sequences into a single sequence.
+ * 
+ * This function joins all sequences containd in an array into one
+ * long sequence. The sequences are seperated by a `!` character. The
+ * caller has to free the initial array.
+ *
+ * @returns A new sequence represention the union of the array.
+ */
+seq_t dsa_join( dsa_t *dsa){
+	seq_t joined = { NULL, NULL, 0, 0, NULL, 0.0};
+	if( dsa->size() == 0){
+		return joined;
+	}
+	
+	// Compute the total length
+	size_t total = 0;
+	for( auto it = dsa->begin(); it != dsa->end(); ++it){
+		total += it->len + 1;
+	}
+	
+	// A single malloc for the whole new sequence
+	char *ptr = (char *) malloc( total);
+	if( ptr == NULL ){
+		return joined;
+	}
+	char *next = ptr;
+	
+	// Copy all old sequences and add a `!` in between
+	auto it = dsa->begin();
+	memcpy( next, it->S, it->len);
+	next += it->len;
+	for( it++; it != dsa->end(); it++){
+		*next++ = '!';
+		memcpy( next, it->S, it->len);
+		next += it->len;
+	}
+	
+	// Dont forget the null byte.
+	*next = '\0';
+	
+	joined.S = ptr;
+	joined.len = total -1; // subtract the null byte
+	
+	return joined;
+}
+
 /**
  * @brief Frees the memory of a given sequence.
  * @param S - The sequence to free.
  */
-void freeSeq( seq_t *S){
+void seq_free( seq_t *S){
 	free( S->S);
 	free( S->RS);
 	free( S->name);
 	S->S = S->RS = S->name = NULL;
-}
-
-/**
- * @brief Ensures that a dynamic array can hols at least one more element.
- *
- * @param dsa - The dynamic array of sequences.
- */
-void *ensure_dyn_seq_arr( dyn_seq_arr *dsa){
-	seq_t *block;
-	
-	if( dsa->size == 0 ){
-		dsa->size = 2;
-		return dsa->seqs = (seq_t*) malloc( sizeof(seq_t) * dsa->size );
-	}
-	
-	if( dsa->n >= dsa->size ){
-		dsa->size *= 2;
-		block = (seq_t*) realloc( dsa->seqs, sizeof(seq_t) * dsa->size );
-		if( !block ){
-			return NULL;
-		} else {
-			dsa->seqs = block;
-		}
-	}
-	
-	return dsa->seqs;
+	S->len = S->RSlen = 0;
+	S->gc = 0.0;
 }
 
 /**
@@ -104,9 +130,13 @@ char *catcomp( char *s , size_t len){
 	
 	char *rev = revcomp( s, len);
 	
-	rev = (char*) realloc( rev, 2 * len + 2);
-	if( !rev) return NULL;
+	char *temp = (char*) realloc( rev, 2 * len + 2);
+	if( !temp){
+		free(rev);
+		return NULL;
+	}
 	
+	rev = temp;
 	rev[len] = '#';
 	
 	memcpy( rev+len+1, s, len+1);
@@ -117,7 +147,7 @@ char *catcomp( char *s , size_t len){
 /**
  * @brief Calculates the GC content of a sequence.
  *
- * This function computes the relatice amount of G and C in the total sequence.
+ * This function computes the relative amount of G and C in the total sequence.
  */
 double calc_gc( seq_t *S){
 	size_t GC = 0;
@@ -132,18 +162,50 @@ double calc_gc( seq_t *S){
 	return S->gc = (double)GC/S->len;
 }
 
-/**
- * @brief Initializes a sequence.
- *
- * This function prepares a sequence for further processing.
- */
-void init_seq( seq_t *S){
+/** @brief Prepares a sequences to be used as the subject in a comparision. */
+void seq_subject_init( seq_t *S){
 	normalize( S);
+	
+	// recalculate the length because `normalize` might have stripped some characters.
 	S->len = strlen(S->S);
 	calc_gc(S);
 	
 	S->RS = catcomp(S->S, S->len);
 	S->RSlen = 2 * S->len + 1;
+}
+
+/** @brief Frees some memory unused for when a sequence is only used as query. */
+void seq_subject_free( seq_t *S){
+	free(S->RS);
+	S->RS = NULL;
+	S->RSlen = 0;
+	S->gc = 0.0;
+}
+
+/** @brief Initializes a sequences
+ *
+ * @returns 0 iff successful.
+ */
+int seq_init( seq_t *S, const char *seq, const char *name){
+	if( !S || !seq || !name) {
+		return 1;
+	}
+	S->S = S->RS = S->name = NULL;
+	S->len = S->RSlen = 0;
+	S->gc = 0.0;
+
+	S->S = strdup(seq);
+	if( !S->S) return 1;
+
+	S->name = strdup(name);
+	if( !S->name){
+		seq_free(S);
+		return 1;
+	}
+
+	S->len = strlen((const char*) seq);
+
+	return 0;
 }
 
 /**

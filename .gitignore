@@ -1,12 +1,16 @@
+# Binary and automatically generated files
 *.o
 *.a
 andi
+andi_*
 randomSeed.dat
 seedms
 testRMQ
 docs/html/*
 docs/latex/*
+docs/andi.1
 *.in
+!docs/andi.1.in
 *.log
 **/Makefile
 configure.scan
@@ -17,14 +21,37 @@ aclocal.m4
 **/.deps/
 autom4te.cache/
 README
+ChangeLog
 missing
+compile
+configure
+ar-lib
+src/.dirstamp
 
+# test files
 *.fasta
 cachegrind*
 callgrind*
+test.trs
+test-driver
+test_esa
+test_seq
+*.trs
+
+# Coverage
+*.gcda
+*.gcno
+*.gcov
+
+
+andi.sublime-*
 
 # for legacy git only:
 libs/RMQ/.deps/
 libs/RMQ/Makefile
 Makefile
+
+# Profiling:
+gmon.out
+profile
 

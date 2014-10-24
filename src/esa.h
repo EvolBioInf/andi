@@ -8,7 +8,40 @@
 
 #include <divsufsort.h>
 #include <RMQ.hpp>
+#include <RMQ_n_1_improved.hpp>
 
+#include "sequence.h"
+
+/**
+ * @brief Represents intervals on natural numbers.
+ *
+ * This struct can be used to represent intervals on natural numbers. The
+ * member `i` should coincide with the lower bound whereas `j` is the upper
+ * bound. Both bounds are inclusive. So if `i == j` the interval contains
+ * exactly one element, namely `i`. To represent an empty interval please
+ * use `i == j == -1`. Other variants, such as `i == j == -2` can be used
+ * to indicate an error.
+ * Variables of this type are often called `ij`.
+ */
+typedef struct {
+	/** @brief lower bound */
+	saidx_t i;
+	/** @brief upper bound */
+	saidx_t j;
+} interval;
+
+/**
+ * @brief Represents LCP-Intervals.
+ *
+ * This struct is used to represent LCP-intervals. In addition to the rules
+ * in ::interval regarding `i` and `j`, l should always be non-negative. It
+ * can be used to hold the length of the common prefix in an interval.
+ */
+typedef struct {
+	saidx_t l, i, j;
+	/** The new middle. */
+	saidx_t m;
+} lcp_inter_t;
 
 /** 
  * @brief The ESA type.
@@ -32,45 +65,19 @@ typedef struct {
 	saidx_t len;
 	/** A reference to an object for range minimum queries. */
 	RMQ *rmq_lcp;
+	lcp_inter_t *rmq_cache;
 } esa_t;
 
-/**
- * @brief Represents intervals on natural numbers.
- *
- * This struct can be used to represent intervals on natural numbers. The
- * member `i` should coincide with the lower bound whereas `j` is the upper
- * bound. Both bounds are inclusive. So if `i == j` the interval contains
- * exactly one element, namely `i`. To represent an empty interval please
- * use `i == j == -1`. Other variants, such as `i == j == -2` can be used
- * to indicate an error.
- * Variables of this type are often called `ij`.
- */
-typedef struct {
-	saidx_t i;
-	saidx_t j;
-} interval;
-
-/**
- * @brief Represents LCP-Intervals.
- *
- * This struct is used to represent LCP-intervals. In addition to the rules
- * in ::interval regarding `i` and `j`, l should always be non-negative. It
- * can be used to hold the length of the commen prefix in an interval.
- */
-typedef struct {
-	saidx_t l, i, j;
-	/** The new middle. */
-	saidx_t m;
-} lcp_inter_t;
-
-
-int compute_SA( esa_t *c);
-int compute_LCP( esa_t *c);
-int compute_LCP_PHI( esa_t *c);
-saidx_t longestMatch( const esa_t *C, const char *query, int qlen);
-interval  exactMatch( const esa_t *C, const char *query);
-
+lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen);
 lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen);
+int esa_init( esa_t *C, seq_t *S);
+void esa_free( esa_t *C);
+
+#ifdef DEBUG
+
+char code2char( ssize_t code);
+
+#endif //DEBUG
 
 #endif
 

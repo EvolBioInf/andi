@@ -1,14 +1,18 @@
-SUBDIRS = . libs/RMQ libs/libdivsufsort-2.0.1 src docs
+SUBDIRS = . libs/RMQ libs/libdivsufsort-2.0.1 src docs test
 
-noinst_DATA = README
+TESTS = test/test_esa test/test_seq
+
+$(TESTS): all
+#	$(MAKE) -C test
+
+dist_noinst_DATA = README ChangeLog README.md
 
 README: README.md
 	cp README.md README
 	
-README.md:
-	cp README README.md
+ChangeLog: configure.ac
+	which git && git log --stat --date=short --abbrev-commit | grep --invert-match '^ [[:alnum:].]' | git stripspace > ChangeLog
 
 .PHONY: code-docs
 code-docs:
-	doxygen
-
+	cd docs && $(MAKE) code-docs;

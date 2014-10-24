@@ -2,21 +2,235 @@
  * @file
  * @brief ESA functions
  *
- * This file contains various functions that operate on
- * an enhanced suffix array.
+ * This file contains various functions that operate on an enhanced suffix
+ * array. Some of these are taken straight from the book of Ohlebusch (2013);
+ * Others are modified for improved performance. For future reference here are
+ * some of the implemented changes.
+ *
+ * The name `getLCPInterval` is kind of missleading. It and `getInterval` both
+ * find LCP-intervals but once for prefixes and for characters respectively.
+ * A critical speed component for both functions is the number of RMQs done.
+ * To reduce the number of calls, the `m` property of `lcp_inter_t` is caching
+ * the correct value. This reduces the number of RMQ calls per input base
+ * to an average of 1.7. This is less than the expected number of calls for
+ * a binary search over for elements (log_2 (4) = 2).
+ *
+ * An additional RMQ-saving strategy was introduced in commit 7ba1d363189… and
+ * optimized in 716958a01…. Since for every new match the very same RMQs are
+ * called a cache is introduced: A "hash" over the first `CACHE_LENGTH` characters
+ * of a new query determines an index into the cache. This cache is filled at
+ * the initilization time of the ESA. Hence for multiple comparisions this is
+ * done only once. The filling itself is done via a depth first search over the
+ * imaginary suffix tree. This strategy saves about 20% of time when comparing
+ * only two sequences and provides an additional speedup a factor of 3 to 4 when
+ * applied to big data sets.
  */
 #include <stdlib.h>
 #include <RMQ.hpp>
 #include <string.h>
 #include "esa.h"
-#include "stdio.h"
+
+lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a);
+static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+
+static int esa_init_SA( esa_t *c);
+static int esa_init_LCP( esa_t *c);
+
+/** @brief The prefix length up to which RMQs are cached. */
+const size_t CACHE_LENGTH = 10;
+
+/** @brief Map a code to the character. */
+char code2char( ssize_t code){
+	switch( code & 0x3){
+		case 0: return 'A';
+		case 1: return 'C';
+		case 2: return 'G';
+		case 3: return 'T';
+	}
+	return '\0';
+}
+
+/** @brief Map a character to a two bit code. */
+ssize_t char2code( const char c){
+	ssize_t result = -1;
+	switch( c){
+		case 'A' : result = 0; break;
+		case 'C' : result = 1; break;
+		case 'G' : result = 2; break;
+		case 'T' : result = 3; break;
+	}
+	return result;
+}
+
+/** @brief Fills the RMQ cache.
+ *
+ * When looking up LCP intervals of matches we constantly do the same RMQs on
+ * the LCP array. Since a RMQ takes about 45 cycles we can speed up things by
+ * caching the intervals for some prefix length (`CACHE_LENGTH`).
+ *
+ * @param C - The ESA.
+ * @returns 0 iff successful
+ */
+int esa_init_cache( esa_t *C){
+	lcp_inter_t* rmq_cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
+
+	if( !rmq_cache){
+		return 1;
+	}
+
+	C->rmq_cache = rmq_cache;
+
+	char str[CACHE_LENGTH+1];
+	str[CACHE_LENGTH] = '\0';
+	lcp_inter_t ij = { 0, 0, C->len-1, 0};
+	ij.m = C->rmq_lcp->query(1,C->len-1);
+	esa_init_cache_dfs( C, str, 0, &ij);
+
+	return 0;
+}
+
+/** @brief Fills the RMQ cache — one char at a time.
+ *
+ * Recursively traverse the virtual sufix tree created by the SA, LCP and RMQs,
+ * using a depth first search. by doing this cache the current LCP interval and
+ * improve the performance of getting the next value for the cache.
+ */
+void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
+	// we are not yet done, but the current strings do not exist in the subject.
+	if( pos < CACHE_LENGTH && in->i == -1 && in->j == -1){
+		esa_init_cache_fill(C,str,pos,in);
+		return;
+	}
+
+	if( pos >= CACHE_LENGTH){
+		esa_init_cache_fill(C,str,pos,in);
+		return;
+	}
+
+	lcp_inter_t ij;
+
+	for( int code = 0; code < 4; ++code){
+		str[pos] = code2char(code);
+		ij = *in;
+		getInterval(C, &ij, str[pos]);
+
+		// fail early
+		if( ij.i == -1 && ij.j == -1){
+			esa_init_cache_fill(C, str, pos + 1, &ij);
+			continue;
+		}
+
+		if ( ij.l > (ssize_t)(pos + 1)){
+
+			if( (size_t)ij.l < CACHE_LENGTH){
+				// fill with dummy value
+				esa_init_cache_fill(C, str, pos+1, in);
+
+				char non_acgt = 0;
+
+				// fast forward
+				auto k = pos + 1;
+				for(;k < (size_t)ij.l; k++){
+					char c = C->S[C->SA[ij.i]+k];
+					if( char2code(c) < 0){
+						non_acgt = 1;
+						break;
+					}
+					str[k] = c;
+				}
+
+				if( non_acgt) {
+					esa_init_cache_fill(C, str, k, &ij);
+				} else {
+					esa_init_cache_dfs(C, str, k, &ij);
+				}
+
+				continue;
+			}
+
+			esa_init_cache_fill(C, str, pos+1, in);
+			continue;
+		}
+
+		esa_init_cache_dfs(C,str,pos+1,&ij);
+	}
+}
+
+void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
+	if( pos < CACHE_LENGTH){
+		for( int code = 0; code < 4; ++code){
+			str[pos] = code2char(code);
+			esa_init_cache_fill( C, str, pos + 1, in);
+		}
+	} else {
+		ssize_t code = 0;
+		for( size_t i = 0; i < CACHE_LENGTH; ++i ){
+			code <<= 2;
+			code |= char2code(str[i]);
+		}
+
+		C->rmq_cache[code] = *in;
+
+		if( in->i != in->j){
+			C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
+		}
+	}
+}
+
+/** @brief Initializes an ESA.
+ *
+ * This function initializes an ESA with respect to the provided sequence.
+ * @param C - The ESA to initialize.
+ * @param S - The sequence
+ * @returns 0 iff successful
+ */
+int esa_init( esa_t *C, seq_t *S){
+	C->S = NULL;
+	C->SA = NULL;
+	C->ISA = NULL;
+	C->LCP = NULL;
+	C->len = 0;
+	C->rmq_lcp = NULL;
+
+	int result;
+
+	C->S = (const char*) S->RS;
+	C->len = S->RSlen;
+
+	if( C->S == NULL ) return 1;
+
+	result = esa_init_SA(C);
+	if(result) return result;
+
+	result = esa_init_LCP(C);
+	if(result) return result;
+
+	// TODO: check return value/ catch errors
+	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
+
+	result = esa_init_cache(C);
+	if(result) return result;
+
+	return 0;
+}
+
+/** @brief Free the private data of an ESA. */
+void esa_free( esa_t *C){
+	delete C->rmq_lcp;
+	free( C->SA);
+	free( C->ISA);
+	free( C->LCP);
+	free( C->rmq_cache);
+}
 
 /**
  * Computes the SA given a string S. To do so it uses libdivsufsort.
  * @param C The enhanced suffix array to use. Reads C->S, fills C->SA.
  * @returns 0 iff successful
  */
-int compute_SA(esa_t *C){
+int esa_init_SA(esa_t *C){
 	// assert c.S
 	if( !C || C->S == NULL){
 		return 1;
@@ -35,68 +249,13 @@ int compute_SA(esa_t *C){
 }
 
 /**
- * Computes the LCP and ISA given SA and S. This function uses the method from Kasai et al.
- * @param C The enhanced suffix array.
- * @returns 0 iff sucessful
- * @deprecated Use compute_LCP_PHI( esa_t *C) instead.
- */
-int compute_LCP( esa_t *C){
-	const char *S = C->S;
-	saidx_t *SA  = C->SA;
-	saidx_t len  = C->len;
-	
-	if( !C || S == NULL || SA == NULL || len == 0){
-		return 1;
-	}
-	
-	if( C->ISA == NULL){
-		C->ISA = (saidx_t*) malloc( len*sizeof(saidx_t));
-		if( C->ISA == NULL ){
-			return 2;
-		}
-	}
-	if( C->LCP == NULL){
-		C->LCP = (saidx_t*) malloc((len+1)*sizeof(saidx_t));
-		if( C->LCP == NULL ){
-			return 3;
-		}
-	}
-	
-	saidx_t *ISA = C->ISA;
-	saidx_t *LCP = C->LCP;
-
-	LCP[0] = -1;
-	LCP[len] = -1;
-	
-	int i,j,k,l;
-	for( i=0; i< len; i++){
-		ISA[SA[i]] = i;
-	}
-	
-	l=0;
-	for( i=0; i< len; i++){
-		j = ISA[i];
-		if( j> 0) {
-			k = SA[j-1];
-			while( S[k+l] == S[i+l] ){
-				l++;
-			}
-			LCP[j] = l;
-			l--;
-			if (l<0) l = 0;
-		}
-	}
-	return 0;
-}
-
-/**
  * This function implements an alternative way of computing an LCP
  * array for a given suffix array. It uses an intermediate `phi`
  * array, hence the name. It's a bit faster than the other version.
  * @param C The enhanced suffix array to compute the LCP from.
  * @returns 0 iff successful
  */
-int compute_LCP_PHI( esa_t *C){
+int esa_init_LCP( esa_t *C){
 	const char *S = C->S;
 	saidx_t *SA  = C->SA;
 	saidx_t len  = C->len;
@@ -122,7 +281,11 @@ int compute_LCP_PHI( esa_t *C){
 	// Allocate temporary arrays
 	saidx_t *PHI = (saidx_t *) malloc( len * sizeof(saidx_t));
 	saidx_t *PLCP = (saidx_t *) malloc( len * sizeof(saidx_t));
-	if( !PHI || !PLCP) return 2;
+	if( !PHI || !PLCP){
+		free(PHI);
+		free(PLCP);
+		return 2;
+	}
 	
 	PHI[SA[0]] = -1;
 	ssize_t i, k;
@@ -157,7 +320,6 @@ int compute_LCP_PHI( esa_t *C){
 	return 0;
 }
 
-
 /**
  * Given the LCP interval for a string `w` this function calculates the 
  * LCP interval for `wa` where `a` is a single character.
@@ -189,11 +351,7 @@ static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 
 	saidx_t l, m;
 	
-	//m = rmq_lcp->query(i+1, j); // m is now any minimum in (i..j]
-	m = ij->m;
-	//l = LCP[m];
-	//fprintf(stderr, "l: %d ij->l: %d\n", l, ij->l);
-	//ij->l = l;
+	m = ij->m; // m is now any minimum in (i..j]
 	l = ij->l;
 	
 	/* We now use an abstract binary search. Think of `i` as the
@@ -247,14 +405,86 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 		return res;
 	}
 	
-	saidx_t k = 0, l, i, j, p;
 	lcp_inter_t ij = { 0, 0, C->len-1, 0};
+	
+	// TODO: This should be cached in a future version
+	ij.m = C->rmq_lcp->query(1,C->len-1);
+
+	return getLCPIntervalFrom(C, query, qlen, 0, ij);
+}
+
+/** @brief Compute the LCP interval of a query. For a certain prefix length of the
+ * query its LCP interval is retrieved from a cache. Hence this is faster than the
+ * naive `getInterval`.
+ *
+ * @param C - The enhanced suffix array for the subject.
+ * @param query - The query sequence.
+ * @param qlen - The length of the query. Should correspond to `strlen(query)`.
+ * @returns The LCP interval for the longest prefix.
+ */
+lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen){
+	if( qlen <= CACHE_LENGTH) return getLCPInterval( C, query, qlen);
+
+	ssize_t offset = 0;
+	for( size_t i = 0; i< CACHE_LENGTH; i++){
+		offset <<= 2;
+		offset |= char2code(query[i]);
+	}
+
+	if( offset < 0){
+		return getLCPInterval( C, query, qlen);
+	}
+
+	lcp_inter_t ij = C->rmq_cache[offset];
+
+	if( ij.j == -1 && ij.j == -1){
+		return getLCPInterval( C, query, qlen);
+	}
+
+	return getLCPIntervalFrom(C, query, qlen, ij.l, ij);
+}
+
+/** @brief Compute the LCP interval of a query from a certain starting interval.
+ *
+ * @param C - The enhanced suffix array for the subject.
+ * @param query - The query sequence.
+ * @param qlen - The length of the query. Should correspond to `strlen(query)`.
+ * @param k - The starting index into the query.
+ * @param ij - The LCP interval for the string `query[0..k]`.
+ * @returns The LCP interval for the longest prefix.
+ */
+lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
+
+	if( ij.i == -1 && ij.j == -1){
+		return ij;
+	}
+
+	// fail early on singleton intervals.
+	if( ij.i == ij.j){
+
+		// try to extend the match. See line 499 below.
+		saidx_t p = C->SA[ij.i];
+		size_t k = ij.l;
+		const char *S = (const char *)C->S;
+
+		for(k = 0 ; k< qlen && S[p+k]; k++ ){
+			if( S[p+k] != query[k]){
+				ij.l = k;
+				return ij;
+			}
+		}
+
+		ij.l = k;
+		return ij;
+	}
+
+	saidx_t l, i, j, p;
 	saidx_t m = qlen;
+
+	lcp_inter_t res = ij;
 	
 	saidx_t *SA = C->SA;
 	const char *S = (const char *)C->S;
-	
-	ij.m = C->rmq_lcp->query(1,C->len-1);
 	
 	// Loop over the query until a mismatch is found
 	do {
@@ -289,6 +519,7 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 		}
 		
 		// TODO: Verify if this is the best solution
+		// You shall not pass the null byte.
 		if( k < l && (!S[p+k] || !query[k])){
 			res.l = k;
 			return res;
@@ -299,31 +530,5 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 
 	res.l = m;
 	return res;
-}
-
-/**
- * This function computes the length of the longest prefix of `query`
- * which can be found in the subject sequence.
- * @param C The enhanced suffix array for the subject.
- * @param query The query sequence.
- * @param qlen The length of the query. Should correspond to `strlen(query)`.
- * @returns The length of the prefix.
- */
-saidx_t longestMatch( const esa_t *C, const char *query, int qlen){
-	return getLCPInterval( C, query, qlen).l;
-}
-
-/**
- * exactMatch Ohlebusch Alg 5.2
- * @returns LCP Interval for query or [-1..-1] if not found
- */
-interval exactMatch( const esa_t *C, const char *query){
-	interval ij;
-	lcp_inter_t kl = getLCPInterval( C, query, strlen(query));
-	
-	ij.i = kl.i;
-	ij.j = kl.j;
-	
-	return ij;
 }
 

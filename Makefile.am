@@ -1,9 +1,17 @@
-SUBDIRS = . libs/RMQ libs/libdivsufsort-2.0.1 src docs test
+SUBDIRS = . libs/RMQ libs/libdivsufsort-2.0.1 src docs
+
+# Conditionaly build the tests
+if BUILD_TESTS
+
+SUBDIRS+= test
 
 TESTS = test/test_esa test/test_seq
 
 $(TESTS): all
 #	$(MAKE) -C test
+
+endif # BUILD_TESTS
+
 
 dist_noinst_DATA = README ChangeLog README.md
 

@@ -1,9 +1,17 @@
-SUBDIRS = . libs/RMQ src docs test
+SUBDIRS = . libs/RMQ src docs
+
+# Conditionaly build the tests
+if BUILD_TESTS
+
+SUBDIRS+= test
 
 TESTS = test/test_esa test/test_seq
 
 $(TESTS): all
 #	$(MAKE) -C test
+
+endif # BUILD_TESTS
+
 
 dist_noinst_DATA = README ChangeLog README.md
 

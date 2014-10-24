@@ -52,7 +52,7 @@ typedef struct {
 typedef struct {
 	/** The base string from which the ESA was generated. */
 	const char *S;
-	/** The actual suffix array with indices into S. */
+	/** The actual suffix array with indexes into S. */
 	saidx_t *SA;
 	/** The inverse suffix array holds at position `i` the index at
 		which the suffix `S[i]` is positioned in the SA. */

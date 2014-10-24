@@ -7,7 +7,7 @@
  * Others are modified for improved performance. For future reference here are
  * some of the implemented changes.
  *
- * The name `getLCPInterval` is kind of missleading. It and `getInterval` both
+ * The name `getLCPInterval` is kind of misleading. It and `getInterval` both
  * find LCP-intervals but once for prefixes and for characters respectively.
  * A critical speed component for both functions is the number of RMQs done.
  * To reduce the number of calls, the `m` property of `lcp_inter_t` is caching
@@ -19,7 +19,7 @@
  * optimized in 716958a01…. Since for every new match the very same RMQs are
  * called a cache is introduced: A "hash" over the first `CACHE_LENGTH` characters
  * of a new query determines an index into the cache. This cache is filled at
- * the initilization time of the ESA. Hence for multiple comparisions this is
+ * the initialization time of the ESA. Hence for multiple comparisons this is
  * done only once. The filling itself is done via a depth first search over the
  * imaginary suffix tree. This strategy saves about 20% of time when comparing
  * only two sequences and provides an additional speedup a factor of 3 to 4 when
@@ -93,7 +93,7 @@ int esa_init_cache( esa_t *C){
 
 /** @brief Fills the RMQ cache — one char at a time.
  *
- * Recursively traverse the virtual sufix tree created by the SA, LCP and RMQs,
+ * Recursively traverse the virtual suffix tree created by the SA, LCP and RMQs,
  * using a depth first search. by doing this cache the current LCP interval and
  * improve the performance of getting the next value for the cache.
  */

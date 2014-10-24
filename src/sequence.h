@@ -39,7 +39,7 @@ void seq_subject_free( seq_t *S);
 int seq_init( seq_t *S, const char *seq, const char *name);
 
 /**
- * A dynamicly growing structure for sequences.
+ * A dynamically growing structure for sequences.
  */
 typedef std::vector<seq_t> dsa_t;
 

@@ -8,7 +8,7 @@ andi \- estimates evolutionary distance
 .TP
 \fBandi\fR estimates the evolutionary distance between closely related genomes. For this \fBandi\fR reads the input sequences from \fIFASTA\fR files and computes the pairwise anchor distance. The idea behind this is explained in a paper by Haubold et al. (see below).
 .SH OUTPUT
-The output is a symmetrical distance matrix with each entry representing divergence with a value beween 0 and 1. A distance of zero means that two sequences are identical whereas other values are estimates for the nucleotide mutation rate. For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were too short (<200bp) or too diverce (K>0.5) for our method to work properly.
+The output is a symmetrical distance matrix with each entry representing divergence with a value between 0 and 1. A distance of zero means that two sequences are identical whereas other values are estimates for the nucleotide mutation rate. For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were too short (<200bp) or too diverse (K>0.5) for our method to work properly.
 .SH OPTIONS
 .TP
 \fB\-j\fR, \fB\-\-join\fR
@@ -35,7 +35,7 @@ Multithreading is only available if \fBandi\fR was compiled with OpenMP support.
 Prints the synopsis and an explanation of available options.
 .TP
 \fB\-\-version\fR
-Outputs version information and acknowledgements
+Outputs version information and acknowledgments
 .SH COPYRIGHT
 Copyright \(co 2014 Fabian Klötzl
 License GPLv3+: GNU GPL version 3 or later.
@@ -44,14 +44,14 @@ This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
 The full license text is available at <http://gnu.org/licenses/gpl.html>.
 .PP
-.SH ACKNOWLEDGEMENTS
+.SH ACKNOWLEDGMENTS
 1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014). Fast and accurate estimation of evolutionary distances between genomes. In preparation.
 .br
-2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algoritms. Sequence Analysis, Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.
+2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algorithms. Sequence Analysis, Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.
 .br
 3) RMQ: Fischer, J. and Heun, V. (2007). A new succinct representation of RMQ\-information and improvements in the enhanced suffix array. Chen, B. Paterson, M., and Zhang, G. (Eds): ESCAPE 2007, LCNS 4614, pp. 459\-470.
 .br
-4) SA construction: Mori, Y. (2005). Short description of improved two\-stage suffix sorting alorithm. http://homepage3.nifty.com/wpage/software/itssort.txt
+4) SA construction: Mori, Y. (2005). Short description of improved two\-stage suffix sorting algorithm. http://homepage3.nifty.com/wpage/software/itssort.txt
 .SH BUGS
 .SS Reporting Bugs
 Please report bugs to <kloetzl@evolbio.mpg.de> or at <https://github.com/EvolBioInf/andi>.

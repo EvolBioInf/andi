@@ -24,12 +24,12 @@
  * Variables of this type are often called `ij`.
  */
 typedef struct {
+	/** @brief The common prefix length */
+	saidx_t l;
 	/** @brief lower bound */
 	saidx_t i;
 	/** @brief upper bound */
 	saidx_t j;
-	/** @brief The common prefix length */
-	saidx_t l;
 	/** The new middle. */
 	saidx_t m;
 } lcp_inter_t;

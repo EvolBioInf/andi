@@ -7,7 +7,7 @@
  * Others are modified for improved performance. For future reference here are
  * some of the implemented changes.
  *
- * The name `getLCPInterval` is kind of misleading. It and `getInterval` both
+ * The name `get_match` is kind of misleading. It and `get_interval` both
  * find LCP-intervals but once for prefixes and for characters respectively.
  * A critical speed component for both functions is the number of RMQs done.
  * To reduce the number of calls, the `m` property of `lcp_inter_t` is caching
@@ -30,8 +30,8 @@
 #include <string.h>
 #include "esa.h"
 
-lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
-static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a);
+lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a);
 static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 
@@ -114,7 +114,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 	for( int code = 0; code < 4; ++code){
 		str[pos] = code2char(code);
 		ij = *in;
-		getInterval(C, &ij, str[pos]);
+		get_interval(C, &ij, str[pos]);
 
 		// fail early
 		if( ij.i == -1 && ij.j == -1){
@@ -329,7 +329,7 @@ int esa_init_LCP( esa_t *C){
  * @param a The next character in the query sequence.
  * @returns A reference to the new LCP interval.
  */
-static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
+static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 	saidx_t i = ij->i;
 	saidx_t j = ij->j;
 
@@ -390,13 +390,13 @@ static lcp_inter_t *getInterval( const esa_t *C, lcp_inter_t *ij, char a){
 
 /**
  * This function computes the LCPInterval for the longest prefix of `query` which
- * can be found in the subject sequence. Compare Ohlebusch getInterval Alg 5.2 p.119
+ * can be found in the subject sequence. Compare Ohlebusch get_interval Alg 5.2 p.119
  * @param C The enhanced suffix array for the subject.
  * @param query The query sequence.
  * @param qlen The length of the query. Should correspond to `strlen(query)`.
  * @returns The LCP interval for the longest prefix.
  */
-lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
+lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen){
 	lcp_inter_t res = {0,0,0,0};
 
 	// sanity checks
@@ -410,20 +410,20 @@ lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen){
 	// TODO: This should be cached in a future version
 	ij.m = C->rmq_lcp->query(1,C->len-1);
 
-	return getLCPIntervalFrom(C, query, qlen, 0, ij);
+	return get_match_from(C, query, qlen, 0, ij);
 }
 
 /** @brief Compute the LCP interval of a query. For a certain prefix length of the
  * query its LCP interval is retrieved from a cache. Hence this is faster than the
- * naive `getInterval`.
+ * naive `get_interval`.
  *
  * @param C - The enhanced suffix array for the subject.
  * @param query - The query sequence.
  * @param qlen - The length of the query. Should correspond to `strlen(query)`.
  * @returns The LCP interval for the longest prefix.
  */
-lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen){
-	if( qlen <= CACHE_LENGTH) return getLCPInterval( C, query, qlen);
+lcp_inter_t get_match_cached( const esa_t *C, const char *query, size_t qlen){
+	if( qlen <= CACHE_LENGTH) return get_match( C, query, qlen);
 
 	ssize_t offset = 0;
 	for( size_t i = 0; i< CACHE_LENGTH; i++){
@@ -432,16 +432,16 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
 	}
 
 	if( offset < 0){
-		return getLCPInterval( C, query, qlen);
+		return get_match( C, query, qlen);
 	}
 
 	lcp_inter_t ij = C->rmq_cache[offset];
 
 	if( ij.j == -1 && ij.j == -1){
-		return getLCPInterval( C, query, qlen);
+		return get_match( C, query, qlen);
 	}
 
-	return getLCPIntervalFrom(C, query, qlen, ij.l, ij);
+	return get_match_from(C, query, qlen, ij.l, ij);
 }
 
 /** @brief Compute the LCP interval of a query from a certain starting interval.
@@ -453,7 +453,7 @@ lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen
  * @param ij - The LCP interval for the string `query[0..k]`.
  * @returns The LCP interval for the longest prefix.
  */
-lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
+lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
 
 	if( ij.i == -1 && ij.j == -1){
 		return ij;
@@ -488,7 +488,7 @@ lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, 
 	
 	// Loop over the query until a mismatch is found
 	do {
-		getInterval( C, &ij, query[k]);
+		get_interval( C, &ij, query[k]);
 		i = ij.i;
 		j = ij.j;
 		
@@ -504,7 +504,7 @@ lcp_inter_t getLCPIntervalFrom( const esa_t *C, const char *query, size_t qlen, 
 		l = m;
 		if( i < j){
 			/* Instead of making another RMQ we can use the LCP interval calculated
-			 * in getInterval */
+			 * in get_interval */
 			if( ij.l < l ){
 				l = ij.l;
 			}

@@ -150,18 +150,25 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	size_t this_length;
 	
 	size_t num_right_anchors = 0;
-	
+
+#ifdef DEBUG
+	size_t num_matches = 0;
+	size_t num_anchors = 0;
+	size_t num_anchors_in_rc = 0;
+#endif
+
 	size_t threshold = minAnchorLength( 1-sqrt(1-RANDOM_ANCHOR_PROP), gc, C->len);
-	if( FLAGS & F_EXTRA_VERBOSE){
-		fprintf(stderr, "threshold: %ld\n", threshold);
-	}
 
 	data_t retval = {0.0,0.0};
 
 	// Iterate over the complete query.
 	while( this_pos_Q < query_length){
 		inter = get_match_cached( C, query + this_pos_Q, query_length - this_pos_Q);
-		
+
+#ifdef DEBUG
+		num_matches++;
+#endif
+
 		if( inter.l <= 0) break;
 		this_length = inter.l;
 		
@@ -169,7 +176,14 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		{
 			// We have reached a new anchor.
 			this_pos_S = C->SA[ inter.i];
-			
+
+#ifdef DEBUG
+			num_anchors++;
+			if( this_pos_S < (size_t)(C->len / 2)){
+				num_anchors_in_rc++;
+			}
+#endif
+
 			// Check if this can be a right anchor to the last one.
 			if( this_pos_Q - last_pos_Q == this_pos_S - last_pos_S ){
 				num_right_anchors++;
@@ -202,6 +216,21 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		// Advance
 		this_pos_Q += this_length + 1;
 	}
+
+#ifdef DEBUG
+	if( FLAGS & F_EXTRA_VERBOSE ){
+		const char str[] = {
+			"- threshold: %ld\n"
+			"- matches: %lu\n"
+			"- anchors: %lu\n"
+			"- in reverse complement: %lu\n"
+			"- right anchors: %lu\n"
+			"\n"
+		};
+
+		fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors);
+	}
+#endif
 	
 	// Very special case: The sequences are identical
 	if( last_length >= query_length ){

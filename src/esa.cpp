@@ -462,12 +462,12 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 	// fail early on singleton intervals.
 	if( ij.i == ij.j){
 
-		// try to extend the match. See line 499 below.
+		// try to extend the match. See line 513 below.
 		saidx_t p = C->SA[ij.i];
 		size_t k = ij.l;
 		const char *S = (const char *)C->S;
 
-		for(k = 0 ; k< qlen && S[p+k]; k++ ){
+		for( ; k< qlen && S[p+k]; k++ ){
 			if( S[p+k] != query[k]){
 				ij.l = k;
 				return ij;

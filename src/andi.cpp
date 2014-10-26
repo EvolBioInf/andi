@@ -27,11 +27,15 @@
 #include <string.h>
 #include <assert.h>
 #include <getopt.h>
+#include <errno.h>
 #include "global.h"
 #include "process.h"
 #include "io.h"
-
 #include "sequence.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 /* Global variables */
 int FLAGS = 0;
@@ -87,14 +91,26 @@ int main( int argc, char *argv[]){
 				break;
 			case 'p':
 				{
-					double prop = atof( optarg);
+					errno = 0;
+					char *end;
+					double prop = strtod( optarg, &end);
+
+					if( errno || end == optarg || *end != '\0'){
+						WARN(
+							"Expected a floating point number for -p argument, but '%s' was given. "
+							"Skipping argument.", optarg
+						);
+						break;
+					}
+
 					if( prop < 0.0 || prop > 1.0 ){
 						WARN(
-							"Warning: A probability should be a value between 0 and 1; "
+							"A probability should be a value between 0 and 1; "
 							"Ignoring -p %f argument.", prop
 						);
 						break;
 					}
+
 					RANDOM_ANCHOR_PROP = prop;
 				}
 				break;
@@ -107,11 +123,26 @@ int main( int argc, char *argv[]){
 #ifdef _OPENMP
 			case 't':
 				{
-					int threads = atoi( optarg);
-					if( threads < 1 ){
-						WARN("The number of threads should be positive; Ignoring -t %d argument.", threads);
+					errno = 0;
+					char *end;
+					long unsigned int threads = strtoul( optarg, &end, 10);
+
+					if( errno || end == optarg || *end != '\0'){
+						WARN(
+							"Expected a number for -t argument, but '%s' was given. "
+							"Ignoring -t argument.", optarg
+						);
 						break;
 					}
+
+					if( threads > (long unsigned int) omp_get_num_procs() ){
+						WARN(
+							"The number of threads to be used, is greater then the number of available processors; "
+							"Ignoring -t %lu argument.", threads
+						);
+						break;
+					}
+
 					THREADS = threads;
 				}
 				break;

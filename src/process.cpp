@@ -189,7 +189,7 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 			
 				// Count the SNPs in between.
 				size_t i;
-				for( i= 0; i< this_pos_Q - last_pos_Q; i++){
+				for( i= last_length; i< this_pos_Q - last_pos_Q; i++){
 					if( C->S[ last_pos_S + i] != query[ last_pos_Q + i] ){
 						snps++;
 					}

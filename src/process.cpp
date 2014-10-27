@@ -169,8 +169,7 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		num_matches++;
 #endif
 
-		if( inter.l <= 0) break;
-		this_length = inter.l;
+		this_length = inter.l <= 0 ? 0 : inter.l;
 		
 		if( inter.i == inter.j && this_length >= threshold)
 		{

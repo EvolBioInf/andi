@@ -228,7 +228,10 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 			"\n"
 		};
 
-		fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors);
+		#pragma omp critical
+		{
+			fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors);
+		}
 	}
 #endif
 	

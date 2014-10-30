@@ -155,6 +155,7 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	size_t num_matches = 0;
 	size_t num_anchors = 0;
 	size_t num_anchors_in_rc = 0;
+	size_t length_anchors = 0;
 #endif
 
 	size_t threshold = minAnchorLength( 1-sqrt(1-RANDOM_ANCHOR_PROP), gc, C->len);
@@ -178,6 +179,7 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 
 #ifdef DEBUG
 			num_anchors++;
+			length_anchors += this_length;
 			if( this_pos_S < (size_t)(C->len / 2)){
 				num_anchors_in_rc++;
 			}
@@ -224,12 +226,13 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 			"- anchors: %lu\n"
 			"- in reverse complement: %lu\n"
 			"- right anchors: %lu\n"
+			"- avg length: %lf\n"
 			"\n"
 		};
 
 		#pragma omp critical
 		{
-			fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors);
+			fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors, (double)length_anchors/ num_anchors );
 		}
 	}
 #endif

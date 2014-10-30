@@ -4,5 +4,5 @@ compiler:
   - clang
 
 #before_install: sudo apt-get install 
-script: ./configure && make
+script: autoreconf -i && ./configure && make
 

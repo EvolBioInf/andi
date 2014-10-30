@@ -12,21 +12,6 @@ AC_LANG(C++)
 AC_CHECK_LIB(m, cos)
 AC_OPENMP
 
-# For suffix array computation we use libdivsufsort.
-# Fail if the library or its headers were not found.
-have_libdivsufsort=yes
-AC_CHECK_LIB(divsufsort, divsufsort, [], [have_libdivsufsort=no])
-
-if test "x${have_libdivsufsort}" = xyes; then
-	AC_CHECK_HEADERS([divsufsort.h],[],[have_libdivsufsort=no])
-fi
-
-if test "x${have_libdivsufsort}" = xno; then
-	AC_MSG_ERROR([
-	The libdivsufsort library and header files are required for compilation. Aborting.
-	])
-fi
-
 
 # The unit tests require GLIB2. So by default do not build the test.
 # If enabled, check for glib.

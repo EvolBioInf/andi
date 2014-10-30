@@ -3,6 +3,6 @@ compiler:
   - gcc
   - clang
 
-#before_install: sudo apt-get install 
-script: autoreconf -i && ./configure && make
+before_install: sudo apt-get install libglib2.0-dev
+script: autoreconf -i && ./configure --enable-uni-tests && make && make check
 

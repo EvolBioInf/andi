@@ -18,11 +18,11 @@ using namespace std;
 /**
  * @brief Convert an array of multiple sequences into a single sequence.
  * 
- * This function joins all sequences containd in an array into one
- * long sequence. The sequences are seperated by a `!` character. The
+ * This function joins all sequences contained in an array into one
+ * long sequence. The sequences are separated by a `!` character. The
  * caller has to free the initial array.
  *
- * @returns A new sequence represention the union of the array.
+ * @returns A new sequence representation the union of the array.
  */
 seq_t dsa_join( dsa_t *dsa){
 	seq_t joined = { NULL, NULL, 0, 0, NULL, 0.0};
@@ -53,7 +53,7 @@ seq_t dsa_join( dsa_t *dsa){
 		next += it->len;
 	}
 	
-	// Dont forget the null byte.
+	// Don't forget the null byte.
 	*next = '\0';
 	
 	joined.S = ptr;
@@ -162,7 +162,7 @@ double calc_gc( seq_t *S){
 	return S->gc = (double)GC/S->len;
 }
 
-/** @brief Prepares a sequences to be used as the subject in a comparision. */
+/** @brief Prepares a sequences to be used as the subject in a comparison. */
 void seq_subject_init( seq_t *S){
 	normalize( S);
 	

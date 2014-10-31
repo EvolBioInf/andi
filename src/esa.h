@@ -13,32 +13,23 @@
 #include "sequence.h"
 
 /**
- * @brief Represents intervals on natural numbers.
+ * @brief Represents LCP-Intervals.
  *
- * This struct can be used to represent intervals on natural numbers. The
- * member `i` should coincide with the lower bound whereas `j` is the upper
- * bound. Both bounds are inclusive. So if `i == j` the interval contains
- * exactly one element, namely `i`. To represent an empty interval please
- * use `i == j == -1`. Other variants, such as `i == j == -2` can be used
- * to indicate an error.
+ * This struct is used to represent LCP-intervals. The member `i` should
+ * coincide with the lower bound whereas `j` is the upper bound. Both bounds
+ * are inclusive. So if `i == j` the interval contains exactly one element,
+ * namely `i`. To represent an empty interval please use `i == j == -1`.
+ * Other variants, such as `i == j == -2` can be used to indicate an error.
+ * The common prefix length is denoted by l and should always be non-negative.
  * Variables of this type are often called `ij`.
  */
 typedef struct {
+	/** @brief The common prefix length */
+	saidx_t l;
 	/** @brief lower bound */
 	saidx_t i;
 	/** @brief upper bound */
 	saidx_t j;
-} interval;
-
-/**
- * @brief Represents LCP-Intervals.
- *
- * This struct is used to represent LCP-intervals. In addition to the rules
- * in ::interval regarding `i` and `j`, l should always be non-negative. It
- * can be used to hold the length of the common prefix in an interval.
- */
-typedef struct {
-	saidx_t l, i, j;
 	/** The new middle. */
 	saidx_t m;
 } lcp_inter_t;
@@ -52,7 +43,7 @@ typedef struct {
 typedef struct {
 	/** The base string from which the ESA was generated. */
 	const char *S;
-	/** The actual suffix array with indices into S. */
+	/** The actual suffix array with indexes into S. */
 	saidx_t *SA;
 	/** The inverse suffix array holds at position `i` the index at
 		which the suffix `S[i]` is positioned in the SA. */
@@ -68,8 +59,8 @@ typedef struct {
 	lcp_inter_t *rmq_cache;
 } esa_t;
 
-lcp_inter_t getCachedLCPInterval( const esa_t *C, const char *query, size_t qlen);
-lcp_inter_t getLCPInterval( const esa_t *C, const char *query, size_t qlen);
+lcp_inter_t get_match_cached( const esa_t *C, const char *query, size_t qlen);
+lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen);
 int esa_init( esa_t *C, seq_t *S);
 void esa_free( esa_t *C);
 

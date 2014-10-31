@@ -27,11 +27,15 @@
 #include <string.h>
 #include <assert.h>
 #include <getopt.h>
+#include <errno.h>
 #include "global.h"
 #include "process.h"
 #include "io.h"
-
 #include "sequence.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 /* Global variables */
 int FLAGS = 0;
@@ -87,14 +91,26 @@ int main( int argc, char *argv[]){
 				break;
 			case 'p':
 				{
-					double prop = atof( optarg);
+					errno = 0;
+					char *end;
+					double prop = strtod( optarg, &end);
+
+					if( errno || end == optarg || *end != '\0'){
+						WARN(
+							"Expected a floating point number for -p argument, but '%s' was given. "
+							"Skipping argument.", optarg
+						);
+						break;
+					}
+
 					if( prop < 0.0 || prop > 1.0 ){
 						WARN(
-							"Warning: A propability should be a value between 0 and 1; "
+							"A probability should be a value between 0 and 1; "
 							"Ignoring -p %f argument.", prop
 						);
 						break;
 					}
+
 					RANDOM_ANCHOR_PROP = prop;
 				}
 				break;
@@ -107,16 +123,31 @@ int main( int argc, char *argv[]){
 #ifdef _OPENMP
 			case 't':
 				{
-					int threads = atoi( optarg);
-					if( threads < 1 ){
-						WARN("The number of threads should be positive; Ignoring -t %d argument.", threads);
+					errno = 0;
+					char *end;
+					long unsigned int threads = strtoul( optarg, &end, 10);
+
+					if( errno || end == optarg || *end != '\0'){
+						WARN(
+							"Expected a number for -t argument, but '%s' was given. "
+							"Ignoring -t argument.", optarg
+						);
 						break;
 					}
+
+					if( threads > (long unsigned int) omp_get_num_procs() ){
+						WARN(
+							"The number of threads to be used, is greater then the number of available processors; "
+							"Ignoring -t %lu argument.", threads
+						);
+						break;
+					}
+
 					THREADS = threads;
 				}
 				break;
 #endif
-			case '?': /* intentional fallthrough */
+			case '?': /* intentional fall-through */
 			default:
 				usage();
 				break;
@@ -131,7 +162,7 @@ int main( int argc, char *argv[]){
 	FILE *in = NULL;
 	
 	if( FLAGS & F_JOIN ){
-		// atleast one file name must be given
+		// at least one file name must be given
 		if( optind == argc ){
 			FAIL("In join mode at least one filename needs to be supplied.");
 		}
@@ -221,7 +252,7 @@ void usage(void){
 		"  -t <INT>          The number of threads to be used; default: 1\n"
 #endif
 		"  -h, --help        Display this help and exit\n"
-		"      --version     Output version information and acknowledgements\n"
+		"      --version     Output version information and acknowledgments\n"
 	};
 
 	printf("%s", str);
@@ -239,16 +270,16 @@ void version(void){
 		"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 		"This is free software: you are free to change and redistribute it.\n"
 		"There is NO WARRANTY, to the extent permitted by law.\n\n"
-		"Acknowledgements:\n"
+		"Acknowledgments:\n"
 		"1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014)."
 		" Fast and accurate estimation of evolutionary distances between genomes. In preparation.\n"
-		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algoritms. Sequence Analysis, "
+		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algorithms. Sequence Analysis, "
 		"Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.\n"
 		"3) RMQ: Fischer, J. and Heun, V. (2007). A new succinct representation of "
 		"RMQ-information and improvements in the enhanced suffix array. "
 		"Chen, B. Paterson, M., and Zhang, G. (Eds): ESCAPE 2007, LCNS 4614, pp. 459-470.\n"
 		"4) SA construction: Mori, Y. (2005). Short description of improved two-stage suffix "
-		"sorting alorithm. http://homepage3.nifty.com/wpage/software/itssort.txt\n"
+		"sorting algorithm. http://homepage3.nifty.com/wpage/software/itssort.txt\n"
 	};
 	printf("%s", str);
 	exit(EXIT_SUCCESS);

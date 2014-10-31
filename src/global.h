@@ -22,7 +22,7 @@ extern int FLAGS;
 extern int THREADS;
 
 /**
- * The ::RANDOM_ANCHOR_PROP represents the propability with which a found
+ * The ::RANDOM_ANCHOR_PROP represents the probability with which a found
  * anchor is a random match and not homologous. Its value can be set using
  * the `-p` switch.
  */

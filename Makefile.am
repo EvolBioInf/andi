@@ -20,7 +20,7 @@ README: README.md
 	
 ChangeLog: configure.ac
 	echo "Missing Git" > ChangeLog;
-	if test -d $(srcdir)/.git: then
+	if test -d $(srcdir)/.git; then
 		which git && git log --stat --date=short --abbrev-commit | grep --invert-match '^ [[:alnum:].]' | git stripspace > ChangeLog
 	fi
 

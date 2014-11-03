@@ -3,7 +3,7 @@ Section: science
 Priority: optional
 Maintainer: Fabian Klötzl <kloetzl@evolbio.mpg.de>
 Build-Depends: debhelper (>= 9.0.0), autotools-dev, dh-autoreconf
-Standards-Version: 3.9.2
+Standards-Version: 3.9.5
 Homepage: https://github.com/EvolBioInf/andi
 #Vcs-Git: git://git.debian.org/collab-maint/andi.git
 #Vcs-Browser: http://git.debian.org/?p=collab-maint/andi.git;a=summary
@@ -12,3 +12,4 @@ Package: andi
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Estimate the evolutionary distance between closely related genomes
+ See above.

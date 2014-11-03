@@ -51,6 +51,8 @@ libs/RMQ/.deps/
 libs/RMQ/Makefile
 Makefile
 
+libs/libdivsufsort-2.0.1/libtool
+
 # Profiling:
 gmon.out
 profile

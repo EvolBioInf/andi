@@ -1,6 +1,6 @@
 Format: http://dep.debian.net/deps/dep5
 Upstream-Name: andi
-Source: https://github.com/kloetzl/andi
+Source: https://github.com/EvolBioInf/andi
 
 Files: *
 Copyright: 2014 Fabian Klötzl <kloetzl@evolbio.mpg.de>
@@ -18,7 +18,7 @@ Files: libs/*
 Copyright: 2009 Heng Li <lh3@sanger.ac.uk>
 License: MIT/X11 License
 
-Files: libs/RMQ/kseq*
+Files: libs/RMQ/*
 Copyright: 2007 Johannes Fischer <Johannes.Fischer@bio.ifi.lmu.de>
 License: GPL-2.0+
 

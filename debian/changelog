@@ -1,6 +1,6 @@
-andi (0.8-beta) unstable; urgency=low
+andi (0.7.1-0ubuntu1) trusty; urgency=low
 
   * Initial Release.
 
- -- Fabian Klötzl <kloetzl@evolbio.mpg.de>  Thu, 05 Jun 2014 12:07:55 +0200
+ -- Fabian Klötzl <kloetzl@evolbio.mpg.de>  Thu, 03 Nov 2014 10:37:55 +0100
  

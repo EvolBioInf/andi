@@ -19,7 +19,10 @@ README: README.md
 	cp README.md README
 	
 ChangeLog: configure.ac
-	which git && git log --stat --date=short --abbrev-commit | grep --invert-match '^ [[:alnum:].]' | git stripspace > ChangeLog
+	echo "Missing Git" > ChangeLog;
+	if test -d $(srcdir)/.git: then
+		which git && git log --stat --date=short --abbrev-commit | grep --invert-match '^ [[:alnum:].]' | git stripspace > ChangeLog
+	fi
 
 .PHONY: code-docs
 code-docs:

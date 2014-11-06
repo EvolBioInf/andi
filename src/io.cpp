@@ -102,8 +102,10 @@ void printDistMatrix( double *D, seq_t *sequences, size_t n){
 		}
 	}
 
-	WARN("Some distance computations failed and are reported as nan. %s",
-		"Please refer to the documentation for further details.");
+	if( failed){
+		WARN("Some distance computations failed and are reported as nan. %s",
+			"Please refer to the documentation for further details.");
+	}
 
 	printf("%lu\n", n);
 	for( i=0;i<n;i++){

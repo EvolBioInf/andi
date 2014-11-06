@@ -27,6 +27,13 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 		esa_t E;
 
 		if( esa_init( &E, &(sequences[i])) != 0){
+			WARN("Failed to create index for %s.", sequences[i].name);
+
+			for( size_t j=0; j< n; j++){
+				D(i,j) = (i==j) ? 0.0 : NAN;
+				if( M) M(i,j).coverage = 0.0;
+			}
+
 			continue;
 		}
 

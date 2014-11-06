@@ -4,6 +4,7 @@
  */
 #include <stdio.h>
 #include <unistd.h>
+#include <math.h>
 #include "io.h"
 
 #ifdef __cplusplus
@@ -87,16 +88,22 @@ void readFile( FILE *in, dsa_t *dsa){
 void printDistMatrix( double *D, seq_t *sequences, size_t n){
 
 	int use_scientific = 0;
+	int failed = 0;
 	size_t i,j;
 
-	for( i=0; i<n && !use_scientific; i++){
+	for( i=0; i<n && (!use_scientific || !failed); i++){
 		for( j=0; j<n; j++){
 			if( D(i,j) > 0 && D(i,j) < 0.001 ){
 				use_scientific = 1;
-				break;
+			}
+			if( isnan(D(i,j))){
+				failed = 1;
 			}
 		}
 	}
+
+	WARN("Some distance computations failed and are reported as nan. %s",
+		"Please refer to the documentation for further details.");
 
 	printf("%lu\n", n);
 	for( i=0;i<n;i++){

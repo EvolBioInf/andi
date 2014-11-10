@@ -1,7 +1,6 @@
 /**
  * @file
- * @brief This header contains function declaratins for io procedures. It also 
- * defines the WARN and FAIL macro.
+ * @brief This header contains function declarations for io procedures.
  */
 #ifndef _IO_H_
 #define _IO_H_

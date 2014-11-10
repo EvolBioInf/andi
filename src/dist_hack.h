@@ -13,10 +13,11 @@
 #endif
 
 double *NAME( seq_t* sequences, size_t n, data_t *M){
+	errno = 0;
 	double *D = (double*) malloc( n * n * sizeof(double));
 
 	if( !D){
-		FAIL("Could not allocate enough memory for the comparison matrix. Try using --join or --low-memory.\n");
+		err(1, "Could not allocate enough memory for the comparison matrix. Try using --join or --low-memory.");
 	}
 
 	size_t i;
@@ -27,7 +28,7 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 		esa_t E;
 
 		if( esa_init( &E, &(sequences[i])) != 0){
-			WARN("Failed to create index for %s.", sequences[i].name);
+			warnx("Failed to create index for %s.", sequences[i].name);
 
 			for( size_t j=0; j< n; j++){
 				D(i,j) = (i==j) ? 0.0 : NAN;

@@ -96,7 +96,7 @@ int main( int argc, char *argv[]){
 					double prop = strtod( optarg, &end);
 
 					if( errno || end == optarg || *end != '\0'){
-						WARN(
+						warnx(
 							"Expected a floating point number for -p argument, but '%s' was given. "
 							"Skipping argument.", optarg
 						);
@@ -104,7 +104,7 @@ int main( int argc, char *argv[]){
 					}
 
 					if( prop < 0.0 || prop > 1.0 ){
-						WARN(
+						warnx(
 							"A probability should be a value between 0 and 1; "
 							"Ignoring -p %f argument.", prop
 						);
@@ -128,7 +128,7 @@ int main( int argc, char *argv[]){
 					long unsigned int threads = strtoul( optarg, &end, 10);
 
 					if( errno || end == optarg || *end != '\0'){
-						WARN(
+						warnx(
 							"Expected a number for -t argument, but '%s' was given. "
 							"Ignoring -t argument.", optarg
 						);
@@ -136,7 +136,7 @@ int main( int argc, char *argv[]){
 					}
 
 					if( threads > (long unsigned int) omp_get_num_procs() ){
-						WARN(
+						warnx(
 							"The number of threads to be used, is greater then the number of available processors; "
 							"Ignoring -t %lu argument.", threads
 						);
@@ -164,7 +164,7 @@ int main( int argc, char *argv[]){
 	if( FLAGS & F_JOIN ){
 		// at least one file name must be given
 		if( optind == argc ){
-			FAIL("In join mode at least one filename needs to be supplied.");
+			errx(1, "In join mode at least one filename needs to be supplied.");
 		}
 		
 		// only one file
@@ -176,7 +176,10 @@ int main( int argc, char *argv[]){
 		// parse all files
 		for( i=optind; i< argc; i++){
 			in = fopen( argv[i], "r");
-			if( !in) continue;
+			if( !in) {
+				warn("%s", argv[i]);
+				continue;
+			}
 			
 			/* In join mode we try to be clever about the sequence name. Given the file
 			 * path we extract just the file name. ie. path/file.ext -> file
@@ -208,7 +211,10 @@ int main( int argc, char *argv[]){
 		// parse all files
 		for( i=optind; i< argc; i++){
 			in = fopen( argv[i], "r");
-			if( !in) continue;
+			if( !in) {
+				warn("%s", argv[i]);
+				continue;
+			};
 
 			readFile( in, dsa);
 
@@ -228,7 +234,7 @@ int main( int argc, char *argv[]){
 	if( n >= 2){
 		calcDistMatrix(sequences, n);
 	} else {
-		WARN("I am truly sorry, but with less than two sequences (%lu given) there is nothing to compare.", n);
+		warnx("I am truly sorry, but with less than two sequences (%lu given) there is nothing to compare.", n);
 	}
 
 	dsa_free( dsa);

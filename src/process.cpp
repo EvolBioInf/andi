@@ -311,7 +311,7 @@ void calcDistMatrix( seq_t* sequences, int n){
 	#pragma omp parallel for num_threads( THREADS)
 	for( i=0;i<n;i++){
 		if( sequences[i].S == NULL){
-			FAIL("Missing sequence.");
+			errx(1,"Missing sequence.");
 		}
 		
 		seq_subject_init( &sequences[i]);
@@ -319,19 +319,17 @@ void calcDistMatrix( seq_t* sequences, int n){
 	
 	// Warn about non ACGT residues.
 	if( FLAGS & F_NON_ACGT ){
-		const char str[] = {
-			"The input sequences contained characters other than acgtACGT. "
-			"These were automatically stripped to ensure correct results.\n"
-		};
-		fprintf( stderr, "%s", str);
+		warnx("The input sequences contained characters other than acgtACGT. "
+			"These were automatically stripped to ensure correct results.");
 	}
 
 	data_t *M = NULL;
 	
 	if( FLAGS & F_VERBOSE){
+		errno = 0;
 		M = (data_t*) malloc(n*n*sizeof(data_t));
 		if( !M){
-			WARN("Couldn't allocate enough memory for verbose mode; Continuing without.%s","");
+			warn("Couldn't allocate enough memory for verbose mode; Continuing without.");
 			FLAGS &= ~F_VERBOSE;
 		}
 	}

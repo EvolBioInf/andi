@@ -6,6 +6,7 @@
 #ifndef _IO_H_
 #define _IO_H_
 
+#include <err.h>
 #include "sequence.h"
 
 typedef struct data_s {
@@ -25,26 +26,5 @@ void joinedRead( FILE *in, dsa_t *dsa, char *name);
 
 void printDistMatrix( double *D, seq_t *sequences, size_t n);
 void printCovMatrix( data_t *D, size_t n);
-
-/** @brief Exit early on a critical error.
- *
- * @returns never.
- */
-#define FAIL(X) do { \
-	const char str[] = { "ERROR: " X "\n"}; \
-	fprintf(stderr, str); \
-	exit(EXIT_FAILURE); \
-} while (0)
-
-/** @brief Print a warning.
- *
- */
-#define WARN(X, ...) do { \
-	_Pragma("omp critical") \
-	{ \
-		const char str[] = { "WARNING: " X "\n"}; \
-		fprintf(stderr, str, __VA_ARGS__); \
-	} \
-} while (0)
 
 #endif // _IO_H_

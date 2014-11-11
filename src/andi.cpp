@@ -53,7 +53,7 @@ void version(void);
  * to processing.
  */
 int main( int argc, char *argv[]){
-	int c, i;
+	int c;
 	int version_flag = 0;
 	
 	static struct option long_options[] = {
@@ -157,71 +157,47 @@ int main( int argc, char *argv[]){
 	if( version_flag ){
 		version();
 	}
+
+	argc -= optind;
+	argv += optind;
+
+	// at least one file name must be given
+	if( FLAGS & F_JOIN && argc == 0 ){
+		errx(1, "In join mode at least one filename needs to be supplied.");
+	}
 	
 	dsa_t *dsa = dsa_new();
 	FILE *in = NULL;
-	
-	if( FLAGS & F_JOIN ){
-		// at least one file name must be given
-		if( optind == argc ){
-			errx(1, "In join mode at least one filename needs to be supplied.");
-		}
-		
-		// only one file
-		if( optind + 1 == argc ){
+	const char *name;
+
+	// parse all files
+	int minfiles = FLAGS & F_JOIN ? 2 : 1;
+	for( ; ; minfiles-- ){
+		if( !*argv){
+			if( minfiles <= 0) break;
+
+			// if no files are supplied, read from stdin
 			in = stdin;
-			joinedRead( in, dsa, strdup("stdin"));
-		}
-		
-		// parse all files
-		for( i=optind; i< argc; i++){
-			in = fopen( argv[i], "r");
+			name = "stdin";
+		} else {
+			name = *argv++;
+			in = fopen( name, "r");
 			if( !in) {
-				warn("%s", argv[i]);
+				warn("%s", name);
 				continue;
 			}
-			
-			/* In join mode we try to be clever about the sequence name. Given the file
-			 * path we extract just the file name. ie. path/file.ext -> file
-			 * This obviously fails on Windows.
-			 */
-			char *filename = argv[i];
-			char *left = strrchr( filename, '/');
-			left = (left == NULL) ? filename : left + 1;
-			
-			char *dot = strchrnul( left, '.');
-			
-			filename = strndup( left, dot-left );
-
-			if( filename){
-				joinedRead( in, dsa, filename);
-			}
-
-			free(filename);
-			fclose(in);
 		}
-		
-	} else {
-		// if no files are supplied, read from stdin
-		if( optind == argc){
-			in = stdin;
-			readFile( in, dsa );
-		}
-	
-		// parse all files
-		for( i=optind; i< argc; i++){
-			in = fopen( argv[i], "r");
-			if( !in) {
-				warn("%s", argv[i]);
-				continue;
-			};
 
+		if( FLAGS & F_JOIN){
+			joinedRead( in, dsa, name);
+		} else {
 			readFile( in, dsa);
-
-			fclose(in);
 		}
+
+		fclose(in);
 	}
-	
+
+
 	size_t n = dsa_size( dsa);
 	
 	if( FLAGS & F_VERBOSE){

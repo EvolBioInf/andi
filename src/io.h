@@ -22,7 +22,7 @@ typedef struct data_s {
 #define M( X, Y) (M[ (X)*n + (Y) ])
 
 void readFile( FILE *in, dsa_t *dsa);
-void joinedRead( FILE *in, dsa_t *dsa, char *name);
+void joinedRead( FILE *in, dsa_t *dsa, const char *name);
 
 void printDistMatrix( double *D, seq_t *sequences, size_t n);
 void printCovMatrix( data_t *D, size_t n);

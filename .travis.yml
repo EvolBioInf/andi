@@ -19,6 +19,7 @@ before_install:
 - make
 - sudo make install
 - cd $TRAVIS_BUILD_DIR
+- export LD_LIBRARY_PATH=/usr/local:$LD_LIBRARY_PATH
 script:
 - autoreconf -i 
 - ./configure --enable-unit-tests

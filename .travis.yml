@@ -7,8 +7,6 @@ before_install:
 - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
 - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
-- pwd
-- echo $TRAVIS_BUILD_DIR
 - sudo apt-get install libglib2.0-dev
 - wget https://libdivsufsort.googlecode.com/files/libdivsufsort-2.0.1.tar.gz
 - tar -xzvf libdivsufsort-2.0.1.tar.gz
@@ -21,6 +19,8 @@ before_install:
 - cd $TRAVIS_BUILD_DIR
 - export LD_LIBRARY_PATH=/usr/local:$LD_LIBRARY_PATH
 script:
+- echo $LD_LIBRARY_PATH
+- export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
 - autoreconf -i 
 - ./configure --enable-unit-tests
 - make 

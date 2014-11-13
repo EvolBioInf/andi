@@ -8,7 +8,7 @@ andi \- estimates evolutionary distance
 .TP
 \fBandi\fR estimates the evolutionary distance between closely related genomes. For this \fBandi\fR reads the input sequences from \fIFASTA\fR files and computes the pairwise anchor distance. The idea behind this is explained in a paper by Haubold et al. (see below).
 .SH OUTPUT
-The output is a symmetrical distance matrix with each entry representing divergence with a value between 0 and 1. A distance of zero means that two sequences are identical whereas other values are estimates for the nucleotide mutation rate. For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were too short (<200bp) or too diverse (K>0.5) for our method to work properly.
+The output is a symmetrical distance matrix with each entry representing divergence with a positive real number. A distance of zero means that two sequences are identical whereas other values are estimates for the nucleotide mutation rate. For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were too short (<200bp) or too diverse (K>0.5) for our method to work properly.
 .SH OPTIONS
 .TP
 \fB\-j\fR, \fB\-\-join\fR

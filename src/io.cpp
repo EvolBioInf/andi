@@ -33,8 +33,8 @@ KSEQ_INIT(int, read)
  * @param dsa - An array that holds found sequences.
  * @param name - The name of the file to be used for the name of the sequence.
  */
-void joinedRead( FILE *in, dsa_t *dsa, char *name){
-	if( !in || !dsa) return;
+void joinedRead( FILE *in, dsa_t *dsa, const char *name){
+	if( !in || !dsa || !name) return;
 
 	dsa_t *single = dsa_new();
 	readFile( in, single);
@@ -44,7 +44,18 @@ void joinedRead( FILE *in, dsa_t *dsa, char *name){
 	}
 	
 	seq_t joined = dsa_join( single);
-	joined.name = strdup(name);
+
+	/* In join mode we try to be clever about the sequence name. Given the file
+	 * path we extract just the file name. ie. path/file.ext -> file
+	 * This obviously fails on Windows.
+	 */
+
+	const char *left = strrchr( name, '/'); // find the last path separator
+	left = (left == NULL) ? name : left + 1; // left is the position one of to the right of the path separator
+	
+	const char *dot = strchrnul( left, '.'); // find the extension
+	
+	joined.name = strndup( left, dot-left ); // copy only the file name, not its path or extension
 	dsa_push( dsa, joined);
 	dsa_free( single);
 }

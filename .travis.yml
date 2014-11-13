@@ -1,0 +1,17 @@
+language: cpp
+compiler:
+- gcc
+- clang
+before_install:
+	sudo apt-get install libglib2.0-dev
+	wget https://code.google.com/p/libdivsufsort/downloads/detail?name=libdivsufsort-2.0.1.tar.gz&can=2&q=
+	tar -xzvf libdivsufsort-2.0.1.tar.gz
+	cd libdivsufsort-2.0.1
+	mkdir build
+	cd build
+	cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="/usr/local" ..
+	make
+	make install
+	cd
+script:
+	autoreconf -i && ./configure --enable-unit-tests && make && make check

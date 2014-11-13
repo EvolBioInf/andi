@@ -36,6 +36,7 @@ test.trs
 test-driver
 test_esa
 test_seq
+test_fasta
 *.trs
 
 # Coverage

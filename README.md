@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/EvolBioInf/andi.svg?branch=master)](https://travis-ci.org/EvolBioInf/andi)
+
 # About
 
 This is the `andi` program for estimating the evolutionary distance between closely related genomes.

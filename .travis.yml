@@ -4,7 +4,7 @@ compiler:
 - clang
 before_install:
 - sudo apt-get install libglib2.0-dev
-- wget https://code.google.com/p/libdivsufsort/downloads/detail?name=libdivsufsort-2.0.1.tar.gz&can=2&q=
+- wget https://libdivsufsort.googlecode.com/files/libdivsufsort-2.0.1.tar.gz
 - tar -xzvf libdivsufsort-2.0.1.tar.gz
 - cd libdivsufsort-2.0.1
 - mkdir build

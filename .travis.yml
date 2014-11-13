@@ -11,7 +11,7 @@ before_install:
 - cd build
 - cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="/usr/local" ..
 - make
-- make install
+- sudo make install
 - cd
 script:
 - autoreconf -i && ./configure --enable-unit-tests && make && make check

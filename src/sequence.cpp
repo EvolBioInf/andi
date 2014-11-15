@@ -32,7 +32,7 @@ seq_t dsa_join( dsa_t *dsa){
 	
 	// Compute the total length
 	size_t total = 0;
-	for( auto it = dsa->begin(); it != dsa->end(); ++it){
+	for( dsa_t::iterator it = dsa->begin(); it != dsa->end(); ++it){
 		total += it->len + 1;
 	}
 	
@@ -44,7 +44,7 @@ seq_t dsa_join( dsa_t *dsa){
 	char *next = ptr;
 	
 	// Copy all old sequences and add a `!` in between
-	auto it = dsa->begin();
+	dsa_t::iterator it = dsa->begin();
 	memcpy( next, it->S, it->len);
 	next += it->len;
 	for( it++; it != dsa->end(); it++){

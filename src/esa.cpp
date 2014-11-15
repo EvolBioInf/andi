@@ -131,7 +131,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 				char non_acgt = 0;
 
 				// fast forward
-				auto k = pos + 1;
+				size_t k = pos + 1;
 				for(;k < (size_t)ij.l; k++){
 					char c = C->S[C->SA[ij.i]+k];
 					if( char2code(c) < 0){

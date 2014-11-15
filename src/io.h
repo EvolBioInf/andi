@@ -6,6 +6,7 @@
 #define _IO_H_
 
 #include <err.h>
+#include <errno.h>
 #include "sequence.h"
 
 typedef struct data_s {

@@ -22,8 +22,8 @@ before_install:
 script:
 - export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
 - autoreconf -i 
-- ./configure --enable-unit-tests --enable-gcov
+- ./configure --enable-unit-tests
 - make 'CXXFLAGS=-fprofile-arcs -ftest-coverage'
 - make check
 after_success:
-- coveralls --exclude lib --exclude tests --gcov-options '\-lp'
+- coveralls --exclude lib --exclude tests --gcov `which gcov-4.8` --gcov-options '\-lp'

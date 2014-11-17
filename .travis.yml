@@ -2,6 +2,7 @@ language: cpp
 compiler:
 - gcc
 before_install:
+- sudo pip install cpp-coveralls
 - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
 - sudo apt-get update -qq
 - if [ "$CXX" = "g++" ]; then sudo apt-get install -qq g++-4.8; fi
@@ -19,9 +20,10 @@ before_install:
 - cd $TRAVIS_BUILD_DIR
 - export LD_LIBRARY_PATH=/usr/local:$LD_LIBRARY_PATH
 script:
-- echo $LD_LIBRARY_PATH
 - export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
 - autoreconf -i 
-- ./configure --enable-unit-tests
+- ./configure --enable-unit-tests --enable-gcov
 - make 
 - make check
+after_success:
+- coveralls --exclude lib --exclude tests --gcov-options '\-lp'

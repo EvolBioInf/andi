@@ -26,4 +26,4 @@ script:
 - make 'CXXFLAGS=-fprofile-arcs -ftest-coverage'
 - make check
 after_success:
-- coveralls --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'
+- coveralls --exclude libdivsufsort-2.0.1 --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'

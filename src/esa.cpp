@@ -28,10 +28,11 @@
 #include <stdlib.h>
 #include <RMQ.hpp>
 #include <string.h>
+#include <assert.h>
 #include "esa.h"
 
 lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
-static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a);
+static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a);
 static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 
@@ -114,7 +115,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 	for( int code = 0; code < 4; ++code){
 		str[pos] = code2char(code);
 		ij = *in;
-		get_interval(C, &ij, str[pos]);
+		get_interval_FVC(C, &ij, str[pos]);
 
 		// fail early
 		if( ij.i == -1 && ij.j == -1){
@@ -179,6 +180,26 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 	}
 }
 
+int esa_init_FVC(esa_t *C){
+	size_t len = C->len;
+
+	char *FVC = C->FVC = (char*) malloc(len);
+	if(!FVC){
+		return 1;
+	}
+
+	const char *S = C->S;
+	const int *SA = C->SA;
+	const int *LCP= C->LCP;
+
+	FVC[0] = '\0';
+	for(size_t i=len; i--; FVC++, SA++, LCP++){
+		*FVC = S[*SA + *LCP];
+	}
+
+	return 0;
+}
+
 /** @brief Initializes an ESA.
  *
  * This function initializes an ESA with respect to the provided sequence.
@@ -193,6 +214,7 @@ int esa_init( esa_t *C, seq_t *S){
 	C->LCP = NULL;
 	C->len = 0;
 	C->rmq_lcp = NULL;
+	C->FVC = NULL;
 
 	int result;
 
@@ -210,6 +232,8 @@ int esa_init( esa_t *C, seq_t *S){
 	// TODO: check return value/ catch errors
 	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
 
+	esa_init_FVC(C);
+
 	result = esa_init_cache(C);
 	if(result) return result;
 
@@ -223,6 +247,7 @@ void esa_free( esa_t *C){
 	free( C->ISA);
 	free( C->LCP);
 	free( C->rmq_cache);
+	free( C->FVC);
 }
 
 /**
@@ -329,7 +354,8 @@ int esa_init_LCP( esa_t *C){
  * @param a The next character in the query sequence.
  * @returns A reference to the new LCP interval.
  */
-static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
+
+static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
 	saidx_t i = ij->i;
 	saidx_t j = ij->j;
 
@@ -337,6 +363,7 @@ static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 	const saidx_t *SA = C->SA;
 	const saidx_t *LCP = C->LCP;
 	const char *S = C->S;
+	const char *FVC= C->FVC;
 	RMQ *rmq_lcp = C->rmq_lcp;
 	
 	// check for singleton or empty interval
@@ -359,7 +386,7 @@ static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 	 * middle. */
 	do {
 		// check if `m` will be a new lower or upper bound.
-		if( S[ SA[m] + l] <= a ){
+		if( FVC[m] <= a ){
 			i = m;
 		} else {
 			j = m - 1;
@@ -374,7 +401,7 @@ static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 	} while( LCP[m] == l);
 
 	// final sanity check
-	if( S[SA[i] + l] == a){
+	if( LCP[i] == l ? FVC[i] == a : S[SA[i] + l] == a){
 		ij->i = i;
 		ij->j = j;
 		/* Also return the length of the LCP interval including `a` and
@@ -488,7 +515,7 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 	
 	// Loop over the query until a mismatch is found
 	do {
-		get_interval( C, &ij, query[k]);
+		get_interval_FVC( C, &ij, query[k]);
 		i = ij.i;
 		j = ij.j;
 		

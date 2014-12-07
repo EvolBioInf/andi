@@ -506,7 +506,6 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 	}
 
 	saidx_t l, i, j, p;
-	saidx_t m = qlen;
 
 	lcp_inter_t res = ij;
 	
@@ -528,13 +527,11 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 		res.i = ij.i;
 		res.j = ij.j;
 
-		l = m;
-		if( i < j){
+		l = qlen;
+		if( i < j && ij.l < l){
 			/* Instead of making another RMQ we can use the LCP interval calculated
 			 * in get_interval */
-			if( ij.l < l ){
-				l = ij.l;
-			}
+			l = ij.l;
 		}
 		
 		// Extend the match
@@ -553,9 +550,9 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 		}
 
 		k = l;
-	} while ( k < m);
+	} while ( k < (ssize_t)qlen);
 
-	res.l = m;
+	res.l = qlen;
 	return res;
 }
 

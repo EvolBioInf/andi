@@ -535,16 +535,15 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 		}
 		
 		// Extend the match
-		for( p = SA[i]; k < l && S[p+k] && query[k]; k++){
+		for( p = SA[i]; k < l && S[p+k]; k++){
 			if( S[p+k] != query[k] ){
 				res.l = k;
 				return res;
 			}
 		}
 		
-		// TODO: Verify if this is the best solution
 		// You shall not pass the null byte.
-		if( k < l && (!S[p+k] || !query[k])){
+		if( k < l && !S[p+k] ){
 			res.l = k;
 			return res;
 		}

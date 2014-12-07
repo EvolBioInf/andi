@@ -368,7 +368,10 @@ static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
 	
 	// check for singleton or empty interval
 	if( i == j ){
-		if( S[SA[i] + ij->l] == a){
+		saidx_t l = ij->l;
+		char c = LCP[i] == l ? FVC[i] : S[SA[i] + l];
+
+		if( c == a){
 			ij->i = ij->j = i;
 		} else {
 			ij->i = ij->j = -1;

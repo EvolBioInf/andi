@@ -538,7 +538,7 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 		}
 		
 		// Extend the match
-		for( p = SA[i]; k < l && p + k < C->len; k++){
+		for( p = SA[i]; k < l; k++){
 			if( S[p+k] != query[k] ){
 				res.l = k;
 				return res;

@@ -307,14 +307,11 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 void calcDistMatrix( seq_t* sequences, int n){
 	int i;
 
-	// initialize the sequences
-	#pragma omp parallel for num_threads( THREADS)
+	// check the sequences
 	for( i=0;i<n;i++){
 		if( sequences[i].S == NULL){
 			errx(1,"Missing sequence.");
 		}
-		
-		seq_subject_init( &sequences[i]);
 	}
 	
 	// Warn about non ACGT residues.

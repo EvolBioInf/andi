@@ -254,10 +254,9 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		retval.coverage = 1.0;
 		return retval;
 	}
-	
-	if ( num_right_anchors <= 1 || snps <= 2 || homo <= 3){
-		// Insignificant results. All abort the fail train.
 
+	// Insignificant results. All abort the fail train.
+	if ( homo <= 3){
 		retval.distance = log(-1.0);
 		return retval;
 	}

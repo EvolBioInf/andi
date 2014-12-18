@@ -57,6 +57,7 @@ typedef struct {
 	/** A reference to an object for range minimum queries. */
 	RMQ *rmq_lcp;
 	lcp_inter_t *rmq_cache;
+	char *FVC;
 } esa_t;
 
 lcp_inter_t get_match_cached( const esa_t *C, const char *query, size_t qlen);

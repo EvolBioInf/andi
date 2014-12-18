@@ -25,10 +25,12 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 	//#pragma
 	P_OUTER
 	for(i=0;i<n;i++){
+		seq_t *subject = &sequences[i];
 		esa_t E;
 
-		if( esa_init( &E, &(sequences[i])) != 0){
-			warnx("Failed to create index for %s.", sequences[i].name);
+		seq_subject_init( subject);
+		if( esa_init( &E, subject)){
+			warnx("Failed to create index for %s.", subject->name);
 
 			for( size_t j=0; j< n; j++){
 				D(i,j) = (i==j) ? 0.0 : NAN;
@@ -59,7 +61,7 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 
 			size_t ql = sequences[j].len;
 
-			data_t datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
+			data_t datum = dist_anchor( &E, sequences[j].S, ql, subject->gc);
 
 			if( !(FLAGS & F_RAW)){
 				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
@@ -76,6 +78,7 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 		}
 
 		esa_free(&E);
+		seq_subject_free(subject);
 	}
 
 	return D;

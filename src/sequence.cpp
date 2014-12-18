@@ -164,12 +164,8 @@ double calc_gc( seq_t *S){
 
 /** @brief Prepares a sequences to be used as the subject in a comparison. */
 void seq_subject_init( seq_t *S){
-	normalize( S);
-	
-	// recalculate the length because `normalize` might have stripped some characters.
-	S->len = strlen(S->S);
 	calc_gc(S);
-	
+
 	S->RS = catcomp(S->S, S->len);
 	S->RSlen = 2 * S->len + 1;
 }
@@ -203,7 +199,10 @@ int seq_init( seq_t *S, const char *seq, const char *name){
 		return 1;
 	}
 
-	S->len = strlen((const char*) seq);
+	normalize( S);
+
+	// recalculate the length because `normalize` might have stripped some characters.
+	S->len = strlen(S->S);
 
 	return 0;
 }

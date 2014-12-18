@@ -45,9 +45,6 @@ typedef struct {
 	const char *S;
 	/** The actual suffix array with indexes into S. */
 	saidx_t *SA;
-	/** The inverse suffix array holds at position `i` the index at
-		which the suffix `S[i]` is positioned in the SA. */
-	saidx_t *ISA;
 	/** The LCP holds the number of letters up to which a suffix `S[SA[i]]`
 		equals `S[SA[i-1]]`. Hence the name longest common prefix. For `i = 0`
 		and `i = len` the LCP value is -1. */
@@ -56,7 +53,9 @@ typedef struct {
 	saidx_t len;
 	/** A reference to an object for range minimum queries. */
 	RMQ *rmq_lcp;
-	lcp_inter_t *rmq_cache;
+	/** A cache for lcp-intervals */
+	lcp_inter_t *cache;
+	/** The FVC array holds the character after the LCP. */
 	char *FVC;
 } esa_t;
 

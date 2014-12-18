@@ -75,13 +75,13 @@ ssize_t char2code( const char c){
  * @returns 0 iff successful
  */
 int esa_init_cache( esa_t *C){
-	lcp_inter_t* rmq_cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
+	lcp_inter_t* cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
 
-	if( !rmq_cache){
+	if( !cache){
 		return 1;
 	}
 
-	C->rmq_cache = rmq_cache;
+	C->cache = cache;
 
 	char str[CACHE_LENGTH+1];
 	str[CACHE_LENGTH] = '\0';
@@ -172,10 +172,10 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 			code |= char2code(str[i]);
 		}
 
-		C->rmq_cache[code] = *in;
+		C->cache[code] = *in;
 
 		if( in->i != in->j){
-			C->rmq_cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
+			C->cache[code].m = C->rmq_lcp->query(in->i+1, in->j);
 		}
 	}
 }
@@ -210,7 +210,6 @@ int esa_init_FVC(esa_t *C){
 int esa_init( esa_t *C, seq_t *S){
 	C->S = NULL;
 	C->SA = NULL;
-	C->ISA = NULL;
 	C->LCP = NULL;
 	C->len = 0;
 	C->rmq_lcp = NULL;
@@ -232,7 +231,8 @@ int esa_init( esa_t *C, seq_t *S){
 	// TODO: check return value/ catch errors
 	C->rmq_lcp = new RMQ_n_1_improved(C->LCP, C->len);
 
-	esa_init_FVC(C);
+	result = esa_init_FVC(C);
+	if( result) return result;
 
 	result = esa_init_cache(C);
 	if(result) return result;
@@ -244,9 +244,8 @@ int esa_init( esa_t *C, seq_t *S){
 void esa_free( esa_t *C){
 	delete C->rmq_lcp;
 	free( C->SA);
-	free( C->ISA);
 	free( C->LCP);
-	free( C->rmq_cache);
+	free( C->cache);
 	free( C->FVC);
 }
 
@@ -354,7 +353,6 @@ int esa_init_LCP( esa_t *C){
  * @param a The next character in the query sequence.
  * @returns A reference to the new LCP interval.
  */
-
 static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
 	saidx_t i = ij->i;
 	saidx_t j = ij->j;
@@ -462,7 +460,7 @@ lcp_inter_t get_match_cached( const esa_t *C, const char *query, size_t qlen){
 		return get_match( C, query, qlen);
 	}
 
-	lcp_inter_t ij = C->rmq_cache[offset];
+	lcp_inter_t ij = C->cache[offset];
 
 	if( ij.i == -1 && ij.j == -1){
 		return get_match( C, query, qlen);

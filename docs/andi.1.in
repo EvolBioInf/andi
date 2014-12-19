@@ -45,7 +45,7 @@ There is NO WARRANTY, to the extent permitted by law.
 The full license text is available at <http://gnu.org/licenses/gpl.html>.
 .PP
 .SH ACKNOWLEDGMENTS
-1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014). Fast and accurate estimation of evolutionary distances between genomes. In preparation.
+1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014). Fast and accurate estimation of evolutionary distances between closely related genomes\n
 .br
 2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algorithms. Sequence Analysis, Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.
 .br

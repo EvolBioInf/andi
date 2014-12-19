@@ -366,9 +366,7 @@ static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
 	
 	// check for singleton or empty interval
 	if( i == j ){
-		if( S[SA[i] + ij->l] == a){
-			ij->i = ij->j = i;
-		} else {
+		if( S[SA[i] + ij->l] != a){
 			ij->i = ij->j = -1;
 		}
 		return ij;
@@ -391,7 +389,7 @@ static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
 		}
 		
 		if( i == j ){
-			break; // `a` not found, exit early
+			break; // singleton interval, or `a` not found
 		}
 		
 		// find the next LCP boundary
@@ -399,7 +397,7 @@ static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
 	} while( LCP[m] == l);
 
 	// final sanity check
-	if( LCP[i] == l ? FVC[i] == a : S[SA[i] + l] == a){
+	if( i != ij->i ? FVC[i] == a : S[SA[i] + l] == a){
 		ij->i = i;
 		ij->j = j;
 		/* Also return the length of the LCP interval including `a` and

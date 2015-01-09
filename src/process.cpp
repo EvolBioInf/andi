@@ -155,6 +155,7 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	size_t num_matches = 0;
 	size_t num_anchors = 0;
 	size_t num_anchors_in_rc = 0;
+	size_t num_right_anchors_in_rc = 0;
 	size_t length_anchors = 0;
 #endif
 
@@ -188,6 +189,11 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 			// Check if this can be a right anchor to the last one.
 			if( this_pos_Q - last_pos_Q == this_pos_S - last_pos_S ){
 				num_right_anchors++;
+#ifdef DEBUG
+				if( this_pos_S < (size_t)(C->len / 2)){
+					num_right_anchors_in_rc++;
+				}
+#endif
 			
 				// Count the SNPs in between.
 				size_t i;
@@ -223,16 +229,15 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		const char str[] = {
 			"- threshold: %ld\n"
 			"- matches: %lu\n"
-			"- anchors: %lu\n"
-			"- in reverse complement: %lu\n"
-			"- right anchors: %lu\n"
+			"- anchors: %lu (rc: %lu)\n"
+			"- right anchors: %lu (rc: %lu)\n"
 			"- avg length: %lf\n"
 			"\n"
 		};
 
 		#pragma omp critical
 		{
-			fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors, (double)length_anchors/ num_anchors );
+			fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors, num_right_anchors_in_rc, (double)length_anchors/ num_anchors );
 		}
 	}
 #endif

@@ -157,6 +157,8 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	size_t num_anchors_in_rc = 0;
 	size_t num_right_anchors_in_rc = 0;
 	size_t length_anchors = 0;
+	double off_num = 0.0;
+	double off_dem = 0.0;
 #endif
 
 	size_t threshold = minAnchorLength( 1-sqrt(1-RANDOM_ANCHOR_PROP), gc, C->len);
@@ -205,6 +207,13 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 				homo += this_pos_Q - last_pos_Q;
 				last_was_right_anchor = 1;
 			} else {
+#ifdef DEBUG
+				double off = fabs((double)(this_pos_Q - last_pos_Q)- (double)(this_pos_S - last_pos_S));
+				if( off < 100 ){
+					off_num += off;
+					off_dem++;
+				}
+#endif
 				if( last_was_right_anchor){
 					// If the last was a right anchor, but with the current one, we 
 					// cannot extend, then add its length.
@@ -232,12 +241,13 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 			"- anchors: %lu (rc: %lu)\n"
 			"- right anchors: %lu (rc: %lu)\n"
 			"- avg length: %lf\n"
+			"- off: %f (skipped: %.0f)\n"
 			"\n"
 		};
 
 		#pragma omp critical
 		{
-			fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors, num_right_anchors_in_rc, (double)length_anchors/ num_anchors );
+			fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors, num_right_anchors_in_rc, (double)length_anchors/ num_anchors, off_num/off_dem, off_dem );
 		}
 	}
 #endif

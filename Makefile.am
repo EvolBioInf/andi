@@ -5,7 +5,7 @@ if BUILD_TESTS
 
 SUBDIRS+= test
 
-TESTS = test/test_esa test/test_seq test/test_random.sh
+TESTS = test/test_esa test/test_seq test/test_random.sh test/test_join.sh
 
 $(TESTS): all
 #	$(MAKE) -C test

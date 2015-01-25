@@ -62,7 +62,7 @@ void joinedRead( FILE *in, dsa_t *dsa, const char *name){
 
 
 /**
- * This function reads sequences from a file.
+ * @brief This function reads sequences from a file.
  * @param in - The file pointer to read from.
  * @param dsa - An array that holds found sequences.
  */
@@ -135,6 +135,11 @@ void printDistMatrix( double *D, seq_t *sequences, size_t n){
 	}
 }
 
+/**
+ * @brief Prints the coverage matrix.
+ * @param D - The distance matrix
+ * @param n - The number of sequences.
+ */
 void printCovMatrix( data_t *D, size_t n){
 	size_t i,j;
 	printf("\nCoverage:\n");

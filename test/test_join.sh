@@ -14,8 +14,10 @@ RES=$($srcdir/src/andi -r -j S0.fasta S1.fasta |
 	awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.01}'
 	)
 
-if test $res -ne 1; then
+if test $RES -ne 1; then
 	echo "The last test computed a distance deviating more than one percent from its intended value."
 	echo "See S1.fasta and S2.fasta for the used sequences."
 	exit 1;
 fi
+
+rm S0.fasta S1.fasta

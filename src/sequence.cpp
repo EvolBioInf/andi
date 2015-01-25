@@ -76,7 +76,7 @@ void seq_free( seq_t *S){
 }
 
 /**
- * Compute the reverse complement.
+ * @brief Compute the reverse complement.
  * @param str The master string.
  * @param len The length of the master string
  * @return The reverse complement. The caller has to free it!
@@ -119,7 +119,7 @@ char *revcomp( const char *str, size_t len){
 }
 
 /**
- * This function concatenates the reverse complement to a given master string. A
+ * @brief This function concatenates the reverse complement to a given master string. A
  * `#` sign is used as a separator.
  * @param s The master string.
  * @param len Its length.

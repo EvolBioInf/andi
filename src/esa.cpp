@@ -97,6 +97,10 @@ int esa_init_cache( esa_t *C){
  * Recursively traverse the virtual suffix tree created by the SA, LCP and RMQs,
  * using a depth first search. by doing this cache the current LCP interval and
  * improve the performance of getting the next value for the cache.
+ * @param C - The ESA.
+ * @param str - The string to be hashed
+ * @param pos - The position up to which str is filled
+ * @param in - The lcp-interval to save
  */
 void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
 	// we are not yet done, but the current strings do not exist in the subject.
@@ -159,6 +163,13 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 	}
 }
 
+/**
+ * @brief Fills all cache cells starting with a certain prefix with the correct interval.
+ * @param C - The ESA.
+ * @param str - The prefix
+ * @param pos - The position up to which str is filled
+ * @param in - The lcp-interval to save
+ */
 void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
 	if( pos < CACHE_LENGTH){
 		for( int code = 0; code < 4; ++code){
@@ -180,6 +191,11 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 	}
 }
 
+/**
+ * @brief Initializes the FVC (first variant character) array.
+ * @param C - The ESA
+ * @returns 0 iff successful
+ */
 int esa_init_FVC(esa_t *C){
 	size_t len = C->len;
 

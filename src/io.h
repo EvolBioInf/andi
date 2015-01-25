@@ -9,8 +9,13 @@
 #include <errno.h>
 #include "sequence.h"
 
+/** @brief The data structure can be used to store output data resulting 
+ * from the computation of distance.
+ */
 typedef struct data_s {
+	/** The distance */
 	double distance;
+	/** The coverage */
 	double coverage;
 } data_t;
 

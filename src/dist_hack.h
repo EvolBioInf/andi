@@ -1,4 +1,6 @@
-
+/** @file
+ * @brief This file is a preprocessor hack for the two functions `distMatrix` and `distMatrixLM`.
+ */
 #ifdef FAST
 #define NAME distMatrix
 #define P_OUTER _Pragma("omp parallel for num_threads( THREADS)")
@@ -12,6 +14,18 @@
 #define P_INNER _Pragma("omp parallel for num_threads( THREADS)")
 #endif
 
+/** @brief This function calls dist_andi for pairs of subjects and queries, and thereby fills the distance matrix.
+ *
+ * This function is actually two functions. It is one template that gets compiled into two functions via
+ * preprocessor hacks. The reason is DRY (Do not Repeat Yourselves).
+ *   The two functions only differ by their name and pragmas; i.e. They run in different parallel modes.
+ * `distMatrix` is faster than `distMatrixLM` but needs more memory.
+ *
+ * @returns The asymmetric distance matrix
+ * @param sequences - The sequences to compare
+ * @param n - The number of sequences
+ * @param M - A matrix for additional output data
+ */
 double *NAME( seq_t* sequences, size_t n, data_t *M){
 	errno = 0;
 	double *D = (double*) malloc( n * n * sizeof(double));

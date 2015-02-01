@@ -6,9 +6,13 @@ andi_*
 randomSeed.dat
 seedms
 testRMQ
+
+#docs
+docs/doxygen_sqlite3.db
 docs/html/*
 docs/latex/*
 docs/andi.1
+
 *.in
 !docs/andi.1.in
 *.log

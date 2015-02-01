@@ -5,5 +5,5 @@ andi_CXXFLAGS = $(OPENMP_CXXFLAGS) -W -Wall
 andi_LDADD = $(top_builddir)/libs/RMQ/libRMQ_improved.a
 
 .PHONY: perf
-perf: CXXFLAGS= -g -pg -O3 -ggdb
+perf: CXXFLAGS= -g -O3 -ggdb
 perf: andi

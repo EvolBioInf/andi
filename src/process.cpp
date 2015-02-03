@@ -323,8 +323,8 @@ void calcDistMatrix( seq_t* sequences, int n){
 
 	// check the sequences
 	for( i=0;i<n;i++){
-		if( sequences[i].S == NULL){
-			errx(1,"Missing sequence.");
+		if( sequences[i].S == NULL || sequences[i].len == 0){
+			errx(1, "Missing sequence: %s", sequences[i].name);
 		}
 	}
 	

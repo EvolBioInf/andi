@@ -326,6 +326,15 @@ void calcDistMatrix( seq_t* sequences, int n){
 		if( sequences[i].S == NULL || sequences[i].len == 0){
 			errx(1, "Missing sequence: %s", sequences[i].name);
 		}
+
+		if( sequences[i].len < 1000){
+			FLAGS |= F_SHORT;
+		}
+	}
+
+	if( FLAGS & F_SHORT ){
+		warnx("One of the given input sequences is shorter than a thousand nucleotides. "
+			"This may result in inaccurate distances. Try an alignment instead.");
 	}
 	
 	// Warn about non ACGT residues.

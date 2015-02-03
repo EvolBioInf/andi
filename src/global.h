@@ -39,7 +39,8 @@ enum {
 	F_EXTRA_VERBOSE = 4,
 	F_NON_ACGT = 8,
 	F_JOIN = 16,
-	F_LOW_MEMORY = 32
+	F_LOW_MEMORY = 32,
+	F_SHORT = 64
 };
 
 #endif

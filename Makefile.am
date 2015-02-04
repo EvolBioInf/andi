@@ -1,3 +1,5 @@
+AM_DISTCHECK_CONFIGURE_FLAGS="--enable-unit-tests"
+
 SUBDIRS = . libs/RMQ src docs
 
 # Conditionaly build the tests

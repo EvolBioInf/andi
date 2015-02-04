@@ -6,11 +6,23 @@
 #ifndef _ESA_H_
 #define _ESA_H_
 
-#include <divsufsort.h>
+
 #include <RMQ.hpp>
 #include <RMQ_n_1_improved.hpp>
 
 #include "sequence.h"
+
+#ifdef HAVE_LIBDIVSUFSORT
+# include <divsufsort.h>
+#else
+
+#include <string>
+#include <vector>
+std::vector<int> psufsort(const std::string& T);
+
+typedef int saidx_t;
+
+#endif
 
 /**
  * @brief Represents LCP-Intervals.

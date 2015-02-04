@@ -12,21 +12,27 @@ AC_LANG(C++)
 AC_CHECK_LIB(m, cos)
 AC_OPENMP
 
-# For suffix array computation we use libdivsufsort.
-# Fail if the library or its headers were not found.
-have_libdivsufsort=yes
-AC_CHECK_LIB(divsufsort, divsufsort, [], [have_libdivsufsort=no])
+# By default try to build with libdivsufsort.
+AC_ARG_WITH([libdivsufsort],
+    AS_HELP_STRING([--without-libdivsufsort], [Build without libdivsufsort and use psufsort instead.]))
 
-if test "x${have_libdivsufsort}" = xyes; then
-	AC_CHECK_HEADERS([divsufsort.h],[],[have_libdivsufsort=no])
-fi
+AS_IF([test "x$with_libdivsufsort" != "xno"],
+	[
+		AC_CHECK_HEADERS([divsufsort.h],[have_libdivsufsort=yes],[have_libdivsufsort=no])
+		AC_CHECK_LIB(divsufsort, divsufsort, [], [have_libdivsufsort=no])
+	],
+	[have_libdivsufsort=no]
+)
 
-if test "x${have_libdivsufsort}" = xno; then
-	AC_MSG_ERROR([
-	The libdivsufsort library and header files are required for compilation. Aborting.
+AS_IF([test "x$have_libdivsufsort" = "xno"],
+	[AS_IF([test "x$with_libdivsufsort" = "xyes"],
+		[AC_MSG_ERROR([Configuration for libdivsufsort failed. Either install libdivsufsort,
+			or use out replacement psufsort instead (./configure --without-libdivsufsort).
+			The latter may result in longer runtimes.])
 	])
-fi
+])
 
+AM_CONDITIONAL([BUILD_WITH_LIBDIVSUFSORT],[test "x${with_libdivsufsort}" = xyes])
 
 # The unit tests require GLIB2. So by default do not build the test.
 # If enabled, check for glib.
@@ -65,6 +71,8 @@ AC_CHECK_FUNCS([floor pow sqrt strdup])
 AC_CHECK_FUNCS([strndup])
 AC_CHECK_FUNCS([strrchr])
 
+AC_CONFIG_HEADERS([src/config.h:src/config.hin])
+
 AC_CONFIG_FILES([
  Makefile
  src/Makefile
@@ -72,6 +80,7 @@ AC_CONFIG_FILES([
  libs/RMQ/Makefile
  docs/Makefile
  docs/andi.1
+ opt/psufsort/Makefile
 ])
 AC_OUTPUT
 

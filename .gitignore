@@ -6,6 +6,7 @@ andi_*
 randomSeed.dat
 seedms
 testRMQ
+src/config.h
 
 #docs
 docs/doxygen_sqlite3.db

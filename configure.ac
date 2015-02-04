@@ -1,4 +1,4 @@
-AC_INIT([andi], [0.8.1-beta])
+AC_INIT([andi], [0.8.1])
 AM_INIT_AUTOMAKE([-Wall foreign ])
 
 AC_PROG_CXX

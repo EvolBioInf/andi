@@ -1,6 +1,9 @@
+AM_DISTCHECK_CONFIGURE_FLAGS="--enable-unit-tests"
+
 if !BUILD_WITH_LIBDIVSUFSORT
-OPT_PSUFSORT= opt/psufsort
+OPT_PSUFSORT = opt/psufsort
 endif
+
 SUBDIRS = . $(OPT_PSUFSORT) libs/RMQ src docs
 DIST_SUBDIRS = $(SUBDIRS) test opt opt/psufsort
 

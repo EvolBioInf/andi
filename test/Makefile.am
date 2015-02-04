@@ -1,4 +1,5 @@
 check_PROGRAMS = test_esa test_seq test_fasta
+dist_noinst_DATA = test_random.sh test_join.sh
 
 test_seq_SOURCES = test_seq.cxx ../src/sequence.cpp
 test_seq_CPPFLAGS = -std=gnu++0x -I$(top_srcdir)/src -DDEBUG

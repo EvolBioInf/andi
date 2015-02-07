@@ -20,25 +20,24 @@ int main(int argc, char *argv[]){
 	int length = 1000;
 	int line_length = 70;
 
-	auto seqs = vector<double>({0,0.1});
-	int num_seqs = 1;
+	auto seqs = vector<double>{0};
 
 	int check;
 	while((check = getopt(argc, argv, "l:L:d:")) != -1){
 		switch(check) {
 			case 'l': length = stoi(optarg); break;
 			case 'L': line_length = stoi(optarg); break;
-			case 'd': seqs[num_seqs++] = stod(optarg); break;
+			case 'd': seqs.push_back(stod(optarg)); break;
 			case '?':
 			default: usage(); return 1;
 		}
 	}
 
-	if( num_seqs < 2){
-		seqs[num_seqs++] = 0.1;
+	if( seqs.size() < 2){
+		seqs.push_back(0.1);
 	}
 
-	for( int i=0; i< num_seqs; i++){
+	for( int i=0; i< seqs.size(); i++){
 		cout << ">S" << i << endl;
 		print_seq( seed, rd(), length, line_length, seqs[i]);
 	}

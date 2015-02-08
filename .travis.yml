@@ -3,6 +3,7 @@ compiler:
 - gcc
 before_install:
 - autoreconf --version
+- automake --version
 - sudo pip install cpp-coveralls
 - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
 - sudo apt-get update -qq
@@ -22,7 +23,7 @@ before_install:
 - export LD_LIBRARY_PATH=/usr/local:$LD_LIBRARY_PATH
 script:
 - export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
-- autoreconf -i 
+- autoreconf -fvi
 - ./configure --enable-unit-tests
 - make 'CXXFLAGS=-fprofile-arcs -ftest-coverage'
 - make check

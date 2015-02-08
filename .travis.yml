@@ -2,6 +2,7 @@ language: cpp
 compiler:
 - gcc
 before_install:
+- autoreconf --version
 - sudo pip install cpp-coveralls
 - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
 - sudo apt-get update -qq

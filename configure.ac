@@ -67,6 +67,7 @@ AC_FUNC_REALLOC
 AC_CHECK_FUNCS([floor pow sqrt strdup])
 AC_CHECK_FUNCS([strndup])
 AC_CHECK_FUNCS([strrchr])
+AC_CHECK_FUNCS([strtoul strtod])
 
 AC_CONFIG_FILES([
  Makefile

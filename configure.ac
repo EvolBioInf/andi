@@ -23,7 +23,11 @@ AS_IF([test "x$with_libdivsufsort" != "xno"],
 		AC_CHECK_HEADERS([divsufsort.h],[have_libdivsufsort=yes],[have_libdivsufsort=no])
 		AC_CHECK_LIB(divsufsort, divsufsort, [], [have_libdivsufsort=no])
 	],
-	[have_libdivsufsort=no]
+	[
+		have_libdivsufsort=no
+		# psufsort needs C++11
+		AX_CXX_COMPILE_STDCXX_11([],[mandatory])
+	]
 )
 
 AS_IF([test "x$have_libdivsufsort" = "xno"],

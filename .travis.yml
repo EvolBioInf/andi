@@ -24,7 +24,7 @@ before_install:
 script:
 - export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
 - ls
-- autoreconf -fvi
+- autoreconf -fvi -Im4
 - ls
 - ls m4
 - grep 'cxx' ./aclocal.m4

@@ -1,4 +1,5 @@
 
+
 /**
  * @file
  * @brief This file contains various distance methods.
@@ -7,6 +8,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <stdio.h>
 #include "esa.h"
 #include "global.h"
 #include "process.h"

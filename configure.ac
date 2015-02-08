@@ -1,6 +1,8 @@
 AC_INIT([andi], [0.8.2-beta])
 AM_INIT_AUTOMAKE([-Wall foreign ])
 
+AC_CONFIG_MACRO_DIR([m4])
+
 AC_PROG_CXX
 AC_PROG_MAKE_SET
 AC_PROG_CPP
@@ -53,6 +55,7 @@ if test "x${try_unit_tests}" = xyes; then
 		AC_MSG_ERROR([Missing Glib 2. Either install it or build without unit tests.])
 	fi
 
+	AX_CXX_COMPILE_STDCXX_11([],[mandatory])
 fi
 
 # Check for various headers including those used by libdivsufsort.

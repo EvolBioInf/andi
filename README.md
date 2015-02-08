@@ -2,7 +2,7 @@
 
 # About
 
-This is the `andi` program for estimating the evolutionary distance between closely related genomes.
+This is the `andi` program for estimating the evolutionary distance between closely related genomes. It efficiently and accurately computes a distance for substitution rates up to 0.5. These distances are based on ungapped local alignments framed by anchors. Anchors are efficiently found using an enhanced suffix array. As a result, `andi` scales well even for data sets containing thousands of bacterial genomes.
 
 # Build Instructions
 

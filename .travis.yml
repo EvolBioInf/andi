@@ -23,7 +23,11 @@ before_install:
 - export LD_LIBRARY_PATH=/usr/local:$LD_LIBRARY_PATH
 script:
 - export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
+- ls
 - autoreconf -fvi
+- ls
+- ls m4
+- grep 'cxx' ./aclocal.m4
 - ./configure --enable-unit-tests
 - make 'CXXFLAGS=-fprofile-arcs -ftest-coverage'
 - make check

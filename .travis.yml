@@ -2,8 +2,6 @@ language: cpp
 compiler:
 - gcc
 before_install:
-- autoreconf --version
-- automake --version
 - sudo pip install cpp-coveralls
 - sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
 - sudo apt-get update -qq
@@ -23,13 +21,9 @@ before_install:
 - export LD_LIBRARY_PATH=/usr/local:$LD_LIBRARY_PATH
 script:
 - export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
-- ls
 - autoreconf -fvi -Im4
-- ls
-- ls m4
-- grep 'cxx' ./aclocal.m4
-- ./configure --enable-unit-tests
-- make 'CXXFLAGS=-fprofile-arcs -ftest-coverage'
+- export CXXFLAGS='-fprofile-arcs -ftest-coverage'; ./configure --enable-unit-tests
+- make 
 - make check
 after_success:
 - coveralls --exclude libdivsufsort-2.0.1 --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'

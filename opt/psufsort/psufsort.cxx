@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <iostream>
 #include <cassert>
-//#include <flags.h>
 #include <cmath>
+#include <global.h>
 
 void mk_sort (std::vector<int>& SA, const std::string& T, size_t l, size_t r, size_t depth);
 void insertion_sort (std::vector<int>& SA, const std::string& T, size_t l, size_t r, size_t depth);
@@ -124,7 +124,7 @@ std::vector<int> psufsort(const std::string& T){
 	}
 
 	// sort all S* suffixes
-	//#pragma omp parallel for shared(SA,T) schedule(dynamic, 1) num_threads(THREADS)
+	#pragma omp parallel for shared(SA,T) schedule(dynamic, 1) num_threads( (FLAGS & F_LOW_MEMORY) ? THREADS : 1)
 	for(i=0; i<256*256; i++){
 		const auto buc = bucket_SS[i];
 		if( buc.size > 1){

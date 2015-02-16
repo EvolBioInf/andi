@@ -1,3 +1,4 @@
+ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AM_DISTCHECK_CONFIGURE_FLAGS="--enable-unit-tests"
 
 SUBDIRS = . libs/RMQ src docs

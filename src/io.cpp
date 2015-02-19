@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <math.h>
 #include "io.h"
+#include "global.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -124,12 +125,15 @@ void printDistMatrix( double *D, seq_t *sequences, size_t n){
 		printf("%-9.9s", sequences[i].name);
 		
 		for( j=0;j<n;j++){
-			double avg = (D(i,j) + D(j,i))/2;
-			if( use_scientific){
-				printf(" %1.4e", avg);
-			} else {
-				printf(" %1.4f", avg);
+			// print average
+			double val = (D(i,j) + D(j,i))/2;
+
+			if( FLAGS & F_EXTRA_VERBOSE ){
+				val = D(i,j);
 			}
+
+			// use scientific notation for small numbers
+			printf(use_scientific ? " %1.4e" : " %1.4f", val);
 		}
 		printf("\n");
 	}

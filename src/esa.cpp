@@ -214,11 +214,6 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 		}
 
 		C->cache[code] = *in;
-
-		if( in->i != in->j){
-			C->cache[code].m = C->LCP[in->i] <= C->LCP[in->j] ? L(C->CLD, in->j) : R(C->CLD,in->i);
-			//C->rmq_lcp->query(in->i+1, in->j);
-		}
 	}
 }
 

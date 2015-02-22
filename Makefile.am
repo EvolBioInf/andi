@@ -1,25 +1,32 @@
-SUBDIRS = . src docs test
+ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
+AM_DISTCHECK_CONFIGURE_FLAGS="--enable-unit-tests"
 
-TESTS = test/test_esa test/test_seq
+SUBDIRS = . src docs
+
+# Conditionaly build the tests
+if BUILD_TESTS
+
+SUBDIRS+= test
+
+TESTS = test/test_esa test/test_seq test/test_random.sh test/test_join.sh
 
 $(TESTS): all
 #	$(MAKE) -C test
 
-noinst_DATA = README ChangeLog
+endif # BUILD_TESTS
+
+
+dist_noinst_DATA = README ChangeLog README.md
 
 README: README.md
 	cp README.md README
 	
-README.md:
-	cp README README.md
-
-ChangeLog: FORCE
-	git log --stat --date=short --abbrev-commit | grep --invert-match '^ [[:alnum:].]' | git stripspace > ChangeLog
+ChangeLog: configure.ac
+	echo "Missing Git" > ChangeLog;
+	if test -d $(srcdir)/.git; then \
+		which git && git log --stat --date=short --abbrev-commit | grep --invert-match '^ [[:alnum:].]' | git stripspace > ChangeLog; \
+	fi
 
 .PHONY: code-docs
 code-docs:
 	cd docs && $(MAKE) code-docs;
-
-.PHONY: FORCE
-FORCE:
-

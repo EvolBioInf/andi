@@ -27,11 +27,15 @@
 #include <string.h>
 #include <assert.h>
 #include <getopt.h>
+#include <errno.h>
 #include "global.h"
 #include "process.h"
 #include "io.h"
-
 #include "sequence.h"
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 /* Global variables */
 int FLAGS = 0;
@@ -49,7 +53,7 @@ void version(void);
  * to processing.
  */
 int main( int argc, char *argv[]){
-	int c, i;
+	int c;
 	int version_flag = 0;
 	
 	static struct option long_options[] = {
@@ -87,14 +91,26 @@ int main( int argc, char *argv[]){
 				break;
 			case 'p':
 				{
-					double prop = atof( optarg);
+					errno = 0;
+					char *end;
+					double prop = strtod( optarg, &end);
+
+					if( errno || end == optarg || *end != '\0'){
+						warnx(
+							"Expected a floating point number for -p argument, but '%s' was given. "
+							"Skipping argument.", optarg
+						);
+						break;
+					}
+
 					if( prop < 0.0 || prop > 1.0 ){
-						WARN(
-							"Warning: A propability should be a value between 0 and 1; "
+						warnx(
+							"A probability should be a value between 0 and 1; "
 							"Ignoring -p %f argument.", prop
 						);
 						break;
 					}
+
 					RANDOM_ANCHOR_PROP = prop;
 				}
 				break;
@@ -107,16 +123,31 @@ int main( int argc, char *argv[]){
 #ifdef _OPENMP
 			case 't':
 				{
-					int threads = atoi( optarg);
-					if( threads < 1 ){
-						WARN("The number of threads should be positive; Ignoring -t %d argument.", threads);
+					errno = 0;
+					char *end;
+					long unsigned int threads = strtoul( optarg, &end, 10);
+
+					if( errno || end == optarg || *end != '\0'){
+						warnx(
+							"Expected a number for -t argument, but '%s' was given. "
+							"Ignoring -t argument.", optarg
+						);
 						break;
 					}
+
+					if( threads > (long unsigned int) omp_get_num_procs() ){
+						warnx(
+							"The number of threads to be used, is greater then the number of available processors; "
+							"Ignoring -t %lu argument.", threads
+						);
+						break;
+					}
+
 					THREADS = threads;
 				}
 				break;
 #endif
-			case '?': /* intentional fallthrough */
+			case '?': /* intentional fall-through */
 			default:
 				usage();
 				break;
@@ -126,65 +157,47 @@ int main( int argc, char *argv[]){
 	if( version_flag ){
 		version();
 	}
+
+	argc -= optind;
+	argv += optind;
+
+	// at least one file name must be given
+	if( FLAGS & F_JOIN && argc == 0 ){
+		errx(1, "In join mode at least one filename needs to be supplied.");
+	}
 	
 	dsa_t *dsa = dsa_new();
 	FILE *in = NULL;
-	
-	if( FLAGS & F_JOIN ){
-		// atleast one file name must be given
-		if( optind == argc ){
-			FAIL("In join mode at least one filename needs to be supplied.");
-		}
-		
-		// only one file
-		if( optind + 1 == argc ){
-			in = stdin;
-			joinedRead( in, dsa, strdup("stdin"));
-		}
-		
-		// parse all files
-		for( i=optind; i< argc; i++){
-			in = fopen( argv[i], "r");
-			if( !in) continue;
-			
-			/* In join mode we try to be clever about the sequence name. Given the file
-			 * path we extract just the file name. ie. path/file.ext -> file
-			 * This obviously fails on Windows.
-			 */
-			char *filename = argv[i];
-			char *left = strrchr( filename, '/');
-			left = (left == NULL) ? filename : left + 1;
-			
-			char *dot = strchrnul( left, '.');
-			
-			filename = strndup( left, dot-left );
+	const char *name;
 
-			if( filename){
-				joinedRead( in, dsa, filename);
+	// parse all files
+	int minfiles = FLAGS & F_JOIN ? 2 : 1;
+	for( ; ; minfiles-- ){
+		if( !*argv){
+			if( minfiles <= 0) break;
+
+			// if no files are supplied, read from stdin
+			in = stdin;
+			name = "stdin";
+		} else {
+			name = *argv++;
+			in = fopen( name, "r");
+			if( !in) {
+				warn("%s", name);
+				continue;
 			}
-
-			free(filename);
-			fclose(in);
 		}
-		
-	} else {
-		// if no files are supplied, read from stdin
-		if( optind == argc){
-			in = stdin;
-			readFile( in, dsa );
-		}
-	
-		// parse all files
-		for( i=optind; i< argc; i++){
-			in = fopen( argv[i], "r");
-			if( !in) continue;
 
+		if( FLAGS & F_JOIN){
+			joinedRead( in, dsa, name);
+		} else {
 			readFile( in, dsa);
-
-			fclose(in);
 		}
+
+		fclose(in);
 	}
-	
+
+
 	size_t n = dsa_size( dsa);
 	
 	if( FLAGS & F_VERBOSE){
@@ -197,7 +210,7 @@ int main( int argc, char *argv[]){
 	if( n >= 2){
 		calcDistMatrix(sequences, n);
 	} else {
-		WARN("I am truly sorry, but with less than two sequences (%lu given) there is nothing to compare.", n);
+		warnx("I am truly sorry, but with less than two sequences (%lu given) there is nothing to compare.", n);
 	}
 
 	dsa_free( dsa);
@@ -221,7 +234,7 @@ void usage(void){
 		"  -t <INT>          The number of threads to be used; default: 1\n"
 #endif
 		"  -h, --help        Display this help and exit\n"
-		"      --version     Output version information and acknowledgements\n"
+		"      --version     Output version information and acknowledgments\n"
 	};
 
 	printf("%s", str);
@@ -239,10 +252,10 @@ void version(void){
 		"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 		"This is free software: you are free to change and redistribute it.\n"
 		"There is NO WARRANTY, to the extent permitted by law.\n\n"
-		"Acknowledgements:\n"
-		"1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014)."
-		" Fast and accurate estimation of evolutionary distances between genomes. In preparation.\n"
-		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algoritms. Sequence Analysis, "
+		"Acknowledgments:\n"
+		"1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014). "
+		"Fast and accurate estimation of evolutionary distances between closely related genomes\n"
+		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algorithms. Sequence Analysis, "
 		"Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.\n"
 		"3) SA construction: Mori, Y. (2005). Short description of improved two-stage suffix "
 		"sorting alorithm. http://homepage3.nifty.com/wpage/software/itssort.txt\n"

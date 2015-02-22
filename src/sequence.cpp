@@ -18,11 +18,11 @@ using namespace std;
 /**
  * @brief Convert an array of multiple sequences into a single sequence.
  * 
- * This function joins all sequences containd in an array into one
- * long sequence. The sequences are seperated by a `!` character. The
+ * This function joins all sequences contained in an array into one
+ * long sequence. The sequences are separated by a `!` character. The
  * caller has to free the initial array.
  *
- * @returns A new sequence represention the union of the array.
+ * @returns A new sequence representation the union of the array.
  */
 seq_t dsa_join( dsa_t *dsa){
 	seq_t joined = { NULL, NULL, 0, 0, NULL, 0.0};
@@ -32,7 +32,7 @@ seq_t dsa_join( dsa_t *dsa){
 	
 	// Compute the total length
 	size_t total = 0;
-	for( auto it = dsa->begin(); it != dsa->end(); ++it){
+	for( dsa_t::iterator it = dsa->begin(); it != dsa->end(); ++it){
 		total += it->len + 1;
 	}
 	
@@ -44,7 +44,7 @@ seq_t dsa_join( dsa_t *dsa){
 	char *next = ptr;
 	
 	// Copy all old sequences and add a `!` in between
-	auto it = dsa->begin();
+	dsa_t::iterator it = dsa->begin();
 	memcpy( next, it->S, it->len);
 	next += it->len;
 	for( it++; it != dsa->end(); it++){
@@ -53,7 +53,7 @@ seq_t dsa_join( dsa_t *dsa){
 		next += it->len;
 	}
 	
-	// Dont forget the null byte.
+	// Don't forget the null byte.
 	*next = '\0';
 	
 	joined.S = ptr;
@@ -76,7 +76,7 @@ void seq_free( seq_t *S){
 }
 
 /**
- * Compute the reverse complement.
+ * @brief Compute the reverse complement.
  * @param str The master string.
  * @param len The length of the master string
  * @return The reverse complement. The caller has to free it!
@@ -119,7 +119,7 @@ char *revcomp( const char *str, size_t len){
 }
 
 /**
- * This function concatenates the reverse complement to a given master string. A
+ * @brief This function concatenates the reverse complement to a given master string. A
  * `#` sign is used as a separator.
  * @param s The master string.
  * @param len Its length.
@@ -162,14 +162,10 @@ double calc_gc( seq_t *S){
 	return S->gc = (double)GC/S->len;
 }
 
-/** @brief Prepares a sequences to be used as the subject in a comparision. */
+/** @brief Prepares a sequences to be used as the subject in a comparison. */
 void seq_subject_init( seq_t *S){
-	normalize( S);
-	
-	// recalculate the length because `normalize` might have stripped some characters.
-	S->len = strlen(S->S);
 	calc_gc(S);
-	
+
 	S->RS = catcomp(S->S, S->len);
 	S->RSlen = 2 * S->len + 1;
 }
@@ -203,7 +199,10 @@ int seq_init( seq_t *S, const char *seq, const char *name){
 		return 1;
 	}
 
-	S->len = strlen((const char*) seq);
+	normalize( S);
+
+	// recalculate the length because `normalize` might have stripped some characters.
+	S->len = strlen(S->S);
 
 	return 0;
 }

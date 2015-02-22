@@ -1,6 +1,8 @@
+[![Build Status](https://travis-ci.org/EvolBioInf/andi.svg?branch=master)](https://travis-ci.org/EvolBioInf/andi)
+
 # About
 
-This is the `andi` program for estimating the evolutionary distance between closely related genomes.
+This is the `andi` program for estimating the evolutionary distance between closely related genomes. It efficiently and accurately computes a distance for substitution rates up to 0.5. These distances are based on ungapped local alignments framed by anchors. Anchors are efficiently found using an enhanced suffix array. As a result, `andi` scales well even for data sets containing thousands of bacterial genomes.
 
 # Build Instructions
 
@@ -8,7 +10,7 @@ For the latest [stable release](https://github.com/EvolBioInf/andi/releases) of 
 
 ## Prerequisites
 
-This program has the following dependencies: [kseq.h](http://lh3lh3.users.sourceforge.net/kseq.shtml), RMQ_improved and [libdivsufsort](https://code.google.com/p/libdivsufsort/). The former two are included in the `lib` directory. Please make sure you installed the latter before attempting a build. If you did get the source, not as a tarball, but straight from the git repository, you will also need autoconf, automake and the libtool. Run `autoreconf -i` to generate the configure script and continue with the next step.
+This program has the following dependencies: [kseq.h](https://github.com/lh3/seqtk/blob/master/kseq.h), RMQ_improved and [libdivsufsort](https://code.google.com/p/libdivsufsort/). The former two are included in the `lib` directory. Please make sure you installed the latter before attempting a build. If you did get the source, not as a tarball, but straight from the git repository, you will also need the autotools. Run `autoreconf -i` to generate the configure script and continue with the next step.
 
 
 ## Compiling
@@ -28,9 +30,15 @@ Code documentation is provided via doxygen.
 
 	$ make code-docs
 
+## Unit Test
+To run the unit tests, you also need to install GLIB2 and enable the unit tests at configuration time as follows.
+
+	$ ./configure --enable-unit-tests
+	$ make check
+
 # Links and Additional Resources
 
-The release of this software is accompanied by a paper from Haubold et al. (in prep.). It explains the used *anchor distance* strategy in great detail. The `maf2phy.awk` script used in the validation process is located under `scripts`. Simulations were done using our own [simK](http://guanine.evolbio.mpg.de/bioBox/) tool.
+The release of this software is accompanied by a paper from [Haubold et al.](http://bioinformatics.oxfordjournals.org/content/early/2014/12/10/bioinformatics.btu815.abstract). It explains the used *anchor distance* strategy in great detail. The `maf2phy.awk` script used in the validation process is located under `scripts`. Simulations were done using our own [simK](http://guanine.evolbio.mpg.de/bioBox/) tool.
 
 ## Data Sets
 

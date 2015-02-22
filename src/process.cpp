@@ -1,3 +1,5 @@
+
+
 /**
  * @file
  * @brief This file contains various distance methods.
@@ -6,6 +8,7 @@
 #include <string.h>
 #include <assert.h>
 #include <math.h>
+#include <stdio.h>
 #include "esa.h"
 #include "global.h"
 #include "process.h"
@@ -24,7 +27,7 @@ double shuprop( size_t x, double g, size_t l);
  * Given some parameters calculate the minimum length for anchors according
  * to the distribution from Haubold et al. (2009).
  *
- * @param p - The propability with which an anchor is allowed to be random.
+ * @param p - The probability with which an anchor is allowed to be random.
  * @param g - The the relative amount of GC in the subject.
  * @param l - The length of the subject.
  * @returns The minimum length of an anchor.
@@ -45,11 +48,11 @@ size_t minAnchorLength( double p, double g, size_t l){
  * @brief Calculates the binomial coefficient of n and k.
  *
  * We used to use gsl_sf_lnchoose(xx,kk) for this functionality.
- * Afterall, why implement something that has already been done?
+ * After all, why implement something that has already been done?
  * Well, the reason is simplicity: GSL is used for only this one
  * function and the input (n<=20) is not even considered big.
  * Hence its much easier to have our own implementation and ditch
- * the GSL depenency even if that means our code is a tiny bit
+ * the GSL dependency even if that means our code is a tiny bit
  * less optimized and slower.
  *
  * @param n - The n part of the binomial coefficient.
@@ -80,7 +83,7 @@ size_t binomial_coefficient( size_t n, size_t k){
 }
 
 /**
- * @brief Given `x` this function calculates the propability of a shustring 
+ * @brief Given `x` this function calculates the probability of a shustring 
  * with a length less than `x`.
  *
  * Let X be the longest shortest unique substring (shustring) at any position. Then
@@ -90,7 +93,7 @@ size_t binomial_coefficient( size_t n, size_t k){
  * @param x - The maximum length of a shustring.
  * @param g - The the half of the relative amount of GC in the DNA.
  * @param l - The length of the subject.
- * @returns The propability of a certain shustring length.
+ * @returns The probability of a certain shustring length.
  */
 double shuprop( size_t x, double p, size_t l){
 	double xx = (double)x;
@@ -144,33 +147,56 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 	size_t this_length;
 	
 	size_t num_right_anchors = 0;
-	
-	size_t threshhold = minAnchorLength( 1-sqrt(1-RANDOM_ANCHOR_PROP), gc, C->len);
-	if( FLAGS & F_EXTRA_VERBOSE){
-		fprintf(stderr, "threshhold: %ld\n", threshhold);
-	}
+
+#ifdef DEBUG
+	size_t num_matches = 0;
+	size_t num_anchors = 0;
+	size_t num_anchors_in_rc = 0;
+	size_t num_right_anchors_in_rc = 0;
+	size_t length_anchors = 0;
+	double off_num = 0.0;
+	double off_dem = 0.0;
+#endif
+
+	size_t threshold = minAnchorLength( 1-sqrt(1-RANDOM_ANCHOR_PROP), gc, C->len);
 
 	data_t retval = {0.0,0.0};
 
 	// Iterate over the complete query.
 	while( this_pos_Q < query_length){
-		inter = get_match( C, query + this_pos_Q, query_length - this_pos_Q);
+		inter = get_match_cached( C, query + this_pos_Q, query_length - this_pos_Q);
+
+#ifdef DEBUG
+		num_matches++;
+#endif
+
+		this_length = inter.l <= 0 ? 0 : inter.l;
 		
-		if( inter.l <= 0) break;
-		this_length = inter.l;
-		
-		if( inter.i == inter.j && this_length >= threshhold)
+		if( inter.i == inter.j && this_length >= threshold)
 		{
 			// We have reached a new anchor.
 			this_pos_S = C->SA[ inter.i];
-			
+
+#ifdef DEBUG
+			num_anchors++;
+			length_anchors += this_length;
+			if( this_pos_S < (size_t)(C->len / 2)){
+				num_anchors_in_rc++;
+			}
+#endif
+
 			// Check if this can be a right anchor to the last one.
 			if( this_pos_Q - last_pos_Q == this_pos_S - last_pos_S ){
 				num_right_anchors++;
+#ifdef DEBUG
+				if( this_pos_S < (size_t)(C->len / 2)){
+					num_right_anchors_in_rc++;
+				}
+#endif
 			
 				// Count the SNPs in between.
 				size_t i;
-				for( i= 0; i< this_pos_Q - last_pos_Q; i++){
+				for( i= last_length; i< this_pos_Q - last_pos_Q; i++){
 					if( C->S[ last_pos_S + i] != query[ last_pos_Q + i] ){
 						snps++;
 					}
@@ -178,6 +204,13 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 				homo += this_pos_Q - last_pos_Q;
 				last_was_right_anchor = 1;
 			} else {
+#ifdef DEBUG
+				double off = fabs((double)(this_pos_Q - last_pos_Q)- (double)(this_pos_S - last_pos_S));
+				if( off < 100 ){
+					off_num += off;
+					off_dem++;
+				}
+#endif
 				if( last_was_right_anchor){
 					// If the last was a right anchor, but with the current one, we 
 					// cannot extend, then add its length.
@@ -196,6 +229,25 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		// Advance
 		this_pos_Q += this_length + 1;
 	}
+
+#ifdef DEBUG
+	if( FLAGS & F_EXTRA_VERBOSE ){
+		const char str[] = {
+			"- threshold: %ld\n"
+			"- matches: %lu\n"
+			"- anchors: %lu (rc: %lu)\n"
+			"- right anchors: %lu (rc: %lu)\n"
+			"- avg length: %lf\n"
+			"- off: %f (skipped: %.0f)\n"
+			"\n"
+		};
+
+		#pragma omp critical
+		{
+			fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors, num_right_anchors_in_rc, (double)length_anchors/ num_anchors, off_num/off_dem, off_dem );
+		}
+	}
+#endif
 	
 	// Very special case: The sequences are identical
 	if( last_length >= query_length ){
@@ -214,10 +266,9 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
 		retval.coverage = 1.0;
 		return retval;
 	}
-	
-	if ( num_right_anchors <= 1 || snps <= 2 || homo <= 3){
-		// Insignificant results. All abort the fail train.
 
+	// Insignificant results. All abort the fail train.
+	if ( homo <= 3){
 		retval.distance = log(-1.0);
 		return retval;
 	}
@@ -239,64 +290,13 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
  * @brief Computes the distance matrix.
  *
  * The distMatrix() populates the D matrix with computed distances. It allocates D and
- * filles it with useful values, but the caller has to free it!
+ * fills it with useful values, but the caller has to free it!
  * @return The distance matrix
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-data_t *distMatrix( seq_t* sequences, size_t n){
-	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
-
-	if( !D){
-		FAIL("Could not allocate enough memory for the comparison matrix. Try using --join or --low-memory.\n");
-	}
-
-	size_t i;
-
-	#pragma omp parallel for num_threads( THREADS)
-	for(i=0;i<n;i++){
-		esa_t E;
-
-		if( esa_init( &E, &(sequences[i])) != 0){
-			continue;
-		}
-
-		// now compare every other sequence to i
-		size_t j;
-		for(j=0; j<n; j++){
-			if( j == i) {
-				D(i,j).distance = 0.0;
-				D(i,j).coverage = 0.0;
-				continue;
-			}
-
-			// TODO: Provide a nicer progress indicator.
-			if( FLAGS & F_EXTRA_VERBOSE ){
-				#pragma omp critical
-				{
-					fprintf( stderr, "comparing %lu and %lu\n", i, j);
-				}
-			}
-
-			size_t ql = sequences[j].len;
-
-			data_t datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
-
-			if( !(FLAGS & F_RAW)){
-				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
-			}
-			// fix negative zero
-			if( datum.distance <= 0.0 ){
-				datum.distance = 0.0;
-			}
-			D(i,j) = datum;
-		}
-
-		esa_free(&E);
-	}
-
-	return D;
-}
+#define FAST
+#include "dist_hack.h"
 
 /**
  * @brief Computes the distance matrix.
@@ -307,63 +307,8 @@ data_t *distMatrix( seq_t* sequences, size_t n){
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
-data_t *distMatrixLM( seq_t* sequences, size_t n){
-	data_t *D = (data_t*) malloc( n * n * sizeof(data_t));
-
-	if( !D){
-		FAIL("Could not allocate enough memory for the comparison matrix. Try using --join.");
-	}
-
-	size_t i;
-
-	for(i=0;i<n;i++){
-		esa_t E;
-
-#ifdef _OPENMP
-		omp_set_num_threads(THREADS);
-#endif
-
-		if( esa_init( &E, &(sequences[i])) != 0){
-			continue;
-		}
-
-		// now compare every other sequence to i
-		size_t j;
-		#pragma omp parallel for num_threads( THREADS)
-		for(j=0; j<n; j++){
-			if( j == i) {
-				D(i,j).distance = 0.0;
-				D(i,j).coverage = 0.0;
-				continue;
-			}
-
-			// TODO: Provide a nicer progress indicator.
-			if( FLAGS & F_EXTRA_VERBOSE ){
-				#pragma omp critical
-				{
-					fprintf( stderr, "comparing %lu and %lu\n", i, j);
-				}
-			}
-
-			size_t ql = sequences[j].len;
-
-			data_t datum = dist_anchor( &E, sequences[j].S, ql, sequences[i].gc);
-
-			if( !(FLAGS & F_RAW)){
-				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
-			}
-			// fix negative zero
-			if( datum.distance <= 0.0 ){
-				datum.distance = 0.0;
-			}
-			D(i,j) = datum;
-		}
-
-		esa_free(&E);
-	}
-
-	return D;
-}
+#undef FAST
+#include "dist_hack.h"
 
 /**
  * @brief Calculates and prints the distance matrix
@@ -373,37 +318,52 @@ data_t *distMatrixLM( seq_t* sequences, size_t n){
 void calcDistMatrix( seq_t* sequences, int n){
 	int i;
 
-	// initialise the sequences
-	#pragma omp parallel for num_threads( THREADS)
+	// check the sequences
 	for( i=0;i<n;i++){
-		if( sequences[i].S == NULL){
-			FAIL("Missing sequence.");
+		if( sequences[i].S == NULL || sequences[i].len == 0){
+			errx(1, "Missing sequence: %s", sequences[i].name);
 		}
-		
-		seq_subject_init( &sequences[i]);
+
+		if( sequences[i].len < 1000){
+			FLAGS |= F_SHORT;
+		}
+	}
+
+	if( FLAGS & F_SHORT ){
+		warnx("One of the given input sequences is shorter than a thousand nucleotides. "
+			"This may result in inaccurate distances. Try an alignment instead.");
 	}
 	
 	// Warn about non ACGT residues.
 	if( FLAGS & F_NON_ACGT ){
-		const char str[] = {
-			"The input sequences contained characters other than acgtACGT. "
-			"These were automatically stripped to ensure correct results.\n"
-		};
-		fprintf( stderr, "%s", str);
+		warnx("The input sequences contained characters other than acgtACGT. "
+			"These were automatically stripped to ensure correct results.");
 	}
+
+	data_t *M = NULL;
 	
+	if( FLAGS & F_VERBOSE){
+		errno = 0;
+		M = (data_t*) malloc(n*n*sizeof(data_t));
+		if( !M){
+			warn("Couldn't allocate enough memory for verbose mode; Continuing without.");
+			FLAGS &= ~F_VERBOSE;
+		}
+	}
+
 	// compute the distances
-	data_t *D = FLAGS & F_LOW_MEMORY ? distMatrixLM( sequences, n) : distMatrix( sequences, n);
+	double *D = FLAGS & F_LOW_MEMORY ? distMatrixLM( sequences, n, M) : distMatrix( sequences, n, M);
 	
 	// print the results
 	printDistMatrix( D, sequences, n);
 
 	// print additional information.
 	if( FLAGS & F_VERBOSE){
-		printCovMatrix( D, n);
+		printCovMatrix( M, n);
 	}
 	
 	free(D);
+	free(M);
 }
 
 

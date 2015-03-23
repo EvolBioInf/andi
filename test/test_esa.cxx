@@ -6,6 +6,7 @@
 #include <stdlib.h>
 
 int FLAGS = F_NONE;
+int THREADS = 1;
 
 extern const int CACHE_LENGTH;
 

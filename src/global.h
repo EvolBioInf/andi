@@ -7,6 +7,7 @@
  */
 #ifndef _GLOBAL_H_
 #define _GLOBAL_H_
+#include "config.h"
 
 /**
  * The *global* variable ::FLAGS is used to set different options

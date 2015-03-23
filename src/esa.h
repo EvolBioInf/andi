@@ -6,8 +6,20 @@
 #ifndef _ESA_H_
 #define _ESA_H_
 
-#include <divsufsort.h>
 #include "sequence.h"
+#include "config.h"
+
+#ifdef HAVE_LIBDIVSUFSORT
+# include <divsufsort.h>
+#else
+
+#include <string>
+#include <vector>
+extern std::vector<int> psufsort(const std::string& T);
+
+typedef int saidx_t;
+
+#endif
 
 /**
  * @brief Represents LCP-Intervals.

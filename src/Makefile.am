@@ -10,5 +10,5 @@ andi_CXXFLAGS = $(OPENMP_CXXFLAGS) -W -Wall
 andi_LDADD = $(PSUFSORT)
 
 .PHONY: perf
-perf: CXXFLAGS= -g -O3 -ggdb
+perf: CXXFLAGS+= -g -O3 -ggdb
 perf: andi

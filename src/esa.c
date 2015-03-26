@@ -146,7 +146,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 		}
 
 		// The LCP-interval is deeper than expected
-		if ( ij.l > (ssize_t)(pos + 1)){
+		if ( ij.l > (size_t)(pos + 1)){
 
 			// Check if it still fits into the cache
 			if( (size_t)ij.l < CACHE_LENGTH){
@@ -353,7 +353,7 @@ int esa_init_CLD( esa_t *C){
 	top->lcp = -1;
 
 	// iterate over all elements
-	for( ssize_t k = 1; k < C->len + 1; k++){
+	for( size_t k = 1; k < C->len + 1; k++){
 		while( LCP[k] < top->lcp){
 			// top->lcp is a leaf
 			last = *top--;
@@ -422,14 +422,14 @@ int esa_init_LCP( esa_t *C){
 	}
 	
 	PHI[SA[0]] = -1;
-	ssize_t i, k;
+	size_t i, k;
 	
 	
 	for( i=1; i< len; i++){
 		PHI[SA[i]] = SA[ i-1];
 	}
 	
-	ssize_t l = 0;
+	size_t l = 0;
 	for( i = 0; i< len ; i++){
 		k = PHI[i];
 		if( k != -1 ){
@@ -479,7 +479,7 @@ static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
 	}
 
 	int m = ij->m;
-	ssize_t k = ij->i;
+	size_t k = ij->i;
 	int l = ij->l;
 
 	do {
@@ -594,7 +594,7 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 		}
 
 		k = l;
-	} while ( k < (ssize_t)qlen);
+	} while ( k < (size_t)qlen);
 
 	res.l = qlen;
 	return res;

@@ -56,8 +56,12 @@ int main( int argc, char *argv[]){
 	int c;
 	int version_flag = 0;
 	
-	static struct option long_options[] = {
-		{"version", no_argument, &version_flag, 1},
+	struct option long_options[] = {
+		{
+			"version",
+			no_argument,
+			&version_flag,
+		1},
 		{"help", no_argument, NULL, 'h'},
 		{"raw", no_argument, NULL, 'r'},
 		{"verbose", no_argument, NULL, 'v'},
@@ -166,7 +170,8 @@ int main( int argc, char *argv[]){
 		errx(1, "In join mode at least one filename needs to be supplied.");
 	}
 	
-	dsa_t *dsa = dsa_new();
+	dsa_t dsa;
+	dsa_init(&dsa);
 	FILE *in = NULL;
 	const char *name;
 
@@ -189,23 +194,23 @@ int main( int argc, char *argv[]){
 		}
 
 		if( FLAGS & F_JOIN){
-			joinedRead( in, dsa, name);
+			joinedRead( in, &dsa, name);
 		} else {
-			readFile( in, dsa);
+			readFile( in, &dsa);
 		}
 
 		fclose(in);
 	}
 
 
-	size_t n = dsa_size( dsa);
+	size_t n = dsa_size( &dsa);
 	
 	if( FLAGS & F_VERBOSE){
 		fprintf( stderr, "Comparing %lu sequences\n", n);
 		fflush( stderr);
 	}
 	
-	seq_t *sequences = dsa_data( dsa);
+	seq_t *sequences = dsa_data( &dsa);
 	// compute distance matrix
 	if( n >= 2){
 		calcDistMatrix(sequences, n);
@@ -213,7 +218,7 @@ int main( int argc, char *argv[]){
 		warnx("I am truly sorry, but with less than two sequences (%lu given) there is nothing to compare.", n);
 	}
 
-	dsa_free( dsa);
+	dsa_free( &dsa);
 	return 0;
 }
 

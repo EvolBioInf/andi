@@ -47,7 +47,7 @@ void test_esa_setup( esa_fixture *ef, gconstpointer test_data){
 	g_assert( ef->C != NULL);
 	g_assert( ef->S != NULL);
 
-	const char *seq {
+	const char *seq = {
 		"TACGAGCACTGGTGGAATTGATGTC"
 		"CAGTCTTATATGGCGCACCAGGCTG"
 		"ATAGTAGTAGCAGTTTGCTTATCTC"
@@ -72,7 +72,7 @@ void test_esa_setup2( esa_fixture *ef, gconstpointer test_data){
 	g_assert( ef->C != NULL);
 	g_assert( ef->S != NULL);
 
-	const char *seq {
+	const char *seq = {
 		"TACGAGCACTGGTGGAATTGATGTC"
 		"CAGTCTTATATGGCGCACCAGGCTG"
 		"ATAGTAGTAGCAGTTTGCTTATCTC"

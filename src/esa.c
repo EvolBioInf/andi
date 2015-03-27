@@ -429,7 +429,7 @@ int esa_init_LCP( esa_t *C){
 		PHI[SA[i]] = SA[ i-1];
 	}
 	
-	size_t l = 0;
+	ssize_t l = 0;
 	for( i = 0; i< len ; i++){
 		k = PHI[i];
 		if( k != -1 ){

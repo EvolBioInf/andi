@@ -57,11 +57,7 @@ int main( int argc, char *argv[]){
 	int version_flag = 0;
 	
 	struct option long_options[] = {
-		{
-			"version",
-			no_argument,
-			&version_flag,
-		1},
+		{"version", no_argument, &version_flag, 1},
 		{"help", no_argument, NULL, 'h'},
 		{"raw", no_argument, NULL, 'r'},
 		{"verbose", no_argument, NULL, 'v'},
@@ -171,7 +167,9 @@ int main( int argc, char *argv[]){
 	}
 	
 	dsa_t dsa;
-	dsa_init(&dsa);
+	if(dsa_init(&dsa)){
+		errx(errno,"Out of memory.");
+	}
 	FILE *in = NULL;
 	const char *name;
 

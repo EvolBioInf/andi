@@ -49,10 +49,15 @@ typedef struct dsa_s {
 	size_t capacity, size;
 } dsa_t;
 
-inline void dsa_init(dsa_t *A){
+inline int dsa_init(dsa_t *A){
 	A->data = (seq_t*) malloc(sizeof(seq_t) * 2);
+	if(!A->data){
+		return 1;
+	}
+	//!FIXME check for null!
 	A->capacity = 2;
 	A->size = 0;
+	return 0;
 }
 
 /** Create a new dynamic array for sequences. */
@@ -65,12 +70,13 @@ inline void dsa_push( dsa_t *A, seq_t S){
 	if( A->size < A->capacity){
 		A->data[A->size++] = S;
 	} else {
-		seq_t* ptr = (seq_t*) realloc(A->data, A->capacity * 2);
+		seq_t* ptr = (seq_t*) realloc(A->data, sizeof(seq_t) * A->capacity * 2);
 		if(ptr == NULL){
 			errx(errno, "out of memory?");
 		}
 
 		A->capacity *= 2;
+		A->data = ptr;
 		A->data[A->size++] = S;
 	}
 }

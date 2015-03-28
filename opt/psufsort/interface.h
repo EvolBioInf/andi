@@ -1,4 +1,4 @@
-#ifdef __CPLUSPLUS
+#ifdef __cplusplus
 
 std::vector<int> psufsort(const std::string& T);
 

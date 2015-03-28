@@ -589,8 +589,6 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 				return res;
 			}
 		}
-
-		k = l;
 	} while ( k < (ssize_t)qlen);
 
 	res.l = qlen;

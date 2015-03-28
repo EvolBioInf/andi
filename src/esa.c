@@ -313,10 +313,7 @@ int esa_init_SA(esa_t *C){
 	#ifdef HAVE_LIBDIVSUFSORT
 	result = divsufsort((const unsigned char*)C->S, C->SA, C->len);
 	#else
-	auto T = std::string(C->S);
-	auto temp = psufsort(T);
-	memcpy(C->SA, temp.data()+1, C->len * sizeof(int));
-	result = 0;
+	result = c_psufsort(C->S, C->SA);
 	#endif
 	
 	return result;

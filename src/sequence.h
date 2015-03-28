@@ -49,6 +49,9 @@ typedef struct dsa_s {
 	size_t capacity, size;
 } dsa_t;
 
+
+
+/** Create a new dynamic array for sequences. */
 inline int dsa_init(dsa_t *A){
 	A->data = (seq_t*) malloc(sizeof(seq_t) * 2);
 	if(!A->data){
@@ -59,11 +62,6 @@ inline int dsa_init(dsa_t *A){
 	A->size = 0;
 	return 0;
 }
-
-/** Create a new dynamic array for sequences. */
-// inline dsa_t *dsa_new(){
-// 	return ;
-// }
 
 /** Add a sequence to an array. */
 inline void dsa_push( dsa_t *A, seq_t S){

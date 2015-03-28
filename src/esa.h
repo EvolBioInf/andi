@@ -13,9 +13,7 @@
 # include <divsufsort.h>
 #else
 
-#include <string>
-#include <vector>
-extern std::vector<int> psufsort(const std::string& T);
+#include "../opt/psufsort/interface.h"
 
 typedef int saidx_t;
 

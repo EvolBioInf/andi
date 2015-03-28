@@ -10,6 +10,11 @@ AC_PROG_CPP
 AC_PROG_RANLIB
 m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 
+# Make sure, also the C++ programs are compiled with OpenMP
+AC_LANG(C++)
+AC_OPENMP
+
+# Execute all tests using C
 AC_LANG(C)
 
 AC_CHECK_LIB(m, cos)

@@ -4,11 +4,7 @@
 
 std::vector<int> psufsort(const std::string& T);
 
-extern "C" {
-	int c_psufsort(const char *str, int* SA);
-}
-
-int c_psufsort(const char *str, int* SA){
+extern "C" int c_psufsort(const char *str, int* SA){
 	if( !str || !SA){
 		return 1;
 	}

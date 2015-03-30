@@ -646,7 +646,7 @@ lcp_inter_t get_match_cached( const esa_t *C, const char *query, size_t qlen){
 
 	lcp_inter_t ij = C->cache[offset];
 
-	if( ij.j == -1 && ij.j == -1){
+	if( ij.i == -1 && ij.j == -1){
 		return get_match( C, query, qlen);
 	}
 

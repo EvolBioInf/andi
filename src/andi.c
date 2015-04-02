@@ -192,9 +192,9 @@ int main( int argc, char *argv[]){
 		}
 
 		if( FLAGS & F_JOIN){
-			joinedRead( in, &dsa, name);
+			read_fasta_join( in, &dsa, name);
 		} else {
-			readFile( in, &dsa);
+			read_fasta( in, &dsa);
 		}
 
 		fclose(in);
@@ -211,7 +211,7 @@ int main( int argc, char *argv[]){
 	seq_t *sequences = dsa_data( &dsa);
 	// compute distance matrix
 	if( n >= 2){
-		calcDistMatrix(sequences, n);
+		calculate_distances(sequences, n);
 	} else {
 		warnx("I am truly sorry, but with less than two sequences (%lu given) there is nothing to compare.", n);
 	}

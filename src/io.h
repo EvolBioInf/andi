@@ -27,10 +27,10 @@ typedef struct data_s {
 #define D( X, Y) (D[ (X)*n + (Y) ])
 #define M( X, Y) (M[ (X)*n + (Y) ])
 
-void readFile( FILE *in, dsa_t *dsa);
-void joinedRead( FILE *in, dsa_t *dsa, const char *name);
+void read_fasta( FILE *in, dsa_t *dsa);
+void read_fasta_join( FILE *in, dsa_t *dsa, const char *name);
 
-void printDistMatrix( double *D, seq_t *sequences, size_t n);
-void printCovMatrix( data_t *D, size_t n);
+void print_distances( double *D, seq_t *sequences, size_t n);
+void print_coverages( data_t *D, size_t n);
 
 #endif // _IO_H_

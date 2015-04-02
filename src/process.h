@@ -8,7 +8,7 @@
 
 #include "sequence.h"
 
-void calcDistMatrix( seq_t* sequences, int n);
+void calculate_distances( seq_t* sequences, int n);
 
 #endif
 

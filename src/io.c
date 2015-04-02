@@ -29,12 +29,12 @@ KSEQ_INIT(int, read);
  * @param dsa - An array that holds found sequences.
  * @param name - The name of the file to be used for the name of the sequence.
  */
-void joinedRead( FILE *in, dsa_t *dsa, const char *name){
+void read_fasta_join( FILE *in, dsa_t *dsa, const char *name){
 	if( !in || !dsa || !name) return;
 
 	dsa_t single;
 	dsa_init(&single);
-	readFile( in, &single);
+	read_fasta( in, &single);
 	
 	if( dsa_size( &single) == 0 ){
 		return;
@@ -63,7 +63,7 @@ void joinedRead( FILE *in, dsa_t *dsa, const char *name){
  * @param in - The file pointer to read from.
  * @param dsa - An array that holds found sequences.
  */
-void readFile( FILE *in, dsa_t *dsa){
+void read_fasta( FILE *in, dsa_t *dsa){
 	if( !in || !dsa) return;
 	int l;
 	int check;
@@ -93,7 +93,7 @@ void readFile( FILE *in, dsa_t *dsa){
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
  */
-void printDistMatrix( double *D, seq_t *sequences, size_t n){
+void print_distances( double *D, seq_t *sequences, size_t n){
 
 	int use_scientific = 0;
 	int failed = 0;
@@ -140,7 +140,7 @@ void printDistMatrix( double *D, seq_t *sequences, size_t n){
  * @param D - The distance matrix
  * @param n - The number of sequences.
  */
-void printCovMatrix( data_t *D, size_t n){
+void print_coverages( data_t *D, size_t n){
 	size_t i,j;
 	printf("\nCoverage:\n");
 	for(i=0; i<n; i++){

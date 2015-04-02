@@ -315,7 +315,7 @@ data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, doub
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
  */
-void calcDistMatrix( seq_t* sequences, int n){
+void calculate_distances( seq_t* sequences, int n){
 	int i;
 
 	// check the sequences
@@ -355,11 +355,11 @@ void calcDistMatrix( seq_t* sequences, int n){
 	double *D = FLAGS & F_LOW_MEMORY ? distMatrixLM( sequences, n, M) : distMatrix( sequences, n, M);
 	
 	// print the results
-	printDistMatrix( D, sequences, n);
+	print_distances( D, sequences, n);
 
 	// print additional information.
 	if( FLAGS & F_VERBOSE){
-		printCovMatrix( M, n);
+		print_coverages( M, n);
 	}
 	
 	free(D);

@@ -22,7 +22,7 @@ before_install:
 script:
 - export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
 - autoreconf -fvi -Im4
-- export CFLAGS='-fprofile-arcs -ftest-coverage'; export CXXFLAGS='-fprofile-arcs -ftest-coverage'; ./configure --enable-unit-tests
+- ./configure --enable-unit-tests CFLAGS='-fprofile-arcs -ftest-coverage' CXXFLAGS='-fprofile-arcs -ftest-coverage'
 - make
 - make check
 after_success:

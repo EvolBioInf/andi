@@ -476,18 +476,14 @@ static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
 	int l = ij->l;
 
 	char c = S[SA[i] + l];
-	if( c == a ){
-		goto found;
-	}
-
 	goto SoSueMe;
 
 	do {
 		c = FVC[i];
 
+		SoSueMe:
 		if( c == a){
 			/* found ! */
-			found:
 			ij->i = i;
 			ij->j = m-1;
 			ij->m = LCP[i] <= LCP[m] ? L(CLD, m) : R(CLD,i);
@@ -495,7 +491,6 @@ static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
 			return ij;
 		}
 
-		SoSueMe:
 		if( c > a){
 			break;
 		}

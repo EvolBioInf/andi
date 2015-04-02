@@ -12,6 +12,56 @@
 
 void normalize( seq_t *S);
 
+/** Create a new dynamic array for sequences. */
+int dsa_init(dsa_t *A){
+	A->data = (seq_t*) malloc(sizeof(seq_t) * 2);
+	if(!A->data){
+		return 1;
+	}
+	//!FIXME check for null!
+	A->capacity = 2;
+	A->size = 0;
+	return 0;
+}
+
+/** Add a sequence to an array. */
+void dsa_push( dsa_t *A, seq_t S){
+	if( A->size < A->capacity){
+		A->data[A->size++] = S;
+	} else {
+		seq_t* ptr = (seq_t*) realloc(A->data, sizeof(seq_t) * A->capacity * 2);
+		if(ptr == NULL){
+			errx(errno, "out of memory?");
+		}
+
+		A->capacity *= 2;
+		A->data = ptr;
+		A->data[A->size++] = S;
+	}
+}
+
+/** Frees the array and all sequences stored within. */
+void dsa_free( dsa_t *A){
+	size_t i;
+	for( i=0; i< A->size; i++){
+		seq_free(&A->data[i]);
+	}
+
+	free(A->data);
+	A->data = NULL;
+	A->capacity = A->size = 0;
+}
+
+/** Returns the number of sequences stored within an array. */
+size_t dsa_size( dsa_t *A){
+	return A->size;
+}
+
+/** Get the raw C array. */
+seq_t* dsa_data( dsa_t *A){
+	return A->data;
+}
+
 /**
  * @brief Convert an array of multiple sequences into a single sequence.
  * 

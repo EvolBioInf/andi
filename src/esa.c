@@ -7,11 +7,7 @@
  * Others are modified for improved performance. For future reference here are
  * some of the implemented changes.
  *
-<<<<<<< HEAD
- * The name `getLCPInterval` is kind of misleading. It and `getInterval` both
-=======
  * The name `get_match` is kind of misleading. It and `get_interval` both
->>>>>>> master
  * find LCP-intervals but once for prefixes and for characters respectively.
  * A critical speed component for both functions is the number of RMQs done.
  * To reduce the number of calls, the `m` property of `lcp_inter_t` is caching

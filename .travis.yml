@@ -22,8 +22,8 @@ before_install:
 script:
 - export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
 - autoreconf -fvi -Im4
-- export CXXFLAGS='-fprofile-arcs -ftest-coverage'; ./configure --enable-unit-tests
-- make 
+- export CFLAGS='-fprofile-arcs -ftest-coverage'; export CXXFLAGS='-fprofile-arcs -ftest-coverage'; ./configure --enable-unit-tests
+- make
 - make check
 after_success:
 - coveralls --exclude libdivsufsort-2.0.1 --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'

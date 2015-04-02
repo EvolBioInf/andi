@@ -5,20 +5,16 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
+#define _GNU_SOURCE
+#include <string.h>
 #include "io.h"
+#include "global.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <kseq.h>
 
 // was: KSEQ_INIT(FILE*, read)
+KSEQ_INIT(int, read);
 
-KSEQ_INIT(int, read)
-
-#ifdef __cplusplus
-}
-#endif
 
 /**
  * @brief Joins all sequences from a file into a single long sequence.
@@ -36,14 +32,15 @@ KSEQ_INIT(int, read)
 void joinedRead( FILE *in, dsa_t *dsa, const char *name){
 	if( !in || !dsa || !name) return;
 
-	dsa_t *single = dsa_new();
-	readFile( in, single);
+	dsa_t single;
+	dsa_init(&single);
+	readFile( in, &single);
 	
-	if( dsa_size( single) == 0 ){
+	if( dsa_size( &single) == 0 ){
 		return;
 	}
 	
-	seq_t joined = dsa_join( single);
+	seq_t joined = dsa_join( &single);
 
 	/* In join mode we try to be clever about the sequence name. Given the file
 	 * path we extract just the file name. ie. path/file.ext -> file
@@ -57,7 +54,7 @@ void joinedRead( FILE *in, dsa_t *dsa, const char *name){
 	
 	joined.name = strndup( left, dot-left ); // copy only the file name, not its path or extension
 	dsa_push( dsa, joined);
-	dsa_free( single);
+	dsa_free( &single);
 }
 
 
@@ -124,12 +121,15 @@ void printDistMatrix( double *D, seq_t *sequences, size_t n){
 		printf("%-9.9s", sequences[i].name);
 		
 		for( j=0;j<n;j++){
-			double avg = (D(i,j) + D(j,i))/2;
-			if( use_scientific){
-				printf(" %1.4e", avg);
-			} else {
-				printf(" %1.4f", avg);
+			// print average
+			double val = (D(i,j) + D(j,i))/2;
+
+			if( FLAGS & F_EXTRA_VERBOSE ){
+				val = D(i,j);
 			}
+
+			// use scientific notation for small numbers
+			printf(use_scientific ? " %1.4e" : " %1.4f", val);
 		}
 		printf("\n");
 	}

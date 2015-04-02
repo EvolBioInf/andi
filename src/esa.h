@@ -6,11 +6,18 @@
 #ifndef _ESA_H_
 #define _ESA_H_
 
-#include <divsufsort.h>
-#include <RMQ.hpp>
-#include <RMQ_n_1_improved.hpp>
-
 #include "sequence.h"
+#include "config.h"
+
+#ifdef HAVE_LIBDIVSUFSORT
+# include <divsufsort.h>
+#else
+
+#include "../opt/psufsort/interface.h"
+
+typedef int saidx_t;
+
+#endif
 
 /**
  * @brief Represents LCP-Intervals.
@@ -51,12 +58,11 @@ typedef struct {
 	saidx_t *LCP;
 	/** The length of the string S. */
 	saidx_t len;
-	/** A reference to an object for range minimum queries. */
-	RMQ *rmq_lcp;
 	/** A cache for lcp-intervals */
 	lcp_inter_t *cache;
 	/** The FVC array holds the character after the LCP. */
 	char *FVC;
+	saidx_t *CLD;
 } esa_t;
 
 lcp_inter_t get_match_cached( const esa_t *C, const char *query, size_t qlen);

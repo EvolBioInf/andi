@@ -19,11 +19,6 @@
 #include <omp.h>
 #endif
 
-#include <RMQ_n_1_improved.hpp>
-
-
-
-
 double shuprop( size_t x, double g, size_t l);
 
 /**

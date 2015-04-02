@@ -56,7 +56,7 @@ int main( int argc, char *argv[]){
 	int c;
 	int version_flag = 0;
 	
-	static struct option long_options[] = {
+	struct option long_options[] = {
 		{"version", no_argument, &version_flag, 1},
 		{"help", no_argument, NULL, 'h'},
 		{"raw", no_argument, NULL, 'r'},
@@ -166,7 +166,10 @@ int main( int argc, char *argv[]){
 		errx(1, "In join mode at least one filename needs to be supplied.");
 	}
 	
-	dsa_t *dsa = dsa_new();
+	dsa_t dsa;
+	if(dsa_init(&dsa)){
+		errx(errno,"Out of memory.");
+	}
 	FILE *in = NULL;
 	const char *name;
 
@@ -189,23 +192,23 @@ int main( int argc, char *argv[]){
 		}
 
 		if( FLAGS & F_JOIN){
-			joinedRead( in, dsa, name);
+			joinedRead( in, &dsa, name);
 		} else {
-			readFile( in, dsa);
+			readFile( in, &dsa);
 		}
 
 		fclose(in);
 	}
 
 
-	size_t n = dsa_size( dsa);
+	size_t n = dsa_size( &dsa);
 	
 	if( FLAGS & F_VERBOSE){
 		fprintf( stderr, "Comparing %lu sequences\n", n);
 		fflush( stderr);
 	}
 	
-	seq_t *sequences = dsa_data( dsa);
+	seq_t *sequences = dsa_data( &dsa);
 	// compute distance matrix
 	if( n >= 2){
 		calcDistMatrix(sequences, n);
@@ -213,7 +216,7 @@ int main( int argc, char *argv[]){
 		warnx("I am truly sorry, but with less than two sequences (%lu given) there is nothing to compare.", n);
 	}
 
-	dsa_free( dsa);
+	dsa_free( &dsa);
 	return 0;
 }
 
@@ -257,11 +260,8 @@ void version(void){
 		"Fast and accurate estimation of evolutionary distances between closely related genomes\n"
 		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algorithms. Sequence Analysis, "
 		"Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.\n"
-		"3) RMQ: Fischer, J. and Heun, V. (2007). A new succinct representation of "
-		"RMQ-information and improvements in the enhanced suffix array. "
-		"Chen, B. Paterson, M., and Zhang, G. (Eds): ESCAPE 2007, LCNS 4614, pp. 459-470.\n"
-		"4) SA construction: Mori, Y. (2005). Short description of improved two-stage suffix "
-		"sorting algorithm. http://homepage3.nifty.com/wpage/software/itssort.txt\n"
+		"3) SA construction: Mori, Y. (2005). Short description of improved two-stage suffix "
+		"sorting alorithm. http://homepage3.nifty.com/wpage/software/itssort.txt\n"
 	};
 	printf("%s", str);
 	exit(EXIT_SUCCESS);

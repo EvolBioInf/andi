@@ -1,6 +1,12 @@
+ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AM_DISTCHECK_CONFIGURE_FLAGS="--enable-unit-tests"
 
-SUBDIRS = . libs/RMQ src docs
+if !BUILD_WITH_LIBDIVSUFSORT
+OPT_PSUFSORT = opt/psufsort
+endif
+
+SUBDIRS = . $(OPT_PSUFSORT) src docs
+DIST_SUBDIRS = $(SUBDIRS) test opt opt/psufsort
 
 # Conditionaly build the tests
 if BUILD_TESTS

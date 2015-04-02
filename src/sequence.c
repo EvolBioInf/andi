@@ -7,13 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <vector>
 #include "sequence.h"
 #include "global.h"
 
 void normalize( seq_t *S);
-
-using namespace std;
 
 /**
  * @brief Convert an array of multiple sequences into a single sequence.
@@ -24,15 +21,24 @@ using namespace std;
  *
  * @returns A new sequence representation the union of the array.
  */
-seq_t dsa_join( dsa_t *dsa){
+seq_t dsa_join( dsa_t *A){
 	seq_t joined = { NULL, NULL, 0, 0, NULL, 0.0};
-	if( dsa->size() == 0){
+
+	if( A->size == 0){
 		return joined;
 	}
+
+	if(A->size == 1){
+		joined = A->data[0];
+		return joined;
+	}
+
+	seq_t *data = A->data;
+	seq_t *it = data;
 	
 	// Compute the total length
-	size_t total = 0;
-	for( dsa_t::iterator it = dsa->begin(); it != dsa->end(); ++it){
+	size_t total = 0, i;
+	for( i=0; i< A->size; i++, it++ ){
 		total += it->len + 1;
 	}
 	
@@ -44,10 +50,12 @@ seq_t dsa_join( dsa_t *dsa){
 	char *next = ptr;
 	
 	// Copy all old sequences and add a `!` in between
-	dsa_t::iterator it = dsa->begin();
+
+	it = data;
 	memcpy( next, it->S, it->len);
 	next += it->len;
-	for( it++; it != dsa->end(); it++){
+
+	for( i=1, it++; i < A->size; i++, it++){
 		*next++ = '!';
 		memcpy( next, it->S, it->len);
 		next += it->len;

@@ -8,6 +8,7 @@
 #include <err.h>
 #include <errno.h>
 #include "sequence.h"
+#include <stdio.h>
 
 /** @brief The data structure can be used to store output data resulting 
  * from the computation of distance.

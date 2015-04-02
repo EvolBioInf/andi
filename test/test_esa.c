@@ -1,12 +1,27 @@
-#include "esa.h"
 #include <glib.h>
 #include "global.h"
 #include <stdio.h>
 #include <string.h>
+#include "esa.h"
+#include <stdlib.h>
 
 int FLAGS = F_NONE;
+int THREADS = 1;
 
 extern const int CACHE_LENGTH;
+
+char code3char( ssize_t code){
+	switch( code & 0x7){
+		case 0: return 'A';
+		case 1: return 'C';
+		case 2: return 'G';
+		case 3: return 'T';
+		case 4: return '!';
+		case 5: return ';';
+		case 6: return '#';
+	}
+	return '\0';
+}
 
 typedef struct {
 	esa_t *C;
@@ -32,11 +47,37 @@ void test_esa_setup( esa_fixture *ef, gconstpointer test_data){
 	g_assert( ef->C != NULL);
 	g_assert( ef->S != NULL);
 
-	const char *seq {
+	const char *seq = {
 		"TACGAGCACTGGTGGAATTGATGTC"
 		"CAGTCTTATATGGCGCACCAGGCTG"
 		"ATAGTAGTAGCAGTTTGCTTATCTC"
 		"ATCGCGTGTTTCCGGATGACAGAGA"
+		"TACGTGCACTGGTGGGATTGATGTC"
+		"TAGTATTATATGGCGCACCAGGATG"
+		"ATAGTAGTAGCAGTTTGCTTATCCC"
+		"ATCGCGTGTTTGCGGATGACCGAGA"
+	};
+
+	g_assert( seq_init( ef->S, seq, "S0" ) == 0);
+	seq_subject_init( ef->S);
+	g_assert( ef->S->RS != NULL);
+	int check = esa_init( ef->C, ef->S);
+	g_assert( check == 0);
+}
+
+void test_esa_setup2( esa_fixture *ef, gconstpointer test_data){
+	ef->C = (esa_t *) malloc( sizeof(esa_t));
+	ef->S = (seq_t *) malloc( sizeof(seq_t));
+
+	g_assert( ef->C != NULL);
+	g_assert( ef->S != NULL);
+
+	const char *seq = {
+		"TACGAGCACTGGTGGAATTGATGTC"
+		"CAGTCTTATATGGCGCACCAGGCTG"
+		"ATAGTAGTAGCAGTTTGCTTATCTC"
+		"ATCGCGTGTTTCCGGATGACAGAGA"
+		"!"
 		"TACGTGCACTGGTGGGATTGATGTC"
 		"TAGTATTATATGGCGCACCAGGATG"
 		"ATAGTAGTAGCAGTTTGCTTATCCC"
@@ -82,7 +123,8 @@ void test_esa_basic( esa_fixture *ef, gconstpointer test_data){
 	//g_assert_cmpint(count, >=, 1 << (2*8));
 }
 
-size_t MAX_DEPTH = 11;
+
+size_t MAX_DEPTH = 9;
 
 void test_esa_prefix_dfs( esa_t *C, char *str, size_t depth);
 

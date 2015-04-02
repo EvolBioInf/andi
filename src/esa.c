@@ -31,7 +31,7 @@
 #include "esa.h"
 
 lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
-static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a);
+static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a);
 static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 
@@ -133,7 +133,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
 	for( int code = 0; code < 4; ++code){
 		str[pos] = code2char(code);
 		ij = *in;
-		get_interval_FVC(C, &ij, str[pos]);
+		get_interval(C, &ij, str[pos]);
 
 		// fail early
 		if( ij.i == -1 && ij.j == -1){
@@ -455,7 +455,7 @@ int esa_init_LCP( esa_t *C){
  * @param a - The next character.
  * @returns The lcp-interval one level deeper.
  */
-static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
+static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 	saidx_t i = ij->i;
 	saidx_t j = ij->j;
 
@@ -562,7 +562,7 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 	
 	// Loop over the query until a mismatch is found
 	do {
-		get_interval_FVC( C, &ij, query[k]);
+		get_interval( C, &ij, query[k]);
 		i = ij.i;
 		j = ij.j;
 		

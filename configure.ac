@@ -44,7 +44,8 @@ AS_IF([test "x$have_libdivsufsort" = "xno"],
 	])
 ])
 
-AM_CONDITIONAL([BUILD_WITH_LIBDIVSUFSORT],[test "x${with_libdivsufsort}" = xyes])
+AC_MSG_WARN([test "x${with_libdivsufsort}" != xno])
+AM_CONDITIONAL([BUILD_WITH_LIBDIVSUFSORT],[test "x${with_libdivsufsort}" != "xno"])
 
 # The unit tests require GLIB2. So by default do not build the test.
 # If enabled, check for glib.

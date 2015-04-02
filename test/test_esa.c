@@ -1,9 +1,8 @@
+#include "esa.h"
 #include <glib.h>
 #include "global.h"
 #include <stdio.h>
 #include <string.h>
-#include "esa.h"
-#include <stdlib.h>
 
 int FLAGS = F_NONE;
 int THREADS = 1;
@@ -123,6 +122,41 @@ void test_esa_basic( esa_fixture *ef, gconstpointer test_data){
 	//g_assert_cmpint(count, >=, 1 << (2*8));
 }
 
+void test_esa_normq_cached( esa_fixture *ef, gconstpointer test_data){
+	esa_t *C = ef->C;
+	g_assert( C->SA);
+	lcp_inter_t a, b;
+
+	a = get_match_cached(C, "A", 1);
+	b = get_match(C, "A", 1);
+	assert_equal_lcp( &a, &b);
+
+	a = get_match_cached(C, "C", 1);
+	b = get_match(C, "C", 1);
+	assert_equal_lcp( &a, &b);
+
+	a = get_match_cached(C, "CT", 2);
+	b = get_match(C, "CT", 2);
+	assert_equal_lcp( &a, &b);
+
+	a = get_match_cached(C, "AAGACTGG", 8);
+	b = get_match(C, "AAGACTGG", 8);
+	assert_equal_lcp( &a, &b);
+	
+	a = get_match_cached(C, "AATTAAAA", 8);
+	b = get_match(C, "AATTAAAA", 8);
+	assert_equal_lcp( &a, &b);
+
+	a = get_match_cached(C, "ACCGAGAA", 8);
+	b = get_match(C, "ACCGAGAA", 8);
+	assert_equal_lcp( &a, &b);
+
+	a = get_match_cached(C, "AAAAAAAAAAAA", 12);
+	b = get_match(C, "AAAAAAAAAAAA", 12);
+	assert_equal_lcp( &a, &b);
+
+	//g_assert_cmpint(count, >=, 1 << (2*8));
+}
 
 size_t MAX_DEPTH = 9;
 
@@ -150,8 +184,12 @@ int main(int argc, char *argv[])
 {
 	g_test_init( &argc, &argv, NULL);
 	g_test_add("/esa/basic", esa_fixture, NULL, test_esa_setup, test_esa_basic, test_esa_teardown);
-	g_test_add("/esa/cache", esa_fixture, NULL, test_esa_setup, test_esa_prefix, test_esa_teardown);
+	g_test_add("/esa/sample cache", esa_fixture, NULL, test_esa_setup, test_esa_normq_cached, test_esa_teardown);
+	g_test_add("/esa/sample cache 2", esa_fixture, NULL, test_esa_setup2, test_esa_normq_cached, test_esa_teardown);
+	g_test_add("/esa/full cache", esa_fixture, NULL, test_esa_setup, test_esa_prefix, test_esa_teardown);
+	g_test_add("/esa/full cache 2", esa_fixture, NULL, test_esa_setup2, test_esa_prefix, test_esa_teardown);
 
+	
 	return g_test_run();
 }
 

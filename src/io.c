@@ -2,10 +2,10 @@
  * @file
  * @brief This file contains the definitions for various io methods.
  */
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
-#define _GNU_SOURCE
 #include <string.h>
 #include "io.h"
 #include "global.h"

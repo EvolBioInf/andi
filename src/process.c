@@ -344,7 +344,7 @@ void calculate_distances( seq_t* sequences, int n){
 	
 	if( FLAGS & F_VERBOSE){
 		errno = 0;
-		M = (data_t*) malloc(n*n*sizeof(data_t));
+		M = malloc(n*n*sizeof(data_t));
 		if( !M){
 			warn("Couldn't allocate enough memory for verbose mode; Continuing without.");
 			FLAGS &= ~F_VERBOSE;

@@ -67,7 +67,7 @@ void read_fasta( FILE *in, dsa_t *dsa){
 	if( !in || !dsa) return;
 	int l;
 	int check;
-	seq_t top = { NULL, NULL, 0, 0, NULL, 0.0};
+	seq_t top = {};
 	
 	kseq_t *seq = kseq_init(fileno(in));
 	

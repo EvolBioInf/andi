@@ -83,7 +83,7 @@ ssize_t char2code( const char c){
  * @returns 0 iff successful
  */
 int esa_init_cache( esa_t *C){
-	lcp_inter_t* cache = (lcp_inter_t*) malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
+	lcp_inter_t* cache = malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
 
 	if( !cache){
 		return 1;
@@ -221,7 +221,7 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 int esa_init_FVC(esa_t *C){
 	size_t len = C->len;
 
-	char *FVC = C->FVC = (char*) malloc(len);
+	char *FVC = C->FVC = malloc(len);
 	if(!FVC){
 		return 1;
 	}
@@ -298,7 +298,7 @@ int esa_init_SA(esa_t *C){
 		return 1;
 	}
 	if( C->SA == NULL){
-		C->SA = (saidx_t*) malloc(C->len * sizeof(saidx_t));
+		C->SA = malloc(C->len * sizeof(saidx_t));
 		if( C->SA == NULL){
 			return 2;
 		}
@@ -325,7 +325,7 @@ int esa_init_CLD( esa_t *C){
 	if( !C || !C->LCP){
 		return 1;
 	}
-	saidx_t* CLD = C->CLD = (saidx_t*) malloc((C->len+1) * sizeof(saidx_t));
+	saidx_t* CLD = C->CLD = malloc((C->len+1) * sizeof(saidx_t));
 	if( !C->CLD) {
 		return 2;
 	}
@@ -336,7 +336,7 @@ int esa_init_CLD( esa_t *C){
 		saidx_t idx, lcp;
 	} pair_t;
 
-	pair_t *stack = (pair_t*) malloc((C->len+1) * sizeof(pair_t));
+	pair_t *stack = malloc((C->len+1) * sizeof(pair_t));
 	pair_t *top = stack; // points at the topmost filled element
 	pair_t last;
 
@@ -395,7 +395,7 @@ int esa_init_LCP( esa_t *C){
 	// Allocate new memory
 	if( C->LCP == NULL){
 		// The LCP array is one element longer than S.
-		C->LCP = (saidx_t*) malloc((len+1)*sizeof(saidx_t));
+		C->LCP = malloc((len+1)*sizeof(saidx_t));
 		if( C->LCP == NULL ){
 			return 3;
 		}
@@ -406,8 +406,8 @@ int esa_init_LCP( esa_t *C){
 	LCP[len] = -1;
 	
 	// Allocate temporary arrays
-	saidx_t *PHI = (saidx_t *) malloc( len * sizeof(saidx_t));
-	saidx_t *PLCP = (saidx_t *) malloc( len * sizeof(saidx_t));
+	saidx_t *PHI = malloc( len * sizeof(saidx_t));
+	saidx_t *PLCP = malloc( len * sizeof(saidx_t));
 	if( !PHI || !PLCP){
 		free(PHI);
 		free(PLCP);

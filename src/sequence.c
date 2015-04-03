@@ -14,11 +14,11 @@ void normalize( seq_t *S);
 
 /** Create a new dynamic array for sequences. */
 int dsa_init(dsa_t *A){
-	A->data = (seq_t*) malloc(sizeof(seq_t) * 2);
+	A->data = malloc(sizeof(seq_t) * 2);
 	if(!A->data){
 		return 1;
 	}
-	//!FIXME check for null!
+
 	A->capacity = 2;
 	A->size = 0;
 	return 0;
@@ -29,9 +29,9 @@ void dsa_push( dsa_t *A, seq_t S){
 	if( A->size < A->capacity){
 		A->data[A->size++] = S;
 	} else {
-		seq_t* ptr = (seq_t*) realloc(A->data, sizeof(seq_t) * A->capacity * 2);
+		seq_t* ptr = realloc(A->data, sizeof(seq_t) * A->capacity * 2);
 		if(ptr == NULL){
-			errx(errno, "out of memory?");
+			err(errno, "out of memory?");
 		}
 
 		A->capacity *= 2;
@@ -48,8 +48,7 @@ void dsa_free( dsa_t *A){
 	}
 
 	free(A->data);
-	A->data = NULL;
-	A->capacity = A->size = 0;
+	*A = (dsa_t){};
 }
 
 /** Returns the number of sequences stored within an array. */
@@ -72,7 +71,7 @@ seq_t* dsa_data( dsa_t *A){
  * @returns A new sequence representation the union of the array.
  */
 seq_t dsa_join( dsa_t *A){
-	seq_t joined = { NULL, NULL, 0, 0, NULL, 0.0};
+	seq_t joined = {};
 
 	if( A->size == 0){
 		return joined;
@@ -93,7 +92,7 @@ seq_t dsa_join( dsa_t *A){
 	}
 	
 	// A single malloc for the whole new sequence
-	char *ptr = (char *) malloc( total);
+	char *ptr = malloc( total);
 	if( ptr == NULL ){
 		return joined;
 	}
@@ -128,9 +127,7 @@ void seq_free( seq_t *S){
 	free( S->S);
 	free( S->RS);
 	free( S->name);
-	S->S = S->RS = S->name = NULL;
-	S->len = S->RSlen = 0;
-	S->gc = 0.0;
+	*S = (seq_t){};
 }
 
 /**
@@ -140,7 +137,7 @@ void seq_free( seq_t *S){
  * @return The reverse complement. The caller has to free it!
  */
 char *revcomp( const char *str, size_t len){
-	char *rev = (char*) malloc( len + 1);
+	char *rev = malloc( len + 1);
 	if( !str || !rev) return NULL;
 	
 	char *r = rev;
@@ -244,9 +241,7 @@ int seq_init( seq_t *S, const char *seq, const char *name){
 	if( !S || !seq || !name) {
 		return 1;
 	}
-	S->S = S->RS = S->name = NULL;
-	S->len = S->RSlen = 0;
-	S->gc = 0.0;
+	*S = (seq_t){};
 
 	S->S = strdup(seq);
 	if( !S->S) return 1;

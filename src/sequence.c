@@ -241,15 +241,15 @@ int seq_init( seq_t *S, const char *seq, const char *name){
 	if( !S || !seq || !name) {
 		return 1;
 	}
-	*S = (seq_t){};
 
-	S->S = strdup(seq);
-	if( !S->S) return 1;
+	*S = (seq_t){
+		.S = strdup(seq),
+		.name=strdup(name)
+	};
 
-	S->name = strdup(name);
-	if( !S->name){
+	if( !S->S || !S->name){
 		seq_free(S);
-		return 1;
+		return 2;
 	}
 
 	normalize( S);

@@ -30,18 +30,17 @@
 #include <assert.h>
 #include "esa.h"
 
-lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
 static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a);
 static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
-void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+static void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 
-lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a);
+static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a);
 lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen);
-lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+static lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
 
 static int esa_init_SA( esa_t *c);
 static int esa_init_LCP( esa_t *c);
-int esa_init_CLD( esa_t *C);
+static int esa_init_CLD( esa_t *C);
 
 /** @brief The prefix length up to which RMQs are cached. */
 const size_t CACHE_LENGTH = 10;

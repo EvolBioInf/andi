@@ -245,20 +245,15 @@ int esa_init_FVC(esa_t *C){
  * @param S - The sequence
  * @returns 0 iff successful
  */
-int esa_init( esa_t *C, seq_t *S){
-	C->S = NULL;
-	C->SA = NULL;
-	C->LCP = NULL;
-	C->len = 0;
-	C->CLD = NULL;
-	C->FVC = NULL;
+int esa_init( esa_t *C, const seq_t *S){
+	if( !C || !S || !S->S) return 1;
+
+	*C = (esa_t){
+		.S = S->RS,
+		.len = S->RSlen
+	};
 
 	int result;
-
-	C->S = (const char*) S->RS;
-	C->len = S->RSlen;
-
-	if( C->S == NULL ) return 1;
 
 	result = esa_init_SA(C);
 	if(result) return result;

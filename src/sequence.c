@@ -78,7 +78,9 @@ seq_t dsa_join( dsa_t *A){
 	}
 
 	if(A->size == 1){
+		/* If we are to join just one sequence, _move_ its contents. */
 		joined = A->data[0];
+		A->data[0] = (seq_t){};
 		return joined;
 	}
 

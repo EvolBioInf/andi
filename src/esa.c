@@ -600,18 +600,18 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
  * @returns the lcp interval of the match.
  */
 lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen){
-	lcp_inter_t res = {0,0,0,0};
-
 	// sanity checks
 	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->CLD ){
-		res.i = res.j = res.l = -1;
-		return res;
+		return (lcp_inter_t){-1,-1,-1,-1};
 	}
 
-	lcp_inter_t ij = { 0, 0, C->len-1, 0};
-
-	ij.m = L(C->CLD, C->len);
-	ij.l = C->LCP[ij.m];
+	saidx_t m = L(C->CLD, C->len);
+	lcp_inter_t ij = {
+		.i = 0,
+		.j = C->len - 1,
+		.m = m,
+		.l = C->LCP[m]
+	};
 
 	return get_match_from(C, query, qlen, 0, ij);
 }

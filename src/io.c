@@ -115,7 +115,7 @@ void print_distances( double *D, seq_t *sequences, size_t n){
 			"Please refer to the documentation for further details.");
 	}
 
-	printf("%lu\n", n);
+	printf("%zu\n", n);
 	for( i=0;i<n;i++){
 		// Print exactly nine characters of the name. Pad with spaces if necessary.
 		printf("%-9.9s", sequences[i].name);

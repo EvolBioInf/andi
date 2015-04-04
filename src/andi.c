@@ -204,7 +204,7 @@ int main( int argc, char *argv[]){
 	size_t n = dsa_size( &dsa);
 	
 	if( FLAGS & F_VERBOSE){
-		fprintf( stderr, "Comparing %lu sequences\n", n);
+		fprintf( stderr, "Comparing %zu sequences\n", n);
 		fflush( stderr);
 	}
 	
@@ -213,7 +213,7 @@ int main( int argc, char *argv[]){
 	if( n >= 2){
 		calculate_distances(sequences, n);
 	} else {
-		warnx("I am truly sorry, but with less than two sequences (%lu given) there is nothing to compare.", n);
+		warnx("I am truly sorry, but with less than two sequences (%zu given) there is nothing to compare.", n);
 	}
 
 	dsa_free( &dsa);

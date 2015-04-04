@@ -69,7 +69,7 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 			if( FLAGS & F_EXTRA_VERBOSE ){
 				#pragma omp critical
 				{
-					fprintf( stderr, "comparing %lu and %lu\n", i, j);
+					fprintf( stderr, "comparing %zu and %zu\n", i, j);
 				}
 			}
 

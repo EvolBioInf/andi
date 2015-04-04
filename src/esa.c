@@ -292,14 +292,13 @@ void esa_free( esa_t *C){
  */
 int esa_init_SA(esa_t *C){
 	// assert c.S
-	if( !C || C->S == NULL){
+	if( !C || !C->S ){
 		return 1;
 	}
-	if( C->SA == NULL){
-		C->SA = malloc(C->len * sizeof(saidx_t));
-		if( C->SA == NULL){
-			return 2;
-		}
+
+	C->SA = malloc(C->len * sizeof(saidx_t));
+	if( !C->SA ){
+		return 2;
 	}
 	
 	saidx_t result = 1;
@@ -386,19 +385,16 @@ int esa_init_LCP( esa_t *C){
 	saidx_t len  = C->len;
 	
 	// Trivial safety checks
-	if( !C || S == NULL || SA == NULL || len == 0){
+	if( !C || !S || !SA || len == 0){
 		return 1;
 	}
 	
 	// Allocate new memory
-	if( C->LCP == NULL){
-		// The LCP array is one element longer than S.
-		C->LCP = malloc((len+1)*sizeof(saidx_t));
-		if( C->LCP == NULL ){
-			return 3;
-		}
+	// The LCP array is one element longer than S.
+	saidx_t *LCP = C->LCP = malloc((len+1)*sizeof(saidx_t));
+	if( !LCP ){
+		return 3;
 	}
-	saidx_t *LCP = C->LCP;
 	
 	LCP[0] = -1;
 	LCP[len] = -1;

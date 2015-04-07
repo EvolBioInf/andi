@@ -65,6 +65,11 @@ int main( int argc, char *argv[]){
 		{"low-memory", no_argument, NULL, 'm'},
 		{0,0,0,0}
 	};
+
+#ifdef _OPENMP
+	// Use all available processors by default.
+	THREADS = omp_get_num_procs();
+#endif
 	
 	// parse arguments
 	while( 1 ){

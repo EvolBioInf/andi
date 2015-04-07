@@ -8,26 +8,26 @@ andi \- estimates evolutionary distance
 .TP
 \fBandi\fR estimates the evolutionary distance between closely related genomes. For this \fBandi\fR reads the input sequences from \fIFASTA\fR files and computes the pairwise anchor distance. The idea behind this is explained in a paper by Haubold et al. (see below).
 .SH OUTPUT
-The output is a symmetrical distance matrix with each entry representing divergence with a positive real number. A distance of zero means that two sequences are identical whereas other values are estimates for the nucleotide mutation rate. For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were too short (<200bp) or too diverse (K>0.5) for our method to work properly.
+The output is a symmetrical distance matrix in \fIPHYLIP\fR format, with each entry representing divergence with a positive real number. A distance of zero means that two sequences are identical, whereas other values are estimates for the nucleotide substitution rate (Jukes-Cantor corrected). For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were too short (<200bp) or too diverse (K>0.5) for our method to work properly.
 .SH OPTIONS
 .TP
 \fB\-j\fR, \fB\-\-join\fR
-Use this mode if each of your \fIFASTA\fR files represents one assembly with numerous contigs. \fBandi\fR will then treat all of the contained sequences as a single genome. In this mode at least one file must be provided via command line arguments. For the output the filename is used to identify each sequence.
+Use this mode if each of your \fIFASTA\fR files represents one assembly with numerous contigs. \fBandi\fR will then treat all of the contained sequences per file as a single genome. In this mode at least one file name must be provided via command line arguments. For the output the filename is used to identify each sequence.
 .TP
 \fB\-m\fR, \fB\-\-low-memory\fR
-In multithreaded mode, \fBandi\fR requires memory linear to the amount of threads. The low memory mode changes this to a constant demand independent from the used number of threads. Unfortunately this comes at a significant runtime cost.
+In multithreaded mode, \fBandi\fR requires memory linear to the amount of threads. The low memory mode changes this to a constant demand independent from the used number of threads. Unfortunately, this comes at a significant runtime cost.
 .TP
 \fB\-p\fR <FLOAT>
-Significance of an anchor pair; default: 0.05
+Significance of an anchor pair; default: 0.05.
 .TP
 \fB\-r\fR, \fB\-\-raw\fR
-Calculates raw distances; default: Jukes\-Cantor corrected
+Calculates raw distances; default: Jukes\-Cantor corrected.
 .TP
 \fB\-v\fR, \fB\-\-verbose\fR
 Prints additional information. Apply multiple times for extra verboseness.
 .TP
 \fB\-t\fR <INT>
-The number of threads to be used; default: 1
+The number of threads to be used; by default, all available processors are used.
 .br
 Multithreading is only available if \fBandi\fR was compiled with OpenMP support.
 .TP
@@ -35,7 +35,7 @@ Multithreading is only available if \fBandi\fR was compiled with OpenMP support.
 Prints the synopsis and an explanation of available options.
 .TP
 \fB\-\-version\fR
-Outputs version information and acknowledgments
+Outputs version information and acknowledgments.
 .SH COPYRIGHT
 Copyright \(co 2014 Fabian Klötzl
 License GPLv3+: GNU GPL version 3 or later.
@@ -45,13 +45,11 @@ There is NO WARRANTY, to the extent permitted by law.
 The full license text is available at <http://gnu.org/licenses/gpl.html>.
 .PP
 .SH ACKNOWLEDGMENTS
-1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014). Fast and accurate estimation of evolutionary distances between closely related genomes\n
+1) andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014). andi: Fast and accurate estimation of evolutionary distances between closely related genomes
 .br
 2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algorithms. Sequence Analysis, Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.
 .br
-3) RMQ: Fischer, J. and Heun, V. (2007). A new succinct representation of RMQ\-information and improvements in the enhanced suffix array. Chen, B. Paterson, M., and Zhang, G. (Eds): ESCAPE 2007, LCNS 4614, pp. 459\-470.
-.br
-4) SA construction: Mori, Y. (2005). Short description of improved two\-stage suffix sorting algorithm. http://homepage3.nifty.com/wpage/software/itssort.txt
+3) SA construction: Mori, Y. (2005). Short description of improved two\-stage suffix sorting algorithm. http://homepage3.nifty.com/wpage/software/itssort.txt
 .SH BUGS
 .SS Reporting Bugs
 Please report bugs to <kloetzl@evolbio.mpg.de> or at <https://github.com/EvolBioInf/andi>.

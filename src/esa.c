@@ -401,10 +401,9 @@ int esa_init_LCP( esa_s *C){
 	
 	// Allocate temporary arrays
 	saidx_t *PHI = malloc( len * sizeof(saidx_t));
-	saidx_t *PLCP = malloc( len * sizeof(saidx_t));
-	if( !PHI || !PLCP){
+	saidx_t *PLCP = PHI;
+	if( !PHI ){
 		free(PHI);
-		free(PLCP);
 		return 2;
 	}
 	
@@ -438,7 +437,6 @@ int esa_init_LCP( esa_s *C){
 	}
 	
 	free(PHI);
-	free(PLCP);
 	return 0;
 }
 

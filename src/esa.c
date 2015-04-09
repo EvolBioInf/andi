@@ -71,6 +71,10 @@ ssize_t char2code( const char c){
 #define R(CLD, i) ((CLD)[(i)])
 #define L(CLD, i) ((CLD)[(i)-1])
 
+
+#define LCP(i) (self->LCP[(i)] & 0xFFFFFF)
+#define FVC(i) (self->LCP[(i)] >> 24)
+
 /** @brief Fills the RMQ cache.
  *
  * Traversing the virtual suffix tree, created by SA, LCP and CLD is rather slow.
@@ -78,30 +82,30 @@ ssize_t char2code( const char c){
  * length ::CACHE_LENGTH. This function it the entry point for the cache filling
  * routine.
  *
- * @param C - The ESA.
+ * @param self - The ESA.
  * @returns 0 iff successful
  */
-int esa_init_cache( esa_s *C){
+int esa_init_cache( esa_s *self){
 	lcp_inter_t* cache = malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
 
 	if( !cache){
 		return 1;
 	}
 
-	C->cache = cache;
+	self->cache = cache;
 
 	char str[CACHE_LENGTH+1];
 	str[CACHE_LENGTH] = '\0';
 
-	saidx_t m = L(C->CLD, C->len);
+	saidx_t m = L(self->CLD, self->len);
 	lcp_inter_t ij = {
 		.i = 0,
-		.j = C->len - 1,
+		.j = self->len - 1,
 		.m = m,
-		.l = C->LCP[m]
+		.l = LCP(m)
 	};
 
-	esa_init_cache_dfs( C, str, 0, &ij);
+	esa_init_cache_dfs( self, str, 0, &ij);
 
 	return 0;
 }
@@ -241,6 +245,20 @@ int esa_init_FVC(esa_s *self){
 	return 0;
 }
 
+int esa_init_DIFF(esa_s *self){
+
+
+	const char *S = self->S;
+	const int *SA = self->SA;
+	int *LCP= self->LCP;
+
+	for (int i = self->len; i--; SA++, LCP++){
+		*LCP |= S[*SA + *LCP] << 24;
+	}
+
+	return 0;
+}
+
 /** @brief Initializes an ESA.
  *
  * This function initializes an ESA with respect to the provided sequence.
@@ -267,11 +285,13 @@ int esa_init( esa_s *C, const seq_t *S){
 	result = esa_init_CLD(C);
 	if(result) return result;
 
-	result = esa_init_FVC(C);
-	if( result) return result;
+	// result = esa_init_FVC(C);
+	// if( result) return result;
+	esa_init_DIFF(C);
 
 	result = esa_init_cache(C);
 	if(result) return result;
+
 
 	return 0;
 }
@@ -442,20 +462,18 @@ int esa_init_LCP( esa_s *C){
 
 /** @brief For the lcp-interval of string `w` compute the interval for `wa`
  *
- * @param C - The ESA.
+ * @param self - The ESA.
  * @param ij - The lcp-interval for `w`.
  * @param a - The next character.
  * @returns The lcp-interval one level deeper.
  */
-static lcp_inter_t *get_interval( const esa_s *C, lcp_inter_t *ij, char a){
+static lcp_inter_t *get_interval( const esa_s *self, lcp_inter_t *ij, char a){
 	saidx_t i = ij->i;
 	saidx_t j = ij->j;
 
-	const saidx_t *SA = C->SA;
-	const saidx_t *LCP = C->LCP;
-	const char *S = C->S;
-	const saidx_t *CLD = C->CLD;
-	const char *FVC= C->FVC;
+	const saidx_t *SA = self->SA;
+	const char *S = self->S;
+	const saidx_t *CLD = self->CLD;
 	// check for singleton or empty interval
 	if( i == j ){
 		if( S[SA[i] + ij->l] != a){
@@ -471,7 +489,7 @@ static lcp_inter_t *get_interval( const esa_s *C, lcp_inter_t *ij, char a){
 	goto SoSueMe;
 
 	do {
-		c = FVC[i];
+		c = FVC(i);
 
 		SoSueMe:
 		if( c == a){
@@ -482,7 +500,7 @@ static lcp_inter_t *get_interval( const esa_s *C, lcp_inter_t *ij, char a){
 				.i = i,
 				.j = m-1,
 				.m = n,
-				.l = LCP[n]
+				.l = LCP(n)
 			};
 
 			return ij;
@@ -499,15 +517,15 @@ static lcp_inter_t *get_interval( const esa_s *C, lcp_inter_t *ij, char a){
 		}
 
 		m = R(CLD,m);
-	} while ( /*m != "bottom" && */ LCP[m] == l);
+	} while ( /*m != "bottom" && */ LCP(m) == l);
 
 	// final sanity check
-	if( i != ij->i ? FVC[i] == a : S[SA[i] + l] == a){
+	if( i != ij->i ? FVC(i) == a : S[SA[i] + l] == a){
 		ij->i = i;
 		ij->j = j;
 		/* Also return the length of the LCP interval including `a` and
 		 * possibly even more characters. Note: l + 1 <= LCP[m] */
-		ij->l = LCP[m];
+		ij->l = LCP(m);
 		ij->m = m;
 	} else {
 		ij->i = ij->j = -1;
@@ -594,29 +612,29 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 
 /** @brief Get a match.
  *
- * Given an ESA (C) and a string q find the longest prefix of q that matches some
- * where in C. Of that match the lcp-interval is returned.
+ * Given an ESA (self) and a string q find the longest prefix of q that matches some
+ * where in self. Of that match the lcp-interval is returned.
  *
- * @param C - The ESA.
+ * @param self - The ESA.
  * @param query - The query string — duh.
  * @param qlen - The length of the query.
  * @returns the lcp interval of the match.
  */
-lcp_inter_t get_match( const esa_s *C, const char *query, size_t qlen){
+lcp_inter_t get_match( const esa_s *self, const char *query, size_t qlen){
 	// sanity checks
-	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->CLD ){
+	if( !self || !query || !self->len || !self->SA || !self->LCP || !self->S || !self->CLD ){
 		return (lcp_inter_t){-1,-1,-1,-1};
 	}
 
-	saidx_t m = L(C->CLD, C->len);
+	saidx_t m = L(self->CLD, self->len);
 	lcp_inter_t ij = {
 		.i = 0,
-		.j = C->len - 1,
+		.j = self->len - 1,
 		.m = m,
-		.l = C->LCP[m]
+		.l = LCP(m)
 	};
 
-	return get_match_from(C, query, qlen, 0, ij);
+	return get_match_from(self, query, qlen, 0, ij);
 }
 
 /** @brief Compute the LCP interval of a query. For a certain prefix length of the

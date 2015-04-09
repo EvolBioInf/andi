@@ -21,6 +21,7 @@ before_install:
 - export LD_LIBRARY_PATH=/usr/local:$LD_LIBRARY_PATH
 script:
 - export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
+- export OMP_NUM_THREADS=4
 - autoreconf -fvi -Im4
 - ./configure --enable-unit-tests CFLAGS='-fprofile-arcs -ftest-coverage' CXXFLAGS='-fprofile-arcs -ftest-coverage'
 - make

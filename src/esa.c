@@ -478,10 +478,17 @@ static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 		SoSueMe:
 		if( c == a){
 			/* found ! */
+			saidx_t n;
+			if( LCP[i] <= LCP[m]){
+				n = L(CLD, m);
+			} else {
+				n = R(CLD,i);
+			}
+
 			ij->i = i;
 			ij->j = m-1;
-			ij->m = LCP[i] <= LCP[m] ? L(CLD, m) : R(CLD,i);
-			ij->l = LCP[ij->m];
+			ij->m = n;
+			ij->l = LCP[n];
 			return ij;
 		}
 

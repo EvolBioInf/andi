@@ -30,17 +30,17 @@
 #include <assert.h>
 #include "esa.h"
 
-static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a);
-static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
-static void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+static lcp_inter_t *get_interval( const esa_s *, lcp_inter_t *ij, char a);
+static void esa_init_cache_dfs( esa_s *, char *str, size_t pos, const lcp_inter_t *in);
+static void esa_init_cache_fill( esa_s *, char *str, size_t pos, const lcp_inter_t *in);
 
-static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a);
-lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen);
-static lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+static lcp_inter_t *get_interval( const esa_s *, lcp_inter_t *ij, char a);
+lcp_inter_t get_match( const esa_s *, const char *query, size_t qlen);
+static lcp_inter_t get_match_from( const esa_s *, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
 
-static int esa_init_SA( esa_t *c);
-static int esa_init_LCP( esa_t *c);
-static int esa_init_CLD( esa_t *C);
+static int esa_init_SA( esa_s *);
+static int esa_init_LCP( esa_s *);
+static int esa_init_CLD( esa_s *);
 
 /** @brief The prefix length up to which RMQs are cached. */
 const size_t CACHE_LENGTH = 10;
@@ -81,7 +81,7 @@ ssize_t char2code( const char c){
  * @param C - The ESA.
  * @returns 0 iff successful
  */
-int esa_init_cache( esa_t *C){
+int esa_init_cache( esa_s *C){
 	lcp_inter_t* cache = malloc((1 << (2*CACHE_LENGTH)) * sizeof(lcp_inter_t) );
 
 	if( !cache){
@@ -117,7 +117,7 @@ int esa_init_cache( esa_t *C){
  * @param pos - The length of the prefix.
  * @param in - The LCP-interval of prefix[0..pos-1].
  */
-void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
+void esa_init_cache_dfs( esa_s *C, char *str, size_t pos, const lcp_inter_t *in){
 	// we are not yet done, but the current strings do not exist in the subject.
 	if( pos < CACHE_LENGTH && in->i == -1 && in->j == -1){
 		esa_init_cache_fill(C,str,pos,in);
@@ -199,7 +199,7 @@ void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in)
  * @param pos - The length of the prefix.
  * @param in - The LCP-interval of prefix[0..pos-1].
  */
-void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in){
+void esa_init_cache_fill( esa_s *C, char *str, size_t pos, const lcp_inter_t *in){
 	if( pos < CACHE_LENGTH){
 		for( int code = 0; code < 4; ++code){
 			str[pos] = code2char(code);
@@ -218,20 +218,20 @@ void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in
 
 /**
  * @brief Initializes the FVC (first variant character) array.
- * @param C - The ESA
+ * @param self - The ESA
  * @returns 0 iff successful
  */
-int esa_init_FVC(esa_t *C){
-	size_t len = C->len;
+int esa_init_FVC(esa_s *self){
+	size_t len = self->len;
 
-	char *FVC = C->FVC = malloc(len);
+	char *FVC = self->FVC = malloc(len);
 	if(!FVC){
 		return 1;
 	}
 
-	const char *S = C->S;
-	const int *SA = C->SA;
-	const int *LCP= C->LCP;
+	const char *S = self->S;
+	const int *SA = self->SA;
+	const int *LCP= self->LCP;
 
 	FVC[0] = '\0';
 	for(size_t i=len; i--; FVC++, SA++, LCP++){
@@ -248,10 +248,10 @@ int esa_init_FVC(esa_t *C){
  * @param S - The sequence
  * @returns 0 iff successful
  */
-int esa_init( esa_t *C, const seq_t *S){
+int esa_init( esa_s *C, const seq_t *S){
 	if( !C || !S || !S->S) return 1;
 
-	*C = (esa_t){
+	*C = (esa_s){
 		.S = S->RS,
 		.len = S->RSlen
 	};
@@ -277,7 +277,7 @@ int esa_init( esa_t *C, const seq_t *S){
 }
 
 /** @brief Free the private data of an ESA. */
-void esa_free( esa_t *C){
+void esa_free( esa_s *C){
 	free( C->SA);
 	free( C->LCP);
 	free( C->CLD);
@@ -290,7 +290,7 @@ void esa_free( esa_t *C){
  * @param C The enhanced suffix array to use. Reads C->S, fills C->SA.
  * @returns 0 iff successful
  */
-int esa_init_SA(esa_t *C){
+int esa_init_SA(esa_s *C){
 	// assert c.S
 	if( !C || !C->S ){
 		return 1;
@@ -318,7 +318,7 @@ int esa_init_SA(esa_t *C){
  *
  * @param C - The ESA
  */
-int esa_init_CLD( esa_t *C){
+int esa_init_CLD( esa_s *C){
 	if( !C || !C->LCP){
 		return 1;
 	}
@@ -379,7 +379,7 @@ int esa_init_CLD( esa_t *C){
  * @param C The enhanced suffix array to compute the LCP from.
  * @returns 0 iff successful
  */
-int esa_init_LCP( esa_t *C){
+int esa_init_LCP( esa_s *C){
 	const char *S = C->S;
 	saidx_t *SA  = C->SA;
 	saidx_t len  = C->len;
@@ -449,7 +449,7 @@ int esa_init_LCP( esa_t *C){
  * @param a - The next character.
  * @returns The lcp-interval one level deeper.
  */
-static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
+static lcp_inter_t *get_interval( const esa_s *C, lcp_inter_t *ij, char a){
 	saidx_t i = ij->i;
 	saidx_t j = ij->j;
 
@@ -527,7 +527,7 @@ static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
  * @param ij - The LCP interval for the string `query[0..k]`.
  * @returns The LCP interval for the longest prefix.
  */
-lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
+lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
 
 	if( ij.i == -1 && ij.j == -1){
 		return ij;
@@ -604,7 +604,7 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
  * @param qlen - The length of the query.
  * @returns the lcp interval of the match.
  */
-lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen){
+lcp_inter_t get_match( const esa_s *C, const char *query, size_t qlen){
 	// sanity checks
 	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->CLD ){
 		return (lcp_inter_t){-1,-1,-1,-1};
@@ -630,7 +630,7 @@ lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen){
  * @param qlen - The length of the query. Should correspond to `strlen(query)`.
  * @returns The LCP interval for the longest prefix.
  */
-lcp_inter_t get_match_cached( const esa_t *C, const char *query, size_t qlen){
+lcp_inter_t get_match_cached( const esa_s *C, const char *query, size_t qlen){
 	if( qlen <= CACHE_LENGTH) return get_match( C, query, qlen);
 
 	ssize_t offset = 0;

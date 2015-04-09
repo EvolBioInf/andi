@@ -7,7 +7,7 @@ DUMMY=dummy.cxx
 endif
 
 andi_SOURCES = andi.c esa.c process.c sequence.c io.c global.h esa.h process.h sequence.h io.h dist_hack.h $(top_srcdir)/libs/kseq.h
-andi_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/libs -std=gnu11
+andi_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/libs -std=gnu99
 andi_CFLAGS = $(OPENMP_CFLAGS) -W -Wall -Wno-missing-field-initializers
 andi_CXXFLAGS = $(OPENMP_CXXFLAGS) -W -Wall
 andi_LDADD = $(PSUFSORT)

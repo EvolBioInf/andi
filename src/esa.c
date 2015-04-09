@@ -480,7 +480,7 @@ static lcp_inter_t *get_interval( const esa_t *C, lcp_inter_t *ij, char a){
 			/* found ! */
 			saidx_t n = L(CLD, m);
 
-			*ij = (seq_t){
+			*ij = (lcp_inter_t){
 				.i = i,
 				.j = m-1,
 				.m = n,

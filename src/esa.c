@@ -553,7 +553,7 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 		return ij;
 	}
 
-	saidx_t l, i, j, p;
+	saidx_t l, i, j;
 
 	lcp_inter_t res = ij;
 	
@@ -586,7 +586,7 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 		k++;
 
 		// Extend the match
-		for( p = SA[i]; k < l; k++){
+		for( int p = SA[i]; k < l; k++){
 			if( S[p+k] != query[k] ){
 				res.l = k;
 				return res;

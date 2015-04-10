@@ -225,35 +225,20 @@ void esa_init_cache_fill( esa_s *C, char *str, size_t pos, const lcp_inter_t *in
  * @param self - The ESA
  * @returns 0 iff successful
  */
-int esa_init_FVC(esa_s *self){
-	size_t len = self->len;
-
-	char *FVC = self->FVC = malloc(len);
-	if(!FVC){
-		return 1;
-	}
-
-	const char *S = self->S;
-	const int *SA = self->SA;
-	const int *LCP= self->LCP;
-
-	FVC[0] = '\0';
-	for(size_t i=len; i--; FVC++, SA++, LCP++){
-		*FVC = S[*SA + *LCP];
-	}
-
-	return 0;
-}
-
 int esa_init_DIFF(esa_s *self){
-
-
 	const char *S = self->S;
 	const int *SA = self->SA;
-	int *LCP= self->LCP;
+	int *LCP= self->LCP, lcp;
 
 	for (int i = self->len; i--; SA++, LCP++){
-		*LCP |= S[*SA + *LCP] << 24;
+		lcp = *LCP;
+		if( lcp >= (1<<24)){
+			warnx("For technical reasons, the longest repeat within a sequence is limited below 2^24."
+				"Found and LCP value of %d. Aborting this sequence.\n", lcp);
+			return 1;
+		}
+
+		*LCP |= S[*SA + lcp] << 24;
 	}
 
 	return 0;
@@ -285,9 +270,8 @@ int esa_init( esa_s *C, const seq_t *S){
 	result = esa_init_CLD(C);
 	if(result) return result;
 
-	// result = esa_init_FVC(C);
-	// if( result) return result;
-	esa_init_DIFF(C);
+	result = esa_init_DIFF(C);
+	if(result) return result;
 
 	result = esa_init_cache(C);
 	if(result) return result;

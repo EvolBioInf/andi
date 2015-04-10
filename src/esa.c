@@ -557,8 +557,8 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 
 	lcp_inter_t res = ij;
 	
-	saidx_t *SA = C->SA;
-	const char *S = (const char *)C->S;
+	const saidx_t *SA = C->SA;
+	const char *S = C->S;
 	
 	// Loop over the query until a mismatch is found
 	do {

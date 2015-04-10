@@ -281,12 +281,13 @@ int esa_init( esa_s *C, const seq_t *S){
 }
 
 /** @brief Free the private data of an ESA. */
-void esa_free( esa_s *C){
-	free( C->SA);
-	free( C->LCP);
-	free( C->CLD);
-	free( C->cache);
-	free( C->FVC);
+void esa_free( esa_s *self){
+	free( self->SA);
+	free( self->LCP);
+	free( self->CLD);
+	free( self->cache);
+	free( self->FVC);
+	*self = (esa_s){};
 }
 
 /**

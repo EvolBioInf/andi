@@ -125,9 +125,9 @@ int main( int argc, char *argv[]){
 			case 'j':
 				FLAGS |= F_JOIN;
 				break;
-#ifdef _OPENMP
 			case 't':
 				{
+#ifdef _OPENMP
 					errno = 0;
 					char *end;
 					long unsigned int threads = strtoul( optarg, &end, 10);
@@ -149,9 +149,12 @@ int main( int argc, char *argv[]){
 					}
 
 					THREADS = threads;
+#else
+					warnx("This version of andi was built without OpenMP and thus "
+						"does not support multi threading. Ignoring -t argument.");
+#endif
 				}
 				break;
-#endif
 			case '?': /* intentional fall-through */
 			default:
 				usage();
@@ -239,7 +242,7 @@ void usage(void){
 		"  -r, --raw         Calculates raw distances; default: Jukes-Cantor corrected\n"
 		"  -v, --verbose     Prints additional information\n"
 #ifdef _OPENMP
-		"  -t <INT>          The number of threads to be used; default: 1\n"
+		"  -t <INT>          The number of threads to be used; by default, all available processors are used\n"
 #endif
 		"  -h, --help        Display this help and exit\n"
 		"      --version     Output version information and acknowledgments\n"

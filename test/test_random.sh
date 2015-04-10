@@ -8,7 +8,7 @@ do
 	do
 		res=$(./test/test_fasta -l $LENGTH -d $dist |
 			tee ./test/test_random.fasta |
-			./src/andi -r |
+			./src/andi -r -t 1 |
 			tail -n 1 |
 			awk -v dist=$dist '{print $2, dist}' |
 			awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.01}')

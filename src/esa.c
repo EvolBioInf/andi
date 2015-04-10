@@ -582,6 +582,9 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 			l = ij.l;
 		}
 		
+		// By definition, the kth letter of the query was matched.
+		k++;
+
 		// Extend the match
 		for( p = SA[i]; k < l; k++){
 			if( S[p+k] != query[k] ){

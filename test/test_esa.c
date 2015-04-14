@@ -106,18 +106,22 @@ void test_esa_basic( esa_fixture *ef, gconstpointer test_data){
 	lcp_inter_t a = get_match_cached(C, "AAGACTGG", 8);
 	lcp_inter_t b = get_match(C, "AAGACTGG", 8);
 	assert_equal_lcp( &a, &b);
+	g_assert(strncmp("AAGACTGG",C->S + C->SA[a.i], 8) == 0);
 
 	a = get_match_cached(C, "AATTAAAA", 8);
 	b = get_match(C, "AATTAAAA", 8);
 	assert_equal_lcp( &a, &b);
+	g_assert(strncmp("AATTAAAA",C->S + C->SA[a.i], a.l) == 0);
 
 	a = get_match_cached(C, "ACCGAGAA", 8);
 	b = get_match(C, "ACCGAGAA", 8);
 	assert_equal_lcp( &a, &b);
+	g_assert(strncmp("ACCGAGAA",C->S + C->SA[a.i], a.l) == 0);
 
 	a = get_match_cached(C, "AAAAAAAAAAAA", 12);
 	b = get_match(C, "AAAAAAAAAAAA", 12);
 	assert_equal_lcp( &a, &b);
+	g_assert(strncmp("AAAAAAAAAAAA",C->S + C->SA[a.i], a.l) == 0);
 
 	//g_assert_cmpint(count, >=, 1 << (2*8));
 }

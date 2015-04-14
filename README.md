@@ -4,13 +4,17 @@
 
 This is the `andi` program for estimating the evolutionary distance between closely related genomes. It efficiently and accurately computes a distance for substitution rates up to 0.5. These distances are based on ungapped local alignments framed by anchors. Anchors are efficiently found using an enhanced suffix array. As a result, `andi` scales well even for data sets containing thousands of bacterial genomes.
 
+This readme covers all necessary instructions for the impatient to get `andi` up and running. For extensive instructions please consult the *manual* (WIP).
+
+
 # Build Instructions
 
 For the latest [stable release](https://github.com/EvolBioInf/andi/releases) of `andi` download the tar ball. If you'd like to contribute to this software, feel free to create a fork of our [git repository](https://github.com/EvolBioInf/andi) and send pull requests.
 
+
 ## Prerequisites
 
-This program has the following dependencies: [kseq.h](https://github.com/lh3/seqtk/blob/master/kseq.h), and [libdivsufsort](https://code.google.com/p/libdivsufsort/). The former is included in the `lib` directory. Please make sure you installed the latter before attempting a build. If you did get the source, not as a tarball, but straight from the git repository, you will also need the autotools. Run `autoreconf -i` to generate the configure script and continue with the next step.
+This program has the following external dependency: [libdivsufsort](https://code.google.com/p/libdivsufsort/). Please make sure you installed `libdivsufsort` before attempting a build. If you did get the source, not as a tarball, but straight from the git repository, you will also need the autotools. Run `autoreconf -i` to generate the configure script and continue with the next step.
 
 
 ## Compiling
@@ -26,15 +30,12 @@ Excessive build instructions are located in `INSTALL`. If the build was successf
 	$ andi --help
 	$ man andi
 
-Code documentation is provided via doxygen.
+You can use simply `andi` with your genomes in `FASTA` format.
 
-	$ make code-docs
-
-## Unit Test
-To run the unit tests, you also need to install GLIB2 and enable the unit tests at configuration time as follows.
-
-	$ ./configure --enable-unit-tests
-	$ make check
+	$ andi S1.fasta S2.fasta
+	2
+	S1     0.0  0.1
+	s2     0.1  0.0
 
 # Links and Additional Resources
 
@@ -55,3 +56,6 @@ License GPLv3+: GNU GPL version 3 or later.
 
 This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law. The full license text is available at <http://gnu.org/licenses/gpl.html>.
 
+## Contact
+
+In case of bugs or unexpected errors don't hesitate to send me a mail: kloetzl@evolbio.mpg.de

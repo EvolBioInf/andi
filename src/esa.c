@@ -30,8 +30,8 @@
 #include <assert.h>
 #include "esa.h"
 
-static void esa_init_cache_dfs( esa_s *, char *str, size_t pos, const lcp_inter_t *in);
-static void esa_init_cache_fill( esa_s *, char *str, size_t pos, const lcp_inter_t *in);
+static void esa_init_cache_dfs( esa_s *, char *str, size_t pos, lcp_inter_t in);
+static void esa_init_cache_fill( esa_s *, char *str, size_t pos, lcp_inter_t in);
 
 static lcp_inter_t get_interval( const esa_s *, lcp_inter_t ij, char a);
 lcp_inter_t get_match( const esa_s *, const char *query, size_t qlen);
@@ -104,7 +104,7 @@ int esa_init_cache( esa_s *self){
 		.l = LCP(m)
 	};
 
-	esa_init_cache_dfs( self, str, 0, &ij);
+	esa_init_cache_dfs( self, str, 0, ij);
 
 	return 0;
 }
@@ -120,9 +120,9 @@ int esa_init_cache( esa_s *self){
  * @param pos - The length of the prefix.
  * @param in - The LCP-interval of prefix[0..pos-1].
  */
-void esa_init_cache_dfs( esa_s *C, char *str, size_t pos, const lcp_inter_t *in){
+void esa_init_cache_dfs( esa_s *C, char *str, size_t pos, const lcp_inter_t in){
 	// we are not yet done, but the current strings do not exist in the subject.
-	if( pos < CACHE_LENGTH && in->i == -1 && in->j == -1){
+	if( pos < CACHE_LENGTH && in.i == -1 && in.j == -1){
 		esa_init_cache_fill(C,str,pos,in);
 		return;
 	}
@@ -138,12 +138,11 @@ void esa_init_cache_dfs( esa_s *C, char *str, size_t pos, const lcp_inter_t *in)
 	// iterate over all nucleotides
 	for( int code = 0; code < 4; ++code){
 		str[pos] = code2char(code);
-		ij = *in;
-		ij = get_interval(C, ij, str[pos]);
+		ij = get_interval(C, in, str[pos]);
 
 		// fail early
 		if( ij.i == -1 && ij.j == -1){
-			esa_init_cache_fill(C, str, pos + 1, &ij);
+			esa_init_cache_fill(C, str, pos + 1, ij);
 			continue;
 		}
 
@@ -174,9 +173,9 @@ void esa_init_cache_dfs( esa_s *C, char *str, size_t pos, const lcp_inter_t *in)
 				}
 
 				if( non_acgt) {
-					esa_init_cache_fill(C, str, k, &ij);
+					esa_init_cache_fill(C, str, k, ij);
 				} else {
-					esa_init_cache_dfs(C, str, k, &ij);
+					esa_init_cache_dfs(C, str, k, ij);
 				}
 
 				continue;
@@ -188,7 +187,7 @@ void esa_init_cache_dfs( esa_s *C, char *str, size_t pos, const lcp_inter_t *in)
 		}
 
 		// Continue one level deeper
-		esa_init_cache_dfs(C,str,pos+1,&ij);
+		esa_init_cache_dfs(C,str,pos+1, ij);
 	}
 }
 
@@ -202,7 +201,7 @@ void esa_init_cache_dfs( esa_s *C, char *str, size_t pos, const lcp_inter_t *in)
  * @param pos - The length of the prefix.
  * @param in - The LCP-interval of prefix[0..pos-1].
  */
-void esa_init_cache_fill( esa_s *C, char *str, size_t pos, const lcp_inter_t *in){
+void esa_init_cache_fill( esa_s *C, char *str, size_t pos, lcp_inter_t in){
 	if( pos < CACHE_LENGTH){
 		for( int code = 0; code < 4; ++code){
 			str[pos] = code2char(code);
@@ -215,7 +214,7 @@ void esa_init_cache_fill( esa_s *C, char *str, size_t pos, const lcp_inter_t *in
 			code |= char2code(str[i]);
 		}
 
-		C->cache[code] = *in;
+		C->cache[code] = in;
 	}
 }
 

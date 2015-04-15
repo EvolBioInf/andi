@@ -30,11 +30,10 @@
 #include <assert.h>
 #include "esa.h"
 
-static lcp_inter_t *get_interval( const esa_s *, lcp_inter_t *ij, char a);
 static void esa_init_cache_dfs( esa_s *, char *str, size_t pos, const lcp_inter_t *in);
 static void esa_init_cache_fill( esa_s *, char *str, size_t pos, const lcp_inter_t *in);
 
-static lcp_inter_t *get_interval( const esa_s *, lcp_inter_t *ij, char a);
+static lcp_inter_t get_interval( const esa_s *, lcp_inter_t ij, char a);
 lcp_inter_t get_match( const esa_s *, const char *query, size_t qlen);
 static lcp_inter_t get_match_from( const esa_s *, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
 
@@ -140,7 +139,7 @@ void esa_init_cache_dfs( esa_s *C, char *str, size_t pos, const lcp_inter_t *in)
 	for( int code = 0; code < 4; ++code){
 		str[pos] = code2char(code);
 		ij = *in;
-		get_interval(C, &ij, str[pos]);
+		ij = get_interval(C, ij, str[pos]);
 
 		// fail early
 		if( ij.i == -1 && ij.j == -1){
@@ -452,23 +451,23 @@ int esa_init_LCP( esa_s *C){
  * @param a - The next character.
  * @returns The lcp-interval one level deeper.
  */
-static lcp_inter_t *get_interval( const esa_s *self, lcp_inter_t *ij, char a){
-	saidx_t i = ij->i;
-	saidx_t j = ij->j;
+static lcp_inter_t get_interval( const esa_s *self, lcp_inter_t ij, char a){
+	saidx_t i = ij.i;
+	saidx_t j = ij.j;
 
 	const saidx_t *SA = self->SA;
 	const char *S = self->S;
 	const saidx_t *CLD = self->CLD;
 	// check for singleton or empty interval
 	if( i == j ){
-		if( S[SA[i] + ij->l] != a){
-			ij->i = ij->j = -1;
+		if( S[SA[i] + ij.l] != a){
+			ij.i = ij.j = -1;
 		}
 		return ij;
 	}
 
-	int m = ij->m;
-	int l = ij->l;
+	int m = ij.m;
+	int l = ij.l;
 
 	char c = S[SA[i] + l];
 	goto SoSueMe;
@@ -481,7 +480,7 @@ static lcp_inter_t *get_interval( const esa_s *self, lcp_inter_t *ij, char a){
 			/* found ! */
 			saidx_t n = L(CLD, m);
 
-			*ij = (lcp_inter_t){
+			ij = (lcp_inter_t){
 				.i = i,
 				.j = m-1,
 				.m = n,
@@ -505,15 +504,15 @@ static lcp_inter_t *get_interval( const esa_s *self, lcp_inter_t *ij, char a){
 	} while ( /*m != "bottom" && */ LCP(m) == l);
 
 	// final sanity check
-	if( i != ij->i ? FVC(i) == a : S[SA[i] + l] == a){
-		ij->i = i;
-		ij->j = j;
+	if( i != ij.i ? FVC(i) == a : S[SA[i] + l] == a){
+		ij.i = i;
+		ij.j = j;
 		/* Also return the length of the LCP interval including `a` and
 		 * possibly even more characters. Note: l + 1 <= LCP[m] */
-		ij->l = LCP(m);
-		ij->m = m;
+		ij.l = LCP(m);
+		ij.m = m;
 	} else {
-		ij->i = ij->j = -1;
+		ij.i = ij.j = -1;
 	}
 
 	return ij;
@@ -562,7 +561,7 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 	
 	// Loop over the query until a mismatch is found
 	do {
-		get_interval( C, &ij, query[k]);
+		ij = get_interval( C, ij, query[k]);
 		i = ij.i;
 		j = ij.j;
 		

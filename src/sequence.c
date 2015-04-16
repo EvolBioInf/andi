@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 #include "sequence.h"
 #include "global.h"
 
@@ -258,6 +259,12 @@ int seq_init( seq_t *S, const char *seq, const char *name){
 
 	// recalculate the length because `normalize` might have stripped some characters.
 	S->len = strlen(S->S);
+
+	const size_t LENGTH_LIMIT = (INT_MAX - 1) /2;
+	if(S->len > LENGTH_LIMIT){
+		warnx("The input sequence %s is too long. The technical limit is %zu.", S->name, LENGTH_LIMIT);
+		return 3;
+	}
 
 	return 0;
 }

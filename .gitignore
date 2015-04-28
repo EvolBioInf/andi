@@ -14,6 +14,14 @@ docs/doxygen_sqlite3.db
 docs/html/*
 docs/latex/*
 docs/andi.1
+*.aux
+*.auxlock
+*.dep
+*.dpth
+*.toc
+*.out
+*.pdf
+*.backup
 
 *.in
 !docs/andi.1.in

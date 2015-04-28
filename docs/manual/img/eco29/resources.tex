@@ -1,0 +1,88 @@
+\documentclass{minimal}
+
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+%\usepackage{babel}
+\usepackage{fontenc}
+\usepackage{graphicx}
+
+\usepackage{tikz}
+\usetikzlibrary{plotmarks}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.9}
+\PrerenderUnicode{±}
+
+% Load the library
+\usetikzlibrary{external}
+
+% Activate it
+\tikzexternalize
+
+\begin{document}
+
+\pgfplotsset{every axis legend/.append style={
+at={(1,0)},
+anchor=south east}}
+
+\begin{tikzpicture}
+\begin{semilogxaxis}[
+	title={\textsc{eco29} Resource Consumption},
+	xlabel={Time (s)},
+	ylabel={Memory (kbyte)},
+	xmin=10
+]
+
+\addplot+[only marks,
+  error bars/.cd,
+  y dir=both,
+  y explicit,
+  x dir=both,
+  x explicit,
+] table[x=time,y=mem,y error=emem,x error=etime] {../../data/eco29/spaced.data}
+	coordinate[pos=0] (B);
+\addlegendentryexpanded{spaced}
+
+\node[pin=270:parallel, below of=B, node distance=0cm] {};
+
+\addplot+[only marks,
+  error bars/.cd,
+  y dir=both,
+  y explicit,
+  x dir=both,
+  x explicit,
+] table[x=time,y=mem,y error=emem,x error=etime] {../../data/eco29/andi.data} 
+	coordinate[pos=0] (A)
+	coordinate[pos=1] (B);
+\addlegendentryexpanded{andi}
+
+\node[pin=270:parallel, below of=B, node distance=0cm] {};
+
+
+\addplot+[only marks,
+  error bars/.cd,
+  y dir=both,
+  y explicit,
+  x dir=both,
+  x explicit,
+] table[x=time,y=mem,y error=emem,x error=etime] {../../data/eco29/cophylog.data};
+\addlegendentryexpanded{cophylog}
+
+\addplot+[only marks,
+  error bars/.cd,
+  y dir=both,
+  y explicit,
+  x dir=both,
+  x explicit,
+] table[x=time,y=mem,y error=emem,x error=etime] {../../data/eco29/kr.data};
+\addlegendentryexpanded{kr}
+
+\addplot+[only marks
+] table[x=time,y=mem] {../../data/eco29/mugsy.data};
+\addlegendentryexpanded{mugsy}
+
+
+\end{semilogxaxis}
+\end{tikzpicture}
+
+\end{document}

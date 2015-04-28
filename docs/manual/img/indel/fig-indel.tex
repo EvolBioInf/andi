@@ -1,0 +1,79 @@
+\documentclass{minimal}
+
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+%\usepackage{babel}
+\usepackage{fontenc}
+\usepackage{graphicx}
+
+\usepackage{tikz}
+\usetikzlibrary{plotmarks}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.9}
+\PrerenderUnicode{±}
+
+% Load the library
+\usetikzlibrary{external}
+
+% Activate it
+%\tikzexternalize
+
+\begin{document}
+
+\pgfplotsset{every axis legend/.append style={
+at={(0,1)},
+anchor=north west}}
+
+\begin{tikzpicture}
+\begin{loglogaxis}[
+	title=Accuracy,
+	xlabel={Indel Rate $\phi$},
+	ylabel={Estimated Distance $d$},
+]
+
+\addplot+[only marks,
+  error bars/.cd,
+  y dir=both,
+  y explicit,
+] table[x=x,y=y,y error=error] {spaced.out};
+\addlegendentryexpanded{$d_{sw}$}
+
+\addplot+[only marks,
+  error bars/.cd,
+  y dir=both,
+  y explicit,
+] table[x=x,y=y,y error=error] {andi.out};
+\addlegendentryexpanded{$d_{a}$}
+
+\addplot+[only marks,
+  error bars/.cd,
+  y dir=both,
+  y explicit,
+] table[x=x,y=y,y error=error] {cophylog.out};
+\addlegendentryexpanded{$d_{co}$}
+
+\addplot+[only marks,
+  error bars/.cd,
+  y dir=both,
+  y explicit,
+] table[x=x,y=y,y error=error] {kr.out};
+\addlegendentryexpanded{$d_{kr}$}
+
+%\addplot+[only marks,
+%  error bars/.cd,
+%  y dir=both,
+%  y explicit,
+%] table[x=x,y=y,y error=error] {mugsy.out};
+%\addlegendentryexpanded{$d_{\mathit{mugsy}}$}
+
+\addplot[green] coordinates {(0.001,0.1) (0.26,0.1)};
+\addlegendentryexpanded{subst}
+
+\addplot[red] coordinates {(0.001,0.101) (0.36,0.46)};
+\addlegendentryexpanded{errors}
+
+\end{loglogaxis}
+\end{tikzpicture}
+
+\end{document}

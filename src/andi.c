@@ -63,6 +63,7 @@ int main( int argc, char *argv[]){
 		{"verbose", no_argument, NULL, 'v'},
 		{"join", no_argument, NULL, 'j'},
 		{"low-memory", no_argument, NULL, 'm'},
+		{"threads", required_argument, NULL, 't'},
 		{0,0,0,0}
 	};
 

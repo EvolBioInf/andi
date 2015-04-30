@@ -23,6 +23,8 @@
 \usepackage{xspace}
 \usepackage{overpic}
 
+\bibliographystyle{alpha}
+
 \DeclareSIUnit\byte{B}
 \DeclareSIUnit\basepairs{bp}
 \DeclareSIUnit\bit{bit}
@@ -81,7 +83,7 @@
 \author{Fabian Klötzl\\ \href{mailto:kloetzl@evolbio.mpg.de}{kloetzl@evolbio.mpg.de}}
 \date{Version 0.9, \isodate\today \\
 \vspace*{2cm}
-\centering\includegraphics[width=0.8\textwidth]{img/eco29/andi_labels.pdf}}
+\centering\includegraphics[width=0.8\textwidth]{andi_labels.pdf}}
 
 \begin{document}
 
@@ -89,7 +91,7 @@
 
 \section*{Abstract}
 %\begin{abstract}
-  This is the documentation of the \andi program for estimating the evolutionary distance between closely related genomes. It efficiently and accurately computes a distance for substitution rates up to 0.5. These distances are based on ungapped local alignments framed by exact matches, termed \emph{anchors}. Anchors are efficiently found using an enhanced suffix array. As a result, \andi scales well, even for data sets containing thousands of bacterial genomes.
+  This is the documentation of the \andi program for estimating the evolutionary distance between closely related genomes \cite{andi}. It efficiently and accurately computes a distance for substitution rates up to 0.5. These distances are based on ungapped local alignments framed by exact matches, termed \emph{anchors}. Anchors are efficiently found using an enhanced suffix array. As a result, \andi scales well, even for data sets containing thousands of bacterial genomes.
 %\end{abstract}
 
 \vspace*{1cm}
@@ -100,9 +102,9 @@ This document is release under the Creative Commons Attribution Share-Alike lice
 
 \chapter{Installation} %%%%%
 
-The easiest way to obtain your own copy of \algo{andi}, is to download the latest release from GitHub.\footnote{\url{https://github.com/EvolBioInf/andi/releases}} Please note, that \andi requires \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
+The easiest way to obtain your own copy of \algo{andi}, is to download the latest release from GitHub.\footnote{\url{https://github.com/EvolBioInf/andi/releases}} Please note, that \andi requires \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
 
-\andi runs best under a \algo{Unix} command line. All following examples are also intended for that environment.
+\andi runs best under a \algo{Unix} commandline. All following examples are also intended for that environment.
 
 \section{Installing from Source Package} \label{sub:regular}
 
@@ -112,8 +114,6 @@ Once you have downloaded the package, unzip it and change into the newly created
 ~ %  tar -xzvf andi-0.9.tar.gz
 ~ %  cd andi-0.9
 \end{lstlisting}
-
-%\noindent You should now see plenty of files, of which most better stay untouched. If you feel that this documentation is too verbose, and you prefer more succinct instructions, please consult the \lstinline$README$. However, if you are still reading this, execute the following commands, to proceed.
 
 \noindent Now build and install \andi.
 
@@ -209,7 +209,7 @@ If \andi seems to take unusually long, or requires huge amounts of memory, then 
 
 \section{Output}
 
-The output of \andi is written to \lstinline$stdout$. This makes it easy to use on the command line and within shell scripts. As seen before, the matrix, computed by \algo{andi}, is given in \algo{Phylip} format.
+The output of \andi is written to \lstinline$stdout$. This makes it easy to use on the command line and within shell scripts. As seen before, the matrix, computed by \algo{andi}, is given in \algo{Phylip} format \cite{phylip}.
 
 \begin{lstlisting}
 ~ %  cat S1.fasta S2.fasta | andi
@@ -239,7 +239,7 @@ S2        0.0995 0.0000
 
 In the above examples the runtime dropped from \SI{0.613}{\second}, to \SI{0.362}{\second} using two threads. Giving \andi more threads than input genomes leads to no further speed improvement. \, The other important option is \lstinline$--join$ (see Section~\ref{sec:join}).
 
-By default, the distances computed by \andi are \emph{Jukes-Cantor} corrected. This means, the output is substitution rates, which is greater than the mismatch rate. To obtain the pure mismatch rate, use the \lstinline$--raw$ switch.
+By default, the distances computed by \andi are \emph{Jukes-Cantor} corrected \cite{jukescantor}. This means, the output is substitution rates, which is greater than the mismatch rate. To obtain the pure mismatch rate, use the \lstinline$--raw$ switch.
 
 \section{Example: \algo{eco29}}
 
@@ -263,7 +263,7 @@ gi|300439 1.8439e-02 4.4029e-04 0.0000e+00 2.6123e-02
 gi|261117 2.6398e-02 2.6166e-02 2.6123e-02 0.0000e+00
 \end{lstlisting}
 
-\noindent From this we compute a tree via neighbor-joining using a \algo{Phylip} wrapper called \algo{Embassy}.\footnote{\url{http://emboss.sourceforge.net/embassy/\#PHYLIP}} % Because I enjoy rooted phylograms, I also midpoint-root the tree.
+\noindent From this we compute a tree via neighbor-joining using a \algo{Phylip} wrapper called \algo{Embassy}.\footnote{\url{http://emboss.sourceforge.net/embassy/\#PHYLIP}}
 
 \begin{lstlisting}
 ~ % fneighbor -datafile eco29.mat -outfile eco29.phylipdump
@@ -278,7 +278,7 @@ R
 EOF
 \end{lstlisting}
 
-\noindent The file \lstinline$eco29.tree$ now contains the tree in Newick format. This can be plotted using
+\noindent The file \lstinline$eco29.tree$ now contains the tree in Newick format. This can be plotted using \cite{figtree}
 
 \begin{lstlisting}
 ~ % figtree eco29.tree &
@@ -287,7 +287,7 @@ EOF
 \noindent to yield
 
 \begin{figure}[h]
-  \centering\includegraphics[width=0.8\textwidth]{img/eco29/andi_labels.pdf}
+  \centering\includegraphics[width=0.8\textwidth]{andi_labels.pdf}
 \end{figure}
 
 
@@ -297,7 +297,8 @@ EOF
 
 \andi is written in C/C++; mostly C99 with some parts in C++11. The sources are released on \algo{GitHub} as \emph{free software} under the \textsc{Gnu General Public License version~3} \cite{GPL}. Prebundled packages using \algo{autoconf} are also available, with the latest release being {v0.9} at the time of writing.
 
-To prove correctness even under exceptional circumstances, the code was statically analyzed by the \algo{scan-build} utility from the \algo{LLVM} framework \cite{LLVM}. 
+If you are interested in the internals of \andi, consult the paper \cite{andi} or my master thesis \cite{kloetzl}. Both explain the used approach in detail. The latter emphasizes the used algorithms, data structures and their efficient implementation.
+
 
 \section{Code Documentation}
 
@@ -358,5 +359,11 @@ andi-0.9.1-beta.tar.gz
 \end{lstlisting}
 
 If the command does not build successfully, no tarballs will be created. This may necessitate further study of \algo{autoconf} and \algo{automake}. 
+
+
+
+\backmatter
+%\addcontentsline{toc}{chapter}{Bibliography}
+\bibliography{references}
 
 \end{document}

@@ -22,6 +22,8 @@ docs/andi.1
 *.out
 *.pdf
 *.backup
+*.bbl
+*.blg
 
 *.in
 !docs/andi.1.in

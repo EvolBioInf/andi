@@ -16,3 +16,8 @@ nodist_EXTRA_andi_SOURCES = $(DUMMY)
 .PHONY: perf
 perf: CFLAGS+= -g -O3 -ggdb
 perf: andi
+
+.PHONY: asan
+asan: CFLAGS+= -fsanitize=address -fno-omit-frame-pointer -g -O1
+asan: CXXFLAGS+= -fsanitize=address -fno-omit-frame-pointer -g -O1
+asan: andi

@@ -63,6 +63,7 @@ int main( int argc, char *argv[]){
 		{"verbose", no_argument, NULL, 'v'},
 		{"join", no_argument, NULL, 'j'},
 		{"low-memory", no_argument, NULL, 'm'},
+		{"threads", required_argument, NULL, 't'},
 		{0,0,0,0}
 	};
 
@@ -259,14 +260,14 @@ void usage(void){
 void version(void){
 	const char str[]= {
 		"andi " VERSION  "\n"
-		"Copyright (C) 2014 Fabian Klötzl\n"
+		"Copyright (C) 2014, 2015 Fabian Klötzl\n"
 		"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
 		"This is free software: you are free to change and redistribute it.\n"
 		"There is NO WARRANTY, to the extent permitted by law.\n\n"
 		"Acknowledgments:\n"
-		"1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2014). "
+		"1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2015). "
 		"Fast and accurate estimation of evolutionary distances between closely related genomes\n"
-		"2) Algorithm: Ohlebusch, E. (2013). Bioinformatics Algorithms. Sequence Analysis, "
+		"2) Algorithms: Ohlebusch, E. (2013). Bioinformatics Algorithms. Sequence Analysis, "
 		"Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.\n"
 		"3) SA construction: Mori, Y. (2005). Short description of improved two-stage suffix "
 		"sorting alorithm. http://homepage3.nifty.com/wpage/software/itssort.txt\n"

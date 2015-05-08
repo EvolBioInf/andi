@@ -2,9 +2,9 @@
 
 # About
 
-This is the `andi` program for estimating the evolutionary distance between closely related genomes. It efficiently and accurately computes a distance for substitution rates up to 0.5. These distances are based on ungapped local alignments framed by anchors. Anchors are efficiently found using an enhanced suffix array. As a result, `andi` scales well even for data sets containing thousands of bacterial genomes.
+This is the `andi` program for estimating the evolutionary distance between closely related genomes. These distances can be used to rapidly infer phylogenies for big sets of genomes. Because `andi` does not compute full alignments, it is so efficient that it scales even up to thousands of bacterial genomes.
 
-This readme covers all necessary instructions for the impatient to get `andi` up and running. For extensive instructions please consult the *manual* (WIP).
+This readme covers all necessary instructions for the impatient to get `andi` up and running. For extensive instructions please consult the [manual](docs/manual/andi-manual.pdf).
 
 
 # Build Instructions
@@ -37,9 +37,11 @@ You can use simply `andi` with your genomes in `FASTA` format.
 	S1     0.0  0.1
 	s2     0.1  0.0
 
+From this distance matrix the phylogeny can be inferred via neighbor-joining. Check the [manual](docs/manual/andi-manual.pdf). for a more thorough description.
+
 # Links and Additional Resources
 
-The release of this software is accompanied by a paper from [Haubold et al.](http://bioinformatics.oxfordjournals.org/content/early/2014/12/10/bioinformatics.btu815.abstract). It explains the used *anchor distance* strategy in great detail. The `maf2phy.awk` script used in the validation process is located under `scripts`. Simulations were done using our own [simK](http://guanine.evolbio.mpg.de/bioBox/) tool.
+The release of this software is accompanied by a paper from [Haubold et al.](http://bioinformatics.oxfordjournals.org/content/31/8/1169). It explains the used *anchor distance* strategy in great detail. The `maf2phy.awk` script used in the validation process is located under `scripts`. Simulations were done using our own [simK](http://guanine.evolbio.mpg.de/bioBox/) tool.
 
 ## Data Sets
 
@@ -51,7 +53,7 @@ The release of this software is accompanied by a paper from [Haubold et al.](htt
 
 ## License
 
-Copyright © 2014 Fabian Klötzl  
+Copyright © 2014, 2015 Fabian Klötzl  
 License GPLv3+: GNU GPL version 3 or later.
 
 This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law. The full license text is available at <http://gnu.org/licenses/gpl.html>.

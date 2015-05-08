@@ -90,9 +90,9 @@
 \maketitle
 
 \section*{Abstract}
-%\begin{abstract}
-  This is the documentation of the \andi program for estimating the evolutionary distance between closely related genomes \cite{andi}. It efficiently and accurately computes a distance for substitution rates up to 0.5. These distances are based on ungapped local alignments framed by exact matches, termed \emph{anchors}. Anchors are efficiently found using an enhanced suffix array. As a result, \andi scales well, even for data sets containing thousands of bacterial genomes.
-%\end{abstract}
+This is the documentation of the \andi program for estimating the evolutionary distance between closely related genomes. These distances can be used to rapidly infer phylogenies for big sets of genomes. Because \andi does not compute full alignments, it is so efficient that it scales well up to thousands of bacterial genomes.
+
+This is scientific software. Please cite our paper \cite{andi} if you use \andi in your publication. Also refer to the paper for the iterna of \andi. Additionally, there is a Master's thesis with even more in depth analysis of \andi \cite{kloetzl}.
 
 \vspace*{1cm}
 \section*{License}
@@ -102,9 +102,9 @@ This document is release under the Creative Commons Attribution Share-Alike lice
 
 \chapter{Installation} %%%%%
 
-The easiest way to obtain your own copy of \algo{andi}, is to download the latest release from GitHub.\footnote{\url{https://github.com/EvolBioInf/andi/releases}} Please note, that \andi requires \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
+The easiest way to obtain your own copy of \algo{andi}, is to download the latest \href{https://github.com/EvolBioInf/andi/releases}{release} from GitHub. Please note, that \andi requires \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
 
-\andi runs best under a \algo{Unix} commandline. All following examples are also intended for that environment.
+\andi runs best under a \algo{Unix} commandline such as \lstinline$bash$. All following examples are also intended for that environment.
 
 \section{Installing from Source Package} \label{sub:regular}
 
@@ -156,7 +156,7 @@ Please note that this requires a C++11 compiler. Also, \algo{psufsort} may be sl
 
 \section{Installing from Git Repository}
 
-To build \andi from the \algo{Git} repo, execute the following steps.
+To build \andi from the \algo{Git} repo, you will also need the \algo{autotools}. Refer to your OS documentation for installation instructions. Once done, execute the following steps.
 
 \begin{lstlisting}
 ~ %  git clone git@github.com:EvolBioInf/andi.git
@@ -298,6 +298,20 @@ EOF
 \andi is written in C/C++; mostly C99 with some parts in C++11. The sources are released on \algo{GitHub} as \emph{free software} under the \textsc{Gnu General Public License version~3} \cite{GPL}. Prebundled packages using \algo{autoconf} are also available, with the latest release being {v0.9} at the time of writing.
 
 If you are interested in the internals of \andi, consult the paper \cite{andi} or my master thesis \cite{kloetzl}. Both explain the used approach in detail. The latter emphasizes the used algorithms, data structures and their efficient implementation.
+
+\section{Dependencies}
+
+Here is a complete list of dependencies required for developing \algo{andi}.
+
+\begin{itemize}
+  \item A C and a C++11 compiler,
+  \item the \algo{autotools},
+  \item \algo{Pdflatex} with various packages for the manual,
+  \item \algo{Git},
+  \item \algo{glib2} for the unit tests,
+  \item \algo{doxygen},
+  \item and \algo{libdivsufsort}.
+\end{itemize}
 
 
 \section{Code Documentation}

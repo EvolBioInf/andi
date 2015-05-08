@@ -2,7 +2,7 @@
 
 # About
 
-This is the `andi` program for estimating the evolutionary distance between closely related genomes. It efficiently and accurately computes a distance for substitution rates up to 0.5. These distances are based on ungapped local alignments framed by anchors. Anchors are efficiently found using an enhanced suffix array. As a result, `andi` scales well even for data sets containing thousands of bacterial genomes.
+This is the `andi` program for estimating the evolutionary distance between closely related genomes. These distances can be used to rapidly infer phylogenies for big sets of genomes. Because `andi` does not compute full alignments, it is so efficient that it scales even up to thousands of bacterial genomes.
 
 This readme covers all necessary instructions for the impatient to get `andi` up and running. For extensive instructions please consult the [manual](docs/manual/andi-manual.pdf).
 
@@ -36,6 +36,8 @@ You can use simply `andi` with your genomes in `FASTA` format.
 	2
 	S1     0.0  0.1
 	s2     0.1  0.0
+
+From this distance matrix the phylogeny can be inferred via neighbor-joining. Check the [manual](docs/manual/andi-manual.pdf). for a more thorough description.
 
 # Links and Additional Resources
 

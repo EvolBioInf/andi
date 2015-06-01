@@ -15,6 +15,7 @@
 #include "sequence.h"
 #include "io.h"
 
+#include <time.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 
@@ -372,6 +373,7 @@ void calculate_distances( seq_t* sequences, int n){
 		gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
 		assert(rng);
 
+		gsl_rng_set( rng, time(NULL));
 
 #define B( X, Y) (B[ (X)*n + (Y) ])
 

@@ -20,6 +20,10 @@ AC_LANG(C)
 AC_CHECK_LIB(m, cos)
 AC_OPENMP
 
+AC_CHECK_LIB([m],[cos])
+AC_CHECK_LIB([gslcblas],[cblas_dgemm])
+AC_CHECK_LIB([gsl],[gsl_blas_dgemm])
+
 # By default try to build with libdivsufsort.
 AC_ARG_WITH([libdivsufsort],
     AS_HELP_STRING([--without-libdivsufsort], [Build without libdivsufsort and use psufsort instead.]))

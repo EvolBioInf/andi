@@ -15,6 +15,9 @@
 #include "sequence.h"
 #include "io.h"
 
+#include <gsl/gsl_rng.h>
+#include <gsl/gsl_randist.h>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -342,7 +345,7 @@ void calculate_distances( seq_t* sequences, int n){
 
 	data_t *M = NULL;
 	
-	if( FLAGS & F_VERBOSE){
+	if( FLAGS & F_VERBOSE || BOOTSTRAP != 0){
 		errno = 0;
 		M = malloc(n*n*sizeof(data_t));
 		if( !M){
@@ -360,6 +363,35 @@ void calculate_distances( seq_t* sequences, int n){
 	// print additional information.
 	if( FLAGS & F_VERBOSE){
 		print_coverages( M, n);
+	}
+
+	if( BOOTSTRAP ){
+		double *B = malloc(n * n * sizeof(double));
+		assert(B);
+
+		gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
+		assert(rng);
+
+
+#define B( X, Y) (B[ (X)*n + (Y) ])
+
+		while( BOOTSTRAP--){
+			for( i=0; i< n; i++){
+				for( size_t j=0; j<n; j++){
+					if( i == j){
+						B(i,j) = 0;
+					} else {
+						double coverage = M(i,j).coverage * (double)sequences[j].len;
+						B(i,j) = gsl_ran_binomial( rng, D(i,j), coverage) / coverage;
+					}
+				}
+			}
+
+			print_distances(B, sequences, n);
+		}
+
+		free(B);
+		gsl_rng_free(rng);
 	}
 	
 	free(D);

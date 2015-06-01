@@ -150,4 +150,3 @@ void print_coverages( data_t *D, size_t n){
 		printf("\n");
 	}
 }
-

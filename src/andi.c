@@ -40,6 +40,7 @@
 /* Global variables */
 int FLAGS = 0;
 int THREADS = 1;
+long unsigned int BOOTSTRAP = 0;
 double RANDOM_ANCHOR_PROP = 0.05;
 
 void usage(void);
@@ -55,7 +56,7 @@ void version(void);
 int main( int argc, char *argv[]){
 	int c;
 	int version_flag = 0;
-	
+
 	struct option long_options[] = {
 		{"version", no_argument, &version_flag, 1},
 		{"help", no_argument, NULL, 'h'},
@@ -64,6 +65,7 @@ int main( int argc, char *argv[]){
 		{"join", no_argument, NULL, 'j'},
 		{"low-memory", no_argument, NULL, 'm'},
 		{"threads", required_argument, NULL, 't'},
+		{"bootstrap", required_argument, NULL, 'b'},
 		{0,0,0,0}
 	};
 
@@ -77,7 +79,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "jvhrt:p:m", long_options, &option_index);
+		c = getopt_long( argc, argv, "jvhrt:p:mb:", long_options, &option_index);
 		
 		if( c == -1){
 			break;
@@ -156,6 +158,23 @@ int main( int argc, char *argv[]){
 #endif
 				}
 				break;
+			case 'b':
+				{
+					errno = 0;
+					char *end;
+					long unsigned int bootstrap = strtoul( optarg, &end, 10);
+
+					if( errno || end == optarg || *end != '\0'){
+						warnx(
+							"Expected a number for -b argument, but '%s' was given. "
+							"Ignoring -b argument.", optarg
+						);
+						break;
+					}
+
+					BOOTSTRAP = bootstrap;
+				}
+				break;
 			case '?': /* intentional fall-through */
 			default:
 				usage();
@@ -224,6 +243,8 @@ int main( int argc, char *argv[]){
 	} else {
 		warnx("I am truly sorry, but with less than two sequences (%zu given) there is nothing to compare.", n);
 	}
+
+
 
 	dsa_free( &dsa);
 	return 0;

@@ -172,7 +172,7 @@ int main( int argc, char *argv[]){
 						break;
 					}
 
-					BOOTSTRAP = bootstrap;
+					BOOTSTRAP = bootstrap - 1;
 				}
 				break;
 			case '?': /* intentional fall-through */

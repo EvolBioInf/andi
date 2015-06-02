@@ -62,6 +62,7 @@ typedef struct esa_s {
 	lcp_inter_t *cache;
 	/** The FVC array holds the character after the LCP. */
 	char *FVC;
+	/** This is the child array. */
 	saidx_t *CLD;
 } esa_s;
 

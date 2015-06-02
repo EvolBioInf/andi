@@ -3,27 +3,15 @@
  * @brief ESA functions
  *
  * This file contains various functions that operate on an enhanced suffix
- * array. Some of these are taken straight from the book of Ohlebusch (2013);
- * Others are modified for improved performance. For future reference here are
- * some of the implemented changes.
+ * array. The basic algorithms originate from the book of Ohlebusch 
+ * "Bioinformatics Algorithms" (2013). Most of these were heavily modified
+ * for improved performance. One example is the lcp-cache.
  *
- * The name `get_match` is kind of misleading. It and `get_interval` both
- * find LCP-intervals but once for prefixes and for characters respectively.
- * A critical speed component for both functions is the number of RMQs done.
- * To reduce the number of calls, the `m` property of `lcp_inter_t` is caching
- * the correct value. This reduces the number of RMQ calls per input base
- * to an average of 1.7. This is less than the expected number of calls for
- * a binary search over for elements (log_2 (4) = 2).
- *
- * An additional RMQ-saving strategy was introduced in commit 7ba1d363189… and
- * optimized in 716958a01…. Since for every new match the very same RMQs are
- * called a cache is introduced: A "hash" over the first `CACHE_LENGTH` characters
- * of a new query determines an index into the cache. This cache is filled at
- * the initialization time of the ESA. Hence for multiple comparisons this is
- * done only once. The filling itself is done via a depth first search over the
- * imaginary suffix tree. This strategy saves about 20% of time when comparing
- * only two sequences and provides an additional speedup a factor of 3 to 4 when
- * applied to big data sets.
+ * The ESA structure defined in esa.h contains a `cache` field. This cache is
+ * used to quickly look up lcp-intervals. Consider the queries "AAGT" and 
+ * "AACG". In both cases the interval for "AA" has to be looked up in the
+ * ESA. If we simply store the interval for "AA" in the cache, once and use it
+ * for each query we are significantly faster (up to 7 times).
  */
 #include <stdlib.h>
 #include <string.h>
@@ -41,7 +29,7 @@ static int esa_init_SA( esa_s *);
 static int esa_init_LCP( esa_s *);
 static int esa_init_CLD( esa_s *);
 
-/** @brief The prefix length up to which RMQs are cached. */
+/** @brief The prefix length up to which LCP-intervals are cached. */
 const size_t CACHE_LENGTH = 10;
 
 /** @brief Map a code to the character. */
@@ -69,12 +57,12 @@ ssize_t char2code( const char c){
 
 #define R(CLD, i) ((CLD)[(i)])
 #define L(CLD, i) ((CLD)[(i)-1])
-
-
 #define LCP(i) (self->LCP[(i)] & 0xFFFFFF)
 #define FVC(i) (self->LCP[(i)] >> 24)
 
-/** @brief Fills the RMQ cache.
+
+
+/** @brief Fills the LCP-Interval cache.
  *
  * Traversing the virtual suffix tree, created by SA, LCP and CLD is rather slow.
  * Hence we create a cache, holding the LCP-interval for a prefix of a certain
@@ -111,7 +99,7 @@ int esa_init_cache( esa_s *self){
 
 /** @brief Fills the cache — one char at a time.
  *
- * This function is a depth first search on the virtual suffix array and fills
+ * This function is a depth first search on the virtual suffix tree and fills
  * the cache. Or rather it calls it self until some value to cache is calculated.
  * This function is a recursive version of get_inteval but with more edge cases.
  *
@@ -220,6 +208,13 @@ void esa_init_cache_fill( esa_s *C, char *str, size_t pos, lcp_inter_t in){
 
 /**
  * @brief Initializes the FVC (first variant character) array.
+ *
+ * The FVC is of my own invention and simply defined as
+ * `FVC[i] = S[SA[i]+LCP[i]]`. This expression is constantly used in
+ * get_interval. By precomputing the result, we have less memory
+ * accesses, less cache misses, and thus improved runtimes of up to 15%
+ * faster matching. This comes at a negligible cost of increased memory.
+ *
  * @param self - The ESA
  * @returns 0 iff successful
  */
@@ -376,9 +371,10 @@ int esa_init_CLD( esa_s *C){
 }
 
 /**
- * This function implements an alternative way of computing an LCP
- * array for a given suffix array. It uses an intermediate `phi`
- * array, hence the name. It's a bit faster than the other version.
+ * This function computed the LCP array, given the suffix array. Thereto it uses
+ * a special `phi` array, which makes it slightly faster than the original
+ * linear-time algorithm by Kasai et al.
+ *
  * @param C The enhanced suffix array to compute the LCP from.
  * @returns 0 iff successful
  */
@@ -444,6 +440,12 @@ int esa_init_LCP( esa_s *C){
 }
 
 /** @brief For the lcp-interval of string `w` compute the interval for `wa`
+ *
+ * Say, we already know the LCP-interval ij for a string `w`. Now we want to
+ * check if `wa` may also be found in the ESA and thus in the subject. So we
+ * look for the sub interval of `ij` in which all strings feature an `a` as
+ * the next character. If such a sub interval is found, its boundaries are
+ * returned.
  *
  * @param self - The ESA.
  * @param ij - The lcp-interval for `w`.
@@ -517,7 +519,14 @@ static lcp_inter_t get_interval( const esa_s *self, lcp_inter_t ij, char a){
 	return ij;
 }
 
-/** @brief Compute the LCP interval of a query from a certain starting interval.
+/** @brief Compute the longest match of a query with the subject.
+ *
+ * The *longest match* is the core concept of `andi`. Its simply defined as the
+ * longest prefix of a query Q appearing anywhere in the subject S. Talking about
+ * genetic sequences, a match is a homologous region, likely followed by a SNP.
+ *
+ * This function returns the interval for where the longest match of the query
+ * can be found in the ESA. Thereto it expects a starting interval for the search.
  *
  * @param C - The enhanced suffix array for the subject.
  * @param query - The query sequence.
@@ -560,6 +569,7 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 	
 	// Loop over the query until a mismatch is found
 	do {
+		// Get the subinterval for the next character.
 		ij = get_interval( C, ij, query[k]);
 		i = ij.i;
 		j = ij.j;
@@ -575,7 +585,7 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 
 		l = qlen;
 		if( i < j && ij.l < l){
-			/* Instead of making another RMQ we can use the LCP interval calculated
+			/* Instead of making another look up we can use the LCP interval calculated
 			 * in get_interval */
 			l = ij.l;
 		}
@@ -598,8 +608,9 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 
 /** @brief Get a match.
  *
- * Given an ESA (self) and a string q find the longest prefix of q that matches some
- * where in self. Of that match the lcp-interval is returned.
+ * Given an ESA and a string Q find the longest prefix of Q that matches somewhere
+ * in C. This search is done entirely via jumping around in the ESA, and thus is
+ * slow.
  *
  * @param self - The ESA.
  * @param query - The query string — duh.
@@ -625,7 +636,8 @@ lcp_inter_t get_match( const esa_s *self, const char *query, size_t qlen){
 
 /** @brief Compute the LCP interval of a query. For a certain prefix length of the
  * query its LCP interval is retrieved from a cache. Hence this is faster than the
- * naive `getInterval`.
+ * naive `get_match`. If the cache fails to provide a proper value, we fall back 
+ * to the standard search.
  *
  * @param C - The enhanced suffix array for the subject.
  * @param query - The query sequence.

@@ -8,8 +8,8 @@ code-docs:
 manual_files=manual/andi-manual.tex manual/andi_labels.pdf 
 
 manual/andi-manual.pdf: $(manual_files)
-	echo "Missing pdflatex" > $@
-	cd manual && which pdflatex && pdflatex andi-manual.tex
+	-which pdflatex && echo "Missing pdflatex" > $@
+	-cd manual && which pdflatex && pdflatex andi-manual.tex
 
 dist_noinst_DATA= $(manual_files)
 

@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/EvolBioInf/andi.svg?branch=master)](https://travis-ci.org/EvolBioInf/andi)
+[![Build Status](https://travis-ci.org/EvolBioInf/andi.svg?branch=master)](https://travis-ci.org/EvolBioInf/andi) [![Coverage Status](https://coveralls.io/repos/EvolBioInf/andi/badge.svg?branch=master)](https://coveralls.io/r/EvolBioInf/andi?branch=master)
 
 # About
 

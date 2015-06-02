@@ -37,10 +37,10 @@ AS_IF([test "x$with_libdivsufsort" != "xno"],
 )
 
 AS_IF([test "x$have_libdivsufsort" = "xno"],
-	[AS_IF([test "x$with_libdivsufsort" = "xyes"],
-		[AC_MSG_ERROR([Configuration for libdivsufsort failed. Either install libdivsufsort,
-			or use out replacement psufsort instead (./configure --without-libdivsufsort).
-			The latter may result in longer runtimes.])
+	[AS_IF([test "x$with_libdivsufsort" != "xno"],
+		[AC_MSG_ERROR([Configuration for libdivsufsort failed. Either install libdivsufsort, or use our replacement, psufsort, instead.
+	./configure --without-libdivsufsort
+The latter may result in longer runtimes.])
 	])
 ])
 

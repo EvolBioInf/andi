@@ -24,6 +24,7 @@
 #endif
 
 double shuprop( size_t x, double g, size_t l);
+int calculate_bootstrap(double *D, data_t *M, seq_t *sequences, size_t n);
 
 /**
  * @brief Calculates the minimum anchor length.
@@ -361,43 +362,64 @@ void calculate_distances( seq_t* sequences, int n){
 	// print the results
 	print_distances( D, sequences, n);
 
+
 	// print additional information.
 	if( FLAGS & F_VERBOSE){
 		print_coverages( M, n);
 	}
 
+	// create new bootstrapped distance matrices
 	if( BOOTSTRAP ){
-		double *B = malloc(n * n * sizeof(double));
-		assert(B);
-
-		gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
-		assert(rng);
-
-		gsl_rng_set( rng, time(NULL));
-
-#define B( X, Y) (B[ (X)*n + (Y) ])
-
-		while( BOOTSTRAP--){
-			for( i=0; i< n; i++){
-				for( size_t j=0; j<n; j++){
-					if( i == j){
-						B(i,j) = 0;
-					} else {
-						double coverage = M(i,j).coverage * (double)sequences[j].len;
-						B(i,j) = gsl_ran_binomial( rng, D(i,j), coverage) / coverage;
-					}
-				}
-			}
-
-			print_distances(B, sequences, n);
+		int res = calculate_bootstrap(D, M, sequences, n);
+		if( res){
+			warnx("Bootstrapping failed.");
 		}
-
-		free(B);
-		gsl_rng_free(rng);
 	}
-	
+
 	free(D);
 	free(M);
 }
 
+/** Yet another hack. */
+#define B( X, Y) (B[ (X)*n + (Y) ])
 
+int calculate_bootstrap(double *D, data_t *M, seq_t *sequences, size_t n){
+	if(!D || !M || !sequences || !n){
+		return 1;
+	}
+
+	// B is the new bootstrap matrix
+	double *B = malloc(n * n * sizeof(double));
+	if( !B) return 2;
+
+	gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
+	if( !rng) return 3;
+
+	// seed the random number generator with the current time
+	gsl_rng_set( rng, time(NULL));
+
+	// Compute a number of new distance matrices
+	while( BOOTSTRAP--){
+		for( size_t i=0; i< n; i++){
+			for( size_t j=0; j<n; j++){
+				if( i == j){
+					B(i,j) = 0;
+				} else {
+					/* The classical bootstrapping process, as described by
+						Felsenstein, resamples all nucleotides of a MSA. As andi
+						only computes a pairwise alignment, this process boils
+						down to a simple binomial distribution around a mean of
+						the original distance. */
+					double coverage = M(i,j).coverage * (double)sequences[j].len;
+					B(i,j) = gsl_ran_binomial( rng, D(i,j), coverage) / coverage;
+				}
+			}
+		}
+
+		print_distances(B, sequences, n);
+	}
+
+	free(B);
+	gsl_rng_free(rng);
+	return 0;
+}

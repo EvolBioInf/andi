@@ -1,4 +1,4 @@
-AC_INIT([andi], [0.9.1-beta])
+AC_INIT([andi], [0.9.2-beta])
 AM_INIT_AUTOMAKE([-Wall foreign ])
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -41,10 +41,10 @@ AS_IF([test "x$with_libdivsufsort" != "xno"],
 )
 
 AS_IF([test "x$have_libdivsufsort" = "xno"],
-	[AS_IF([test "x$with_libdivsufsort" = "xyes"],
-		[AC_MSG_ERROR([Configuration for libdivsufsort failed. Either install libdivsufsort,
-			or use out replacement psufsort instead (./configure --without-libdivsufsort).
-			The latter may result in longer runtimes.])
+	[AS_IF([test "x$with_libdivsufsort" != "xno"],
+		[AC_MSG_ERROR([Configuration for libdivsufsort failed. Either install libdivsufsort, or use our replacement, psufsort, instead.
+	./configure --without-libdivsufsort
+The latter may result in longer runtimes.])
 	])
 ])
 
@@ -86,7 +86,7 @@ AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 AC_CHECK_FUNCS([floor pow sqrt strdup])
 AC_CHECK_FUNCS([strndup])
-AC_CHECK_FUNCS([strrchr])
+AC_CHECK_FUNCS([strrchr strchrnul])
 AC_CHECK_FUNCS([strtoul strtod])
 
 AC_CONFIG_HEADERS([src/config.h:src/config.hin])

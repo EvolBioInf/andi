@@ -16,6 +16,18 @@
 KSEQ_INIT(int, read);
 
 
+#ifndef HAVE_STRCHRNUL
+
+/* @brief Here follows a simple implementation of the GNU function `strchrnul`.
+ * Please check the gnulib manual for details.
+ */
+char *strchrnul(const char *s, int c){
+	char *p = strchr(s,c);
+
+	return p != NULL ? p : strchr(s, '\0');
+}
+#endif
+
 /**
  * @brief Joins all sequences from a file into a single long sequence.
  *
@@ -93,7 +105,7 @@ void read_fasta( FILE *in, dsa_t *dsa){
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
  */
-void print_distances( double *D, seq_t *sequences, size_t n){
+void print_distances( const double *D, const seq_t *sequences, size_t n){
 
 	int use_scientific = 0;
 	int failed = 0;
@@ -140,7 +152,7 @@ void print_distances( double *D, seq_t *sequences, size_t n){
  * @param D - The distance matrix
  * @param n - The number of sequences.
  */
-void print_coverages( data_t *D, size_t n){
+void print_coverages( const data_t *D, size_t n){
 	size_t i,j;
 	printf("\nCoverage:\n");
 	for(i=0; i<n; i++){

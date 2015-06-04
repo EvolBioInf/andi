@@ -30,7 +30,7 @@ typedef struct data_s {
 void read_fasta( FILE *in, dsa_t *dsa);
 void read_fasta_join( FILE *in, dsa_t *dsa, const char *name);
 
-void print_distances( double *D, seq_t *sequences, size_t n);
-void print_coverages( data_t *D, size_t n);
+void print_distances( const double *D, const seq_t *sequences, size_t n);
+void print_coverages( const data_t *D, size_t n);
 
 #endif // _IO_H_

@@ -57,8 +57,6 @@ ssize_t char2code( const char c){
 
 #define R(CLD, i) ((CLD)[(i)])
 #define L(CLD, i) ((CLD)[(i)-1])
-#define LCP(i) (self->LCP[(i)] & 0xFFFFFF)
-#define FVC(i) (self->LCP[(i)] >> 24)
 
 
 
@@ -89,7 +87,7 @@ int esa_init_cache( esa_s *self){
 		.i = 0,
 		.j = self->len - 1,
 		.m = m,
-		.l = LCP(m)
+		.l = self->LCP[m]
 	};
 
 	esa_init_cache_dfs( self, str, 0, ij);
@@ -218,20 +216,21 @@ void esa_init_cache_fill( esa_s *C, char *str, size_t pos, lcp_inter_t in){
  * @param self - The ESA
  * @returns 0 iff successful
  */
-int esa_init_DIFF(esa_s *self){
+int esa_init_FVC(esa_s *self){
+	size_t len = self->len;
+
+	char *FVC = self->FVC = malloc(len);
+	if(!FVC){
+		return 1;
+	}
+
 	const char *S = self->S;
 	const int *SA = self->SA;
-	int *LCP= self->LCP, lcp;
+	const int *LCP= self->LCP;
 
-	for (int i = self->len; i--; SA++, LCP++){
-		lcp = *LCP;
-		if( lcp >= (1<<24)){
-			warnx("For technical reasons, the longest repeat within a sequence is limited below 2^24."
-				"Found and LCP value of %d. Aborting this sequence.\n", lcp);
-			return 1;
-		}
-
-		*LCP |= S[*SA + lcp] << 24;
+	FVC[0] = '\0';
+	for(size_t i=len; i--; FVC++, SA++, LCP++){
+		*FVC = S[*SA + *LCP];
 	}
 
 	return 0;
@@ -263,12 +262,11 @@ int esa_init( esa_s *C, const seq_t *S){
 	result = esa_init_CLD(C);
 	if(result) return result;
 
-	result = esa_init_DIFF(C);
-	if(result) return result;
+	result = esa_init_FVC(C);
+	if( result) return result;
 
 	result = esa_init_cache(C);
 	if(result) return result;
-
 
 	return 0;
 }
@@ -457,8 +455,10 @@ static lcp_inter_t get_interval( const esa_s *self, lcp_inter_t ij, char a){
 	saidx_t j = ij.j;
 
 	const saidx_t *SA = self->SA;
+	const saidx_t *LCP = self->LCP;
 	const char *S = self->S;
 	const saidx_t *CLD = self->CLD;
+	const char *FVC= self->FVC;
 	// check for singleton or empty interval
 	if( i == j ){
 		if( S[SA[i] + ij.l] != a){
@@ -474,7 +474,7 @@ static lcp_inter_t get_interval( const esa_s *self, lcp_inter_t ij, char a){
 	goto SoSueMe;
 
 	do {
-		c = FVC(i);
+		c = FVC[i];
 
 		SoSueMe:
 		if( c == a){
@@ -485,7 +485,7 @@ static lcp_inter_t get_interval( const esa_s *self, lcp_inter_t ij, char a){
 				.i = i,
 				.j = m-1,
 				.m = n,
-				.l = LCP(n)
+				.l = LCP[n]
 			};
 
 			return ij;
@@ -502,15 +502,15 @@ static lcp_inter_t get_interval( const esa_s *self, lcp_inter_t ij, char a){
 		}
 
 		m = R(CLD,m);
-	} while ( /*m != "bottom" && */ LCP(m) == l);
+	} while ( /*m != "bottom" && */ LCP[m] == l);
 
 	// final sanity check
-	if( i != ij.i ? FVC(i) == a : S[SA[i] + l] == a){
+	if( i != ij.i ? FVC[i] == a : S[SA[i] + l] == a){
 		ij.i = i;
 		ij.j = j;
 		/* Also return the length of the LCP interval including `a` and
 		 * possibly even more characters. Note: l + 1 <= LCP[m] */
-		ij.l = LCP(m);
+		ij.l = LCP[m];
 		ij.m = m;
 	} else {
 		ij.i = ij.j = -1;
@@ -612,26 +612,26 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
  * in C. This search is done entirely via jumping around in the ESA, and thus is
  * slow.
  *
- * @param self - The ESA.
+ * @param C - The ESA.
  * @param query - The query string — duh.
  * @param qlen - The length of the query.
  * @returns the lcp interval of the match.
  */
-lcp_inter_t get_match( const esa_s *self, const char *query, size_t qlen){
+lcp_inter_t get_match( const esa_s *C, const char *query, size_t qlen){
 	// sanity checks
-	if( !self || !query || !self->len || !self->SA || !self->LCP || !self->S || !self->CLD ){
+	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->CLD ){
 		return (lcp_inter_t){-1,-1,-1,-1};
 	}
 
-	saidx_t m = L(self->CLD, self->len);
+	saidx_t m = L(C->CLD, C->len);
 	lcp_inter_t ij = {
 		.i = 0,
-		.j = self->len - 1,
+		.j = C->len - 1,
 		.m = m,
-		.l = LCP(m)
+		.l = C->LCP[m]
 	};
 
-	return get_match_from(self, query, qlen, 0, ij);
+	return get_match_from(C, query, qlen, 0, ij);
 }
 
 /** @brief Compute the LCP interval of a query. For a certain prefix length of the

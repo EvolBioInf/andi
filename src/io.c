@@ -16,6 +16,18 @@
 KSEQ_INIT(int, read);
 
 
+#ifndef HAVE_STRCHRNUL
+
+/* @brief Here follows a simple implementation of the GNU function `strchrnul`.
+ * Please check the gnulib manual for details.
+ */
+char *strchrnul(const char *s, int c){
+	char *p = strchr(s,c);
+
+	return p != NULL ? p : strchr(s, '\0');
+}
+#endif
+
 /**
  * @brief Joins all sequences from a file into a single long sequence.
  *

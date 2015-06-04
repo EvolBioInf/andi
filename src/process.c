@@ -24,7 +24,7 @@
 #endif
 
 double shuprop( size_t x, double g, size_t l);
-int calculate_bootstrap(double *D, data_t *M, seq_t *sequences, size_t n);
+int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n);
 
 /**
  * @brief Calculates the minimum anchor length.
@@ -370,7 +370,7 @@ void calculate_distances( seq_t* sequences, int n){
 
 	// create new bootstrapped distance matrices
 	if( BOOTSTRAP ){
-		int res = calculate_bootstrap(D, M, sequences, n);
+		int res = calculate_bootstrap(M, sequences, n);
 		if( res){
 			warnx("Bootstrapping failed.");
 		}
@@ -383,8 +383,8 @@ void calculate_distances( seq_t* sequences, int n){
 /** Yet another hack. */
 #define B( X, Y) (B[ (X)*n + (Y) ])
 
-int calculate_bootstrap(double *D, data_t *M, seq_t *sequences, size_t n){
-	if(!D || !M || !sequences || !n){
+int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n){
+	if( !M || !sequences || !n){
 		return 1;
 	}
 
@@ -393,7 +393,10 @@ int calculate_bootstrap(double *D, data_t *M, seq_t *sequences, size_t n){
 	if( !B) return 2;
 
 	gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
-	if( !rng) return 3;
+	if( !rng){
+		free(B);
+		return 3;
+	}
 
 	// seed the random number generator with the current time
 	gsl_rng_set( rng, time(NULL));
@@ -411,7 +414,7 @@ int calculate_bootstrap(double *D, data_t *M, seq_t *sequences, size_t n){
 						down to a simple binomial distribution around a mean of
 						the original distance. */
 					double coverage = M(i,j).coverage * (double)sequences[j].len;
-					B(i,j) = gsl_ran_binomial( rng, D(i,j), coverage) / coverage;
+					B(i,j) = gsl_ran_binomial( rng, M(i,j).distance, coverage) / coverage;
 				}
 			}
 		}

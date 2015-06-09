@@ -40,7 +40,7 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 	P_OUTER
 	for(i=0;i<n;i++){
 		seq_t *subject = &sequences[i];
-		esa_t E;
+		esa_s E;
 
 		seq_subject_init( subject);
 		if( esa_init( &E, subject)){

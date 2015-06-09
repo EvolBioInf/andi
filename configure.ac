@@ -1,4 +1,4 @@
-AC_INIT([andi], [0.9.2])
+AC_INIT([andi], [0.9.3-beta])
 AM_INIT_AUTOMAKE([-Wall foreign ])
 
 AC_CONFIG_MACRO_DIR([m4])

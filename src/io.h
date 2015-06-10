@@ -31,6 +31,7 @@ void read_fasta( FILE *in, dsa_t *dsa);
 void read_fasta_join( FILE *in, dsa_t *dsa, const char *name);
 
 void print_distances( const double *D, const seq_t *sequences, size_t n);
+void print_distances2( const data_s *M, const seq_t *sequences, size_t n);
 void print_coverages( const data_s *D, size_t n);
 
 #endif // _IO_H_

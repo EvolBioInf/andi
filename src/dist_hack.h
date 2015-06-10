@@ -65,6 +65,9 @@ double *NAME( seq_t* sequences, size_t n, data_s *M){
 				continue;
 			}
 
+			// if already estimated
+			if( M && M(i,j).distance) continue;
+
 			// TODO: Provide a nicer progress indicator.
 			if( FLAGS & F_EXTRA_VERBOSE ){
 				#pragma omp critical
@@ -93,6 +96,41 @@ double *NAME( seq_t* sequences, size_t n, data_s *M){
 
 		esa_free(&E);
 		seq_subject_free(subject);
+
+		double dist_min = 9999.0, dist_max = 0.0;
+		for(j=0; j<n; j++){
+			if(i==j) continue;
+
+			if(M(i,j).distance < dist_min) dist_min = M(i,j).distance;
+			if(M(i,j).distance > dist_max) dist_max = M(i,j).distance;
+		}
+
+		if( dist_min < CUTOFF * dist_max){
+			// estimate distances
+			fprintf(stderr, "%s\n", "estimations inbound");
+
+			// the following code is quick and dirty
+			// it can be made more elegant by sorting the distances, first.
+			for(size_t b=0; b<n; b++){
+				if(i==b) continue;
+
+				for(size_t c=0; c<n; c++){
+					if( c==b || c==i) continue;
+					if( M(b,c).distance) continue;
+
+					if( M(i,b).distance < CUTOFF * M(i,c).distance){
+						// approximate
+						M(b,c).distance = M(c,b).distance = M(i,c).distance;
+						fprintf(stderr, "%zu %zu %zu\n", b, i, c);
+					}
+
+					if( M(i,c).distance < CUTOFF * M(i,b).distance){
+						M(b,c).distance = M(c,b).distance = M(i,b).distance;
+						fprintf(stderr, "%zu %zu %zu\n", b, i, c);
+					}
+				}
+			}
+		}
 	}
 
 	return D;

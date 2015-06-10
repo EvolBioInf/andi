@@ -41,6 +41,7 @@
 int FLAGS = 0;
 int THREADS = 1;
 double RANDOM_ANCHOR_PROP = 0.05;
+double CUTOFF = 0.01;
 
 void usage(void);
 void version(void);
@@ -64,6 +65,7 @@ int main( int argc, char *argv[]){
 		{"join", no_argument, NULL, 'j'},
 		{"low-memory", no_argument, NULL, 'm'},
 		{"threads", required_argument, NULL, 't'},
+		{"cutoff", required_argument, NULL, 'c'},
 		{0,0,0,0}
 	};
 
@@ -77,7 +79,7 @@ int main( int argc, char *argv[]){
 	
 		int option_index = 0;
 		
-		c = getopt_long( argc, argv, "jvhrt:p:m", long_options, &option_index);
+		c = getopt_long( argc, argv, "jvhrt:p:mc:", long_options, &option_index);
 		
 		if( c == -1){
 			break;
@@ -85,6 +87,23 @@ int main( int argc, char *argv[]){
 	
 		switch (c){
 			case 0:
+				break;
+			case 'c':
+				{
+					errno = 0;
+					char *end;
+					long unsigned int cutoff = strtoul( optarg, &end, 10);
+
+					if( errno || end == optarg || *end != '\0'){
+						warnx(
+							"Expected a number for -c argument, but '%s' was given. "
+							"Ignoring -c argument.", optarg
+						);
+						break;
+					}
+
+					CUTOFF = cutoff;
+				}
 				break;
 			case 'h':
 				usage();

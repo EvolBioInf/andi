@@ -147,6 +147,48 @@ void print_distances( const double *D, const seq_t *sequences, size_t n){
 	}
 }
 
+void print_distances2( const data_s *M, const seq_t *sequences, size_t n){
+
+	int use_scientific = 0;
+	int failed = 0;
+	size_t i,j;
+
+	for( i=0; i<n && (!use_scientific || !failed); i++){
+		for( j=0; j<n; j++){
+			if( M(i,j).distance > 0 && M(i,j).distance < 0.001 ){
+				use_scientific = 1;
+			}
+			if( isnan(M(i,j).distance)){
+				failed = 1;
+			}
+		}
+	}
+
+	if( failed){
+		warnx("Some distance computations failed and are reported as nan. "
+			"Please refer to the documentation for further details.");
+	}
+
+	printf("%zu\n", n);
+	for( i=0;i<n;i++){
+		// Print exactly nine characters of the name. Pad with spaces if necessary.
+		printf("%-9.9s", sequences[i].name);
+
+		for( j=0;j<n;j++){
+			// print average
+			double val = (M(i,j).distance + M(j,i).distance)/2;
+
+			if( FLAGS & F_EXTRA_VERBOSE ){
+				val = M(i,j).distance;
+			}
+
+			// use scientific notation for small numbers
+			printf(use_scientific ? " %1.4e" : " %1.4f", val);
+		}
+		printf("\n");
+	}
+}
+
 /**
  * @brief Prints the coverage matrix.
  * @param D - The distance matrix

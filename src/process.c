@@ -349,13 +349,16 @@ void calculate_distances( seq_t* sequences, int n){
 			warn("Couldn't allocate enough memory for verbose mode; Continuing without.");
 			FLAGS &= ~F_VERBOSE;
 		}
+		for(i=0; i<n*n;i++){
+			M[i] = (data_s){0.0,0.0};
+		}
 	}
 
 	// compute the distances
 	double *D = FLAGS & F_LOW_MEMORY ? distMatrixLM( sequences, n, M) : distMatrix( sequences, n, M);
 	
 	// print the results
-	print_distances( D, sequences, n);
+	print_distances2( M, sequences, n);
 
 	// print additional information.
 	if( FLAGS & F_VERBOSE){

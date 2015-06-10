@@ -152,7 +152,7 @@ void print_distances( const double *D, const seq_t *sequences, size_t n){
  * @param D - The distance matrix
  * @param n - The number of sequences.
  */
-void print_coverages( const data_t *D, size_t n){
+void print_coverages( const data_s *D, size_t n){
 	size_t i,j;
 	printf("\nCoverage:\n");
 	for(i=0; i<n; i++){

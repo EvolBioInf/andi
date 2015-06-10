@@ -26,7 +26,7 @@
  * @param n - The number of sequences
  * @param M - A matrix for additional output data
  */
-double *NAME( seq_t* sequences, size_t n, data_t *M){
+double *NAME( seq_t* sequences, size_t n, data_s *M){
 	errno = 0;
 	double *D = (double*) malloc( n * n * sizeof(double));
 
@@ -75,7 +75,7 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 
 			size_t ql = sequences[j].len;
 
-			data_t datum = dist_anchor( &E, sequences[j].S, ql, subject->gc);
+			data_s datum = dist_anchor( &E, sequences[j].S, ql, subject->gc);
 
 			if( !(FLAGS & F_RAW)){
 				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor

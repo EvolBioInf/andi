@@ -130,7 +130,7 @@ double shuprop( size_t x, double p, size_t l){
  * @param query - The actual query string.
  * @param query_length - The length of the query string. Needed for speed reasons.
  */
-data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, double gc){
+data_s dist_anchor( const esa_s *C, const char *query, size_t query_length, double gc){
 	size_t snps = 0; // Total number of found SNPs
 	size_t homo = 0; // Total number of homologous nucleotides.
 	
@@ -160,7 +160,7 @@ data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, doub
 
 	size_t threshold = minAnchorLength( 1-sqrt(1-RANDOM_ANCHOR_PROP), gc, C->len);
 
-	data_t retval = {0.0,0.0};
+	data_s retval = {0.0,0.0};
 
 	// Iterate over the complete query.
 	while( this_pos_Q < query_length){
@@ -340,11 +340,11 @@ void calculate_distances( seq_t* sequences, int n){
 			"These were automatically stripped to ensure correct results.");
 	}
 
-	data_t *M = NULL;
+	data_s *M = NULL;
 	
 	if( FLAGS & F_VERBOSE){
 		errno = 0;
-		M = malloc(n*n*sizeof(data_t));
+		M = malloc(n*n*sizeof(data_s));
 		if( !M){
 			warn("Couldn't allocate enough memory for verbose mode; Continuing without.");
 			FLAGS &= ~F_VERBOSE;

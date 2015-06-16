@@ -21,7 +21,7 @@ $(TESTS): all
 endif # BUILD_TESTS
 
 
-dist_noinst_DATA = README ChangeLog README.md
+dist_noinst_DATA = README ChangeLog README.md andi-manual.pdf
 
 README: README.md
 	cp README.md README
@@ -35,3 +35,9 @@ ChangeLog: configure.ac
 .PHONY: code-docs
 code-docs:
 	cd docs && $(MAKE) code-docs;
+
+docs/maunal/andi-manual.pdf: $(SUBDIRS)
+
+# copy the manual to top dir, so it is more visible
+andi-manual.pdf: docs/manual/andi-manual.pdf
+	cp $^ $@

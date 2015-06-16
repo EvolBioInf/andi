@@ -77,14 +77,6 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 
 			data_t datum = dist_anchor( &E, sequences[j].S, ql, subject->gc);
 
-			if( !(FLAGS & F_RAW)){
-				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
-			}
-			// fix negative zero
-			if( datum.distance <= 0.0 ){
-				datum.distance = 0.0;
-			}
-
 			D(i,j) = datum.distance;
 			if( M){
 				M(i,j) = datum;

@@ -164,9 +164,9 @@ int main( int argc, char *argv[]){
 					char *end;
 					long unsigned int bootstrap = strtoul( optarg, &end, 10);
 
-					if( errno || end == optarg || *end != '\0'){
+					if( errno || end == optarg || *end != '\0' || bootstrap == 0){
 						warnx(
-							"Expected a number for -b argument, but '%s' was given. "
+							"Expected a positive number for -b argument, but '%s' was given. "
 							"Ignoring -b argument.", optarg
 						);
 						break;

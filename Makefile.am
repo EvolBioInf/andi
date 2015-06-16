@@ -23,9 +23,12 @@ endif # BUILD_TESTS
 
 dist_noinst_DATA = README ChangeLog README.md andi-manual.pdf
 
+# This is a small hack to satisfy both GitHub and the GNU coding style.
 README: README.md
 	cp README.md README
-	
+
+
+# Recreate the changelog, when the version string changes.
 ChangeLog: configure.ac
 	echo "Missing Git" > ChangeLog;
 	if test -d $(srcdir)/.git; then \

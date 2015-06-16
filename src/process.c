@@ -135,7 +135,7 @@ double shuprop( size_t x, double p, size_t l){
  * @param query - The actual query string.
  * @param query_length - The length of the query string. Needed for speed reasons.
  */
-data_t dist_anchor( const esa_t *C, const char *query, size_t query_length, double gc){
+data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, double gc){
 	size_t snps = 0; // Total number of found SNPs
 	size_t homo = 0; // Total number of homologous nucleotides.
 	

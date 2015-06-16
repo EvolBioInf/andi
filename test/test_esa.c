@@ -23,7 +23,7 @@ char code3char( ssize_t code){
 }
 
 typedef struct {
-	esa_t *C;
+	esa_s *C;
 	seq_t *S;
 } esa_fixture;
 
@@ -33,15 +33,17 @@ void assert_equal_lcp( const lcp_inter_t *a, const lcp_inter_t *b){
 	g_assert_cmpint( a->l, ==, b->l);
 }
 
-void assert_equal_cache_nocache( const esa_t *C, const char *str, size_t qlen){
+void assert_equal_cache_nocache( const esa_s *C, const char *str, size_t qlen){
 	lcp_inter_t a = get_match_cached(C, str, qlen);
 	lcp_inter_t b = get_match(C, str, qlen);
 	assert_equal_lcp( &a, &b);
+	g_assert(strncmp(str, C->S + C->SA[a.i], a.l) == 0);
+	g_assert( str[a.l] != C->S[ a.l + C->SA[a.i]] || str[a.l] == '\0');
 }
 
-void test_esa_setup( esa_fixture *ef, gconstpointer test_data){
-	ef->C = (esa_t *) malloc( sizeof(esa_t));
-	ef->S = (seq_t *) malloc( sizeof(seq_t));
+void setup( esa_fixture *ef, gconstpointer test_data){
+	ef->C = malloc( sizeof(esa_s));
+	ef->S = malloc( sizeof(seq_t));
 
 	g_assert( ef->C != NULL);
 	g_assert( ef->S != NULL);
@@ -64,9 +66,9 @@ void test_esa_setup( esa_fixture *ef, gconstpointer test_data){
 	g_assert( check == 0);
 }
 
-void test_esa_setup2( esa_fixture *ef, gconstpointer test_data){
-	ef->C = (esa_t *) malloc( sizeof(esa_t));
-	ef->S = (seq_t *) malloc( sizeof(seq_t));
+void setup2( esa_fixture *ef, gconstpointer test_data){
+	ef->C = malloc( sizeof(esa_s));
+	ef->S = malloc( sizeof(seq_t));
 
 	g_assert( ef->C != NULL);
 	g_assert( ef->S != NULL);
@@ -90,7 +92,7 @@ void test_esa_setup2( esa_fixture *ef, gconstpointer test_data){
 	g_assert( check == 0);
 }
 
-void test_esa_teardown( esa_fixture *ef, gconstpointer test_data){
+void teardown( esa_fixture *ef, gconstpointer test_data){
 	esa_free(ef->C);
 	free(ef->C);
 	seq_free(ef->S);
@@ -99,8 +101,8 @@ void test_esa_teardown( esa_fixture *ef, gconstpointer test_data){
 
 extern int count;
 
-void test_esa_basic( esa_fixture *ef, gconstpointer test_data){
-	esa_t *C = ef->C;
+void basic( esa_fixture *ef, gconstpointer test_data){
+	esa_s *C = ef->C;
 	g_assert( C->SA);
 
 	lcp_inter_t a = get_match_cached(C, "AAGACTGG", 8);
@@ -126,8 +128,8 @@ void test_esa_basic( esa_fixture *ef, gconstpointer test_data){
 	//g_assert_cmpint(count, >=, 1 << (2*8));
 }
 
-void test_esa_normq_cached( esa_fixture *ef, gconstpointer test_data){
-	esa_t *C = ef->C;
+void normq_cached( esa_fixture *ef, gconstpointer test_data){
+	esa_s *C = ef->C;
 	g_assert( C->SA);
 	lcp_inter_t a, b;
 
@@ -159,25 +161,24 @@ void test_esa_normq_cached( esa_fixture *ef, gconstpointer test_data){
 	b = get_match(C, "AAAAAAAAAAAA", 12);
 	assert_equal_lcp( &a, &b);
 
-	//g_assert_cmpint(count, >=, 1 << (2*8));
 }
 
-size_t MAX_DEPTH = 9;
+size_t MAX_DEPTH = 11;
 
-void test_esa_prefix_dfs( esa_t *C, char *str, size_t depth);
+void prefix_dfs( esa_s *C, char *str, size_t depth);
 
-void test_esa_prefix( esa_fixture *ef, gconstpointer test_data){
-	esa_t *C = ef->C;
+void prefix( esa_fixture *ef, gconstpointer test_data){
+	esa_s *C = ef->C;
 	char str[MAX_DEPTH+1];
 	str[MAX_DEPTH] = '\0';
-	test_esa_prefix_dfs( C, str, 0);
+	prefix_dfs( C, str, 0);
 }
 
-void test_esa_prefix_dfs( esa_t *C, char *str, size_t depth){
+void prefix_dfs( esa_s *C, char *str, size_t depth){
 	if( depth < MAX_DEPTH){
 		for( int code = 0; code < 4; ++code){
 			str[depth] = code2char(code);
-			test_esa_prefix_dfs( C, str, depth + 1);
+			prefix_dfs( C, str, depth + 1);
 		}
 	} else {
 		assert_equal_cache_nocache(C, str, depth);
@@ -187,11 +188,11 @@ void test_esa_prefix_dfs( esa_t *C, char *str, size_t depth){
 int main(int argc, char *argv[])
 {
 	g_test_init( &argc, &argv, NULL);
-	g_test_add("/esa/basic", esa_fixture, NULL, test_esa_setup, test_esa_basic, test_esa_teardown);
-	g_test_add("/esa/sample cache", esa_fixture, NULL, test_esa_setup, test_esa_normq_cached, test_esa_teardown);
-	g_test_add("/esa/sample cache 2", esa_fixture, NULL, test_esa_setup2, test_esa_normq_cached, test_esa_teardown);
-	g_test_add("/esa/full cache", esa_fixture, NULL, test_esa_setup, test_esa_prefix, test_esa_teardown);
-	g_test_add("/esa/full cache 2", esa_fixture, NULL, test_esa_setup2, test_esa_prefix, test_esa_teardown);
+	g_test_add("/esa/basic", esa_fixture, NULL, setup, basic, teardown);
+	g_test_add("/esa/sample cache", esa_fixture, NULL, setup, normq_cached, teardown);
+	g_test_add("/esa/sample cache 2", esa_fixture, NULL, setup2, normq_cached, teardown);
+	g_test_add("/esa/full cache", esa_fixture, NULL, setup, prefix, teardown);
+	g_test_add("/esa/full cache 2", esa_fixture, NULL, setup2, prefix, teardown);
 
 	
 	return g_test_run();

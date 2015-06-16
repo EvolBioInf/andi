@@ -47,7 +47,7 @@ typedef struct {
  * This structure holds arrays and objects associated with an enhanced
  * suffix array (ESA).
  */
-typedef struct {
+typedef struct esa_s {
 	/** The base string from which the ESA was generated. */
 	const char *S;
 	/** The actual suffix array with indexes into S. */
@@ -64,12 +64,12 @@ typedef struct {
 	char *FVC;
 	/** This is the child array. */
 	saidx_t *CLD;
-} esa_t;
+} esa_s;
 
-lcp_inter_t get_match_cached( const esa_t *C, const char *query, size_t qlen);
-lcp_inter_t get_match( const esa_t *C, const char *query, size_t qlen);
-int esa_init( esa_t *C, const seq_t *S);
-void esa_free( esa_t *C);
+lcp_inter_t get_match_cached( const esa_s *, const char *query, size_t qlen);
+lcp_inter_t get_match( const esa_s *, const char *query, size_t qlen);
+int esa_init( esa_s *, const seq_t *S);
+void esa_free( esa_s *);
 
 #ifdef DEBUG
 

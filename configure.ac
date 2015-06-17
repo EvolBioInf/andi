@@ -16,8 +16,6 @@ AC_OPENMP
 
 # Execute all tests using C
 AC_LANG(C)
-
-AC_CHECK_LIB(m, cos)
 AC_OPENMP
 
 AC_CHECK_LIB([m],[cos])

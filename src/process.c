@@ -269,14 +269,14 @@ data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, doub
 
 	// Insignificant results. All abort the fail train.
 	if ( homo <= 3){
-		retval.distance = log(-1.0);
+		retval.distance = NAN;
 		return retval;
 	}
 	
 	// Abort if we have more homologous nucleotides than just nucleotides. This might
 	// happen with sequences of different lengths.
 	if( homo >= (size_t) C->len ){
-		retval.distance = log(-1.0);
+		retval.distance = NAN;
 		retval.coverage = 1.0;
 		return retval;
 	}

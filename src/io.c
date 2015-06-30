@@ -136,6 +136,10 @@ void print_distances( const double *D, const seq_t *sequences, size_t n){
 			// print average
 			double val = (D(i,j) + D(j,i))/2;
 
+			if( FLAGS & F_EXTRA_VERBOSE ){
+				val = D(i,j);
+			}
+
 			if( !(FLAGS & F_RAW)){
 				val = -0.75 * log(1.0- (4.0 / 3.0) * val ); // jukes cantor
 			}
@@ -143,10 +147,6 @@ void print_distances( const double *D, const seq_t *sequences, size_t n){
 			// fix negative zero
 			if( val <= 0.0 ){
 				val = 0.0;
-			}
-
-			if( FLAGS & F_EXTRA_VERBOSE ){
-				val = D(i,j);
 			}
 
 			// use scientific notation for small numbers

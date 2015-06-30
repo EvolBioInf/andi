@@ -220,6 +220,10 @@ data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, doub
 					// If the last was a right anchor, but with the current one, we 
 					// cannot extend, then add its length.
 					homo += last_length;
+				} else if( (last_length / 2) >= threshold){
+					// The last anchor wasn't neither a left or right anchor. But,
+					// it was as long as an anchor pair. So still count it.
+					homo += last_length;
 				}
 				
 				last_was_right_anchor = 0;
@@ -274,14 +278,14 @@ data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, doub
 
 	// Insignificant results. All abort the fail train.
 	if ( homo <= 3){
-		retval.distance = log(-1.0);
+		retval.distance = NAN;
 		return retval;
 	}
 	
 	// Abort if we have more homologous nucleotides than just nucleotides. This might
 	// happen with sequences of different lengths.
 	if( homo >= (size_t) C->len ){
-		retval.distance = log(-1.0);
+		retval.distance = NAN;
 		retval.coverage = 1.0;
 		return retval;
 	}

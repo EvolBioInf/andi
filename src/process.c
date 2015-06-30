@@ -404,7 +404,7 @@ int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n){
 	// Compute a number of new distance matrices
 	while( BOOTSTRAP--){
 		for( size_t i=0; i< n; i++){
-			for( size_t j=0; j<n; j++){
+			for( size_t j=i; j<n; j++){
 				if( i == j){
 					B(i,j) = 0;
 				} else {
@@ -413,8 +413,13 @@ int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n){
 						only computes a pairwise alignment, this process boils
 						down to a simple binomial distribution around a mean of
 						the original distance. */
-					double coverage = M(i,j).coverage * (double)sequences[j].len;
-					B(i,j) = gsl_ran_binomial( rng, M(i,j).distance, coverage) / coverage;
+
+					double avg_distance = (M(i,j).distance * M(i,j).coverage + M(j,i).distance * M(j,i).coverage) / (M(i,j).coverage + M(j,i).coverage);
+
+					double homonucl = M(i,j).coverage * (double)sequences[j].len +
+									  M(j,i).coverage * (double)sequences[i].len;
+
+					B(j,i) = B(i,j) = gsl_ran_binomial( rng, avg_distance, homonucl) / homonucl;
 				}
 			}
 		}

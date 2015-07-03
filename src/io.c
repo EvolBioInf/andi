@@ -105,7 +105,7 @@ void read_fasta( FILE *in, dsa_t *dsa){
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
  */
-void print_distances( const double *D, const seq_t *sequences, size_t n){
+void print_distances( const data_t *D, const seq_t *sequences, size_t n){
 
 	int use_scientific = 0;
 	int failed = 0;
@@ -113,10 +113,10 @@ void print_distances( const double *D, const seq_t *sequences, size_t n){
 
 	for( i=0; i<n && (!use_scientific || !failed); i++){
 		for( j=0; j<n; j++){
-			if( D(i,j) > 0 && D(i,j) < 0.001 ){
+			if( D(i,j).distance > 0 && D(i,j).distance < 0.001 ){
 				use_scientific = 1;
 			}
-			if( isnan(D(i,j))){
+			if( isnan(D(i,j).distance)){
 				failed = 1;
 			}
 		}
@@ -134,10 +134,10 @@ void print_distances( const double *D, const seq_t *sequences, size_t n){
 		
 		for( j=0;j<n;j++){
 			// print average
-			double val = (D(i,j) + D(j,i))/2;
+			double val = (D(i,j).distance + D(j,i).distance)/2;
 
 			if( FLAGS & F_EXTRA_VERBOSE ){
-				val = D(i,j);
+				val = D(i,j).distance;
 			}
 
 			// use scientific notation for small numbers

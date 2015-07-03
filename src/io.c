@@ -133,11 +133,25 @@ void print_distances( const data_t *D, const seq_t *sequences, size_t n){
 		printf("%-9.9s", sequences[i].name);
 		
 		for( j=0;j<n;j++){
-			// print average
-			double val = (D(i,j).distance + D(j,i).distance)/2;
+			// print average, weighted by covered nucleotides
+			double val = 0;
+			if( i != j){
+				double ijnucl = D(i,j).coverage * (double)sequences[j].len;
+				double jinucl = D(j,i).coverage * (double)sequences[i].len;
+				val = (D(i,j).distance * ijnucl + D(j,i).distance * jinucl)
+						/ (ijnucl + jinucl);
+			}
 
 			if( FLAGS & F_EXTRA_VERBOSE ){
 				val = D(i,j).distance;
+			}
+
+			if( !(FLAGS & F_RAW)){
+				val = -0.75 * log(1.0- (4.0 / 3.0) * val ); // jukes cantor
+			}
+			// fix negative zero
+			if( val <= 0.0 ){
+				val = 0.0;
 			}
 
 			// use scientific notation for small numbers

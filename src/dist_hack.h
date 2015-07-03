@@ -66,17 +66,7 @@ void NAME( data_t *M, seq_t* sequences, size_t n){
 
 			size_t ql = sequences[j].len;
 
-			data_t datum = dist_anchor( &E, sequences[j].S, ql, subject->gc);
-
-			if( !(FLAGS & F_RAW)){
-				datum.distance = -0.75 * log(1.0- (4.0 / 3.0) * datum.distance ); // jukes cantor
-			}
-			// fix negative zero
-			if( datum.distance <= 0.0 ){
-				datum.distance = 0.0;
-			}
-
-			M(i,j) = datum;
+			M(i,j) = dist_anchor( &E, sequences[j].S, ql, subject->gc);
 		}
 
 		esa_free(&E);

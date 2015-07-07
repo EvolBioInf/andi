@@ -105,7 +105,7 @@ void read_fasta( FILE *in, dsa_t *dsa){
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
  */
-void print_distances( const double *D, const seq_t *sequences, size_t n){
+void print_distances( const data_t *D, const seq_t *sequences, size_t n){
 
 	int use_scientific = 0;
 	int failed = 0;
@@ -113,10 +113,10 @@ void print_distances( const double *D, const seq_t *sequences, size_t n){
 
 	for( i=0; i<n && (!use_scientific || !failed); i++){
 		for( j=0; j<n; j++){
-			if( D(i,j) > 0 && D(i,j) < 0.001 ){
+			if( D(i,j).distance > 0 && D(i,j).distance < 0.001 ){
 				use_scientific = 1;
 			}
-			if( isnan(D(i,j))){
+			if( isnan(D(i,j).distance)){
 				failed = 1;
 			}
 		}
@@ -133,11 +133,25 @@ void print_distances( const double *D, const seq_t *sequences, size_t n){
 		printf("%-9.9s", sequences[i].name);
 		
 		for( j=0;j<n;j++){
-			// print average
-			double val = (D(i,j) + D(j,i))/2;
+			// print average, weighted by covered nucleotides
+			double val = 0;
+			if( i != j){
+				double ijnucl = D(i,j).coverage * (double)sequences[j].len;
+				double jinucl = D(j,i).coverage * (double)sequences[i].len;
+				val = (D(i,j).distance * ijnucl + D(j,i).distance * jinucl)
+						/ (ijnucl + jinucl);
+			}
 
 			if( FLAGS & F_EXTRA_VERBOSE ){
-				val = D(i,j);
+				val = D(i,j).distance;
+			}
+
+			if( !(FLAGS & F_RAW)){
+				val = -0.75 * log(1.0- (4.0 / 3.0) * val ); // jukes cantor
+			}
+			// fix negative zero
+			if( val <= 0.0 ){
+				val = 0.0;
 			}
 
 			if( !(FLAGS & F_RAW)){

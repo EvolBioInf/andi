@@ -255,7 +255,7 @@ int main( int argc, char *argv[]){
  */
 void usage(void){
 	const char str[]= {
-		"Usage: andi [-jrvb] [-p FLOAT] FILES...\n"
+		"Usage: andi [-jrvb] [-p FLOAT] [-t INT] FILES...\n"
 		"\tFILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
 		"  -b, --bootstrap <INT> Print additional bootstrap matrices\n"

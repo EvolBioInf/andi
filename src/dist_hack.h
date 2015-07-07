@@ -21,19 +21,11 @@
  *   The two functions only differ by their name and pragmas; i.e. They run in different parallel modes.
  * `distMatrix` is faster than `distMatrixLM` but needs more memory.
  *
- * @returns The asymmetric distance matrix
  * @param sequences - The sequences to compare
  * @param n - The number of sequences
  * @param M - A matrix for additional output data
  */
-double *NAME( seq_t* sequences, size_t n, data_t *M){
-	errno = 0;
-	double *D = (double*) malloc( n * n * sizeof(double));
-
-	if( !D){
-		err(1, "Could not allocate enough memory for the comparison matrix. Try using --join or --low-memory.");
-	}
-
+void NAME( data_t *M, seq_t* sequences, size_t n){
 	size_t i;
 
 	//#pragma
@@ -47,8 +39,8 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 			warnx("Failed to create index for %s.", subject->name);
 
 			for( size_t j=0; j< n; j++){
-				D(i,j) = (i==j) ? 0.0 : NAN;
-				if( M) M(i,j).coverage = 0.0;
+				M(i,j).distance = (i==j) ? 0.0 : NAN;
+				M(i,j).coverage = 0.0;
 			}
 
 			continue;
@@ -60,8 +52,7 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 		P_INNER
 		for(j=0; j<n; j++){
 			if( j == i) {
-				D(i,j) = 0.0;
-				if( M) M(i,j).coverage = 0.0;
+				M(i,j) = (data_t){0.0,0.0};
 				continue;
 			}
 
@@ -75,17 +66,10 @@ double *NAME( seq_t* sequences, size_t n, data_t *M){
 
 			size_t ql = sequences[j].len;
 
-			data_t datum = dist_anchor( &E, sequences[j].S, ql, subject->gc);
-
-			D(i,j) = datum.distance;
-			if( M){
-				M(i,j) = datum;
-			}
+			M(i,j) = dist_anchor( &E, sequences[j].S, ql, subject->gc);
 		}
 
 		esa_free(&E);
 		seq_subject_free(subject);
 	}
-
-	return D;
 }

@@ -32,9 +32,14 @@
 #include "esa.h"
 
 lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+lcp_inter_t get_match_from_optimistic( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
+
 static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a);
+static lcp_inter_t *get_interval_FVC_optimistic( const esa_t *C, lcp_inter_t *ij, char a);
+
 static void esa_init_cache_dfs( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
 void esa_init_cache_fill( esa_t *C, char *str, size_t pos, const lcp_inter_t *in);
+
 
 static int esa_init_SA( esa_t *c);
 static int esa_init_LCP( esa_t *c);
@@ -427,6 +432,9 @@ static lcp_inter_t *get_interval_FVC( const esa_t *C, lcp_inter_t *ij, char a){
 	return ij;
 }
 
+
+
+
 /**
  * This function computes the LCPInterval for the longest prefix of `query` which
  * can be found in the subject sequence. Compare Ohlebusch get_interval Alg 5.2 p.119
@@ -480,7 +488,7 @@ lcp_inter_t get_match_cached( const esa_t *C, const char *query, size_t qlen){
 		return get_match( C, query, qlen);
 	}
 
-	return get_match_from(C, query, qlen, ij.l, ij);
+	return get_match_from_optimistic(C, query, qlen, ij.l, ij);
 }
 
 /** @brief Compute the LCP interval of a query from a certain starting interval.
@@ -561,3 +569,157 @@ lcp_inter_t get_match_from( const esa_t *C, const char *query, size_t qlen, said
 	return res;
 }
 
+
+
+static lcp_inter_t *get_interval_FVC_optimistic( const esa_t *C, lcp_inter_t *ij, char a){
+	saidx_t i = ij->i;
+	saidx_t j = ij->j;
+
+
+	const saidx_t *SA = C->SA;
+	const saidx_t *LCP = C->LCP;
+	const char *S = C->S;
+	const char *FVC= C->FVC;
+	RMQ *rmq_lcp = C->rmq_lcp;
+	
+	// check for singleton or empty interval
+	if( i == j ){
+		if( S[SA[i] + ij->l] != a){
+			ij->i = ij->j = -1;
+		}
+		return ij;
+	}
+
+	saidx_t l, m;
+	
+	m = ij->m; // m is now any minimum in (i..j]
+	l = ij->l;
+	
+	/* We now use an abstract binary search. Think of `i` as the
+	 * lower and `j` as the upper boundary. Then `m` is the new
+	 * middle. */
+	do {
+		// check if `m` will be a new lower or upper bound.
+		if( FVC[m] <= a ){
+			i = m;
+		} else {
+			j = m - 1;
+		}
+		
+		if( i == j ){
+			break; // singleton interval, or `a` not found
+		}
+		
+		// find the next LCP boundary
+		m = rmq_lcp->query(i+1, j);
+	} while( LCP[m] == l);
+
+	// final sanity check
+	if( i != ij->i ? FVC[i] == a : true /*S[SA[i] + l] == a*/){
+		ij->i = i;
+		ij->j = j;
+		/* Also return the length of the LCP interval including `a` and
+		 * possibly even more characters. Note: l + 1 <= LCP[m] */
+		ij->l = LCP[m];
+		ij->m = m;
+	} else {
+		ij->i = ij->j = -1;
+	}
+	
+	return ij;
+}
+
+
+lcp_inter_t get_match_from_optimistic( const esa_t *C, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij){
+
+	if( ij.i == -1 && ij.j == -1){
+		return ij;
+	}
+
+	// fail early on singleton intervals.
+	if( ij.i == ij.j){
+
+		// try to extend the match. See line 513 below.
+		saidx_t p = C->SA[ij.i];
+		size_t k = ij.l;
+		const char *S = (const char *)C->S;
+
+		for( ; k< qlen && S[p+k]; k++ ){
+			if( S[p+k] != query[k]){
+				ij.l = k;
+				return ij;
+			}
+		}
+
+		ij.l = k;
+		return ij;
+	}
+
+	saidx_t l=k, i, j;
+
+	lcp_inter_t res = ij;
+		
+	// Loop over the query until a mismatch is found
+	do {
+		get_interval_FVC_optimistic( C, &ij, query[k]);
+		i = ij.i;
+		j = ij.j;
+		
+		// If our match cannot be extended further, return.
+		if( i == -1 && j == -1 ){
+			break;
+		}
+		
+		res.i = ij.i;
+		res.j = ij.j;
+
+		l = qlen;
+		if( i < j && ij.l < l){
+			/* Instead of making another RMQ we can use the LCP interval calculated
+			 * in get_interval */
+			l = ij.l;
+		}
+		
+		k = l;
+	} while ( k < (ssize_t)qlen);
+
+
+	const saidx_t *SA = C->SA;
+	const char *S = C->S;
+
+	// Extend the match
+	for( int p = SA[res.i], kk=0; kk < qlen; kk++){
+		if( S[p+kk] != query[kk] ){
+			if( kk == k){
+				res.l = k;
+				return res;
+			} else {
+				// we skipped a mismatch
+				res.l = kk;
+				// THIS LINE IS A LIE!
+				res.j = res.i + 1;
+				return res;
+			}
+		}
+	}
+
+	res.l = qlen;
+	return res;
+}
+
+lcp_inter_t get_match_optimistic( const esa_t *C, const char *query, size_t qlen){
+	lcp_inter_t res = {0,0,0,0};
+
+	// sanity checks
+	if( !C || !query || !C->len || !C->SA || !C->LCP || !C->S || !C->rmq_lcp ){
+		res.i = res.j = res.l = -1;
+		return res;
+	}
+	
+	lcp_inter_t ij = { 0, 0, C->len-1, 0};
+	
+	// TODO: This should be cached in a future version
+	ij.m = C->rmq_lcp->query(1,C->len-1);
+
+	return get_match_from_optimistic(C, query, qlen, 0, ij);
+}

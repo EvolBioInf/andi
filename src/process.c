@@ -381,13 +381,31 @@ void calculate_distances( seq_t* sequences, int n){
 /** Yet another hack. */
 #define B( X, Y) (B[ (X)*n + (Y) ])
 
+/** @brief Computes a bootstrap from _pairwise_ aligments.
+ *
+ * Doing bootstrapping for alignments with only two sequences is easy. As
+ * we only count substitutions, this boils down to a binomial distribution.
+ * `n` is the number of homologous sites, and `p` is the (uncorrected)
+ * substitution rate. Thus the bootstrapped distance `q` is `B(n;p)/n`.
+ * Note that `E(q) = p` and `Var(q) = p*(1-p)/n`. So in the limit of long
+ * sequences (i.e. big `n`) `q` almost certainly converges to `p`.
+ *
+ * @param M - the initial distance matrix
+ * @param sequences - a list of the sequences, containing their lengths
+ * @param n - the number of sequences
+ *
+ * The number of bootstrapped distance matrices to print is implicitly
+ * passed via the global `BOOTSTRAP` variable.
+ *
+ * @returns 0 iff successful.
+ */
 int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n){
 	if( !M || !sequences || !n){
 		return 1;
 	}
 
 	// B is the new bootstrap matrix
-	double *B = malloc(n * n * sizeof(double));
+	data_t *B = malloc(n * n * sizeof(data_t));
 	if( !B) return 2;
 
 	gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
@@ -404,21 +422,26 @@ int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n){
 		for( size_t i=0; i< n; i++){
 			for( size_t j=i; j<n; j++){
 				if( i == j){
-					B(i,j) = 0;
-				} else {
-					/* The classical bootstrapping process, as described by
-						Felsenstein, resamples all nucleotides of a MSA. As andi
-						only computes a pairwise alignment, this process boils
-						down to a simple binomial distribution around a mean of
-						the original distance. */
-
-					double avg_distance = (M(i,j).distance * M(i,j).coverage + M(j,i).distance * M(j,i).coverage) / (M(i,j).coverage + M(j,i).coverage);
-
-					double homonucl = M(i,j).coverage * (double)sequences[j].len +
-									  M(j,i).coverage * (double)sequences[i].len;
-
-					B(j,i) = B(i,j) = gsl_ran_binomial( rng, avg_distance, homonucl) / homonucl;
+					B(i,j) = (data_t){0.0,0.0};
+					continue;
 				}
+				/* The classical bootstrapping process, as described by
+					Felsenstein, resamples all nucleotides of a MSA. As andi
+					only computes a pairwise alignment, this process boils
+					down to a simple binomial distribution around a mean of
+					the original distance. */
+
+				double ijnucl = M(i,j).coverage * (double)sequences[j].len;
+				double jinucl = M(j,i).coverage * (double)sequences[i].len;
+				double homonucl = ijnucl + jinucl;
+				double avg_distance  = (M(i,j).distance * ijnucl + M(j,i).distance * jinucl)
+					/ (homonucl);
+
+				// The actual coverage value doesn't matter, just ensure its > 0
+				data_t datum = {.coverage = 1.0};
+
+				datum.distance = gsl_ran_binomial( rng, avg_distance, homonucl) / homonucl;
+				B(j,i) = B(i,j) = datum;
 			}
 		}
 

@@ -294,8 +294,6 @@ data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, doub
  * @brief Computes the distance matrix.
  *
  * The distMatrix() populates the D matrix with computed distances. It allocates D and
- * fills it with useful values, but the caller has to free it!
- * @return The distance matrix
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
@@ -306,8 +304,6 @@ data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, doub
  * @brief Computes the distance matrix.
  *
  * The distMatrixLM() populates the D matrix with computed distances. It allocates D and
- * filles it with useful values, but the caller has to free it!
- * @return The distance matrix
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
@@ -344,29 +340,26 @@ void calculate_distances( seq_t* sequences, int n){
 			"These were automatically stripped to ensure correct results.");
 	}
 
-	data_t *M = NULL;
-	
-	if( FLAGS & F_VERBOSE){
-		errno = 0;
-		M = malloc(n*n*sizeof(data_t));
-		if( !M){
-			warn("Couldn't allocate enough memory for verbose mode; Continuing without.");
-			FLAGS &= ~F_VERBOSE;
-		}
+	data_t *M = malloc(n*n*sizeof(data_t));
+	if( !M){
+		err( errno, "Could not allocate enough memory for the comparison matrix. Try using --join or --low-memory.");
 	}
 
 	// compute the distances
-	double *D = FLAGS & F_LOW_MEMORY ? distMatrixLM( sequences, n, M) : distMatrix( sequences, n, M);
-	
+	if( FLAGS & F_LOW_MEMORY){
+		distMatrixLM( M, sequences, n);
+	} else {
+		distMatrix( M, sequences, n);
+	}
+
 	// print the results
-	print_distances( D, sequences, n);
+	print_distances( M, sequences, n);
 
 	// print additional information.
 	if( FLAGS & F_VERBOSE){
 		print_coverages( M, n);
 	}
 	
-	free(D);
 	free(M);
 }
 

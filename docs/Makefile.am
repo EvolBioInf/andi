@@ -8,6 +8,7 @@ code-docs:
 manual_files=manual/andi-manual.tex manual/andi_labels.pdf 
 
 manual/andi-manual.pdf: $(manual_files)
+	sed -i "s/VERSION/$(VERSION)/" manual/andi-manual.tex
 	-which pdflatex && echo "Missing pdflatex" > $@
 	-cd manual && which pdflatex && pdflatex andi-manual.tex
 

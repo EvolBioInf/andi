@@ -25,8 +25,11 @@ docs/andi.1
 *.bbl
 *.blg
 
+
 *.in
 !docs/andi.1.in
+!docs/manual/version.tex.in
+docs/manual/version.tex
 *.log
 **/Makefile
 configure.scan

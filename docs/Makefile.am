@@ -5,10 +5,12 @@ dist_pdf_DATA = Doxyfile manual/andi-manual.pdf
 code-docs:
 	doxygen
 
-manual_files=manual/andi-manual.tex manual/andi_labels.pdf 
+manual_files=manual/andi-manual.tex manual/andi_labels.pdf manual/version.tex
+
+manual/version.tex: manual/version.tex.in $(top_srcdir)/configure.ac
+	sed "s/VERSION/$(VERSION)/" manual/version.tex.in > manual/version.tex
 
 manual/andi-manual.pdf: $(manual_files)
-	sed -i "s/VERSION/$(VERSION)/" manual/andi-manual.tex
 	-which pdflatex && echo "Missing pdflatex" > $@
 	-cd manual && which pdflatex && pdflatex andi-manual.tex
 

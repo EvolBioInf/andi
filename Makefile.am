@@ -39,7 +39,7 @@ ChangeLog: configure.ac
 code-docs:
 	cd docs && $(MAKE) code-docs;
 
-docs/maunal/andi-manual.pdf: $(SUBDIRS)
+docs/manual/andi-manual.pdf: $(SUBDIRS)
 
 # copy the manual to top dir, so it is more visible
 andi-manual.pdf: docs/manual/andi-manual.pdf

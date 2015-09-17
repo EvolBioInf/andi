@@ -69,7 +69,7 @@ if test "x${try_unit_tests}" = xyes; then
 fi
 
 # Check for various headers including those used by libdivsufsort.
-AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h stdint.h inttypes.h err.h errno.h])
+AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h stdint.h inttypes.h err.h errno.h fcntl.h])
 
 AC_C_INLINE
 AC_TYPE_SIZE_T
@@ -80,9 +80,9 @@ AC_HEADER_STDBOOL
 
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
-AC_CHECK_FUNCS([floor pow sqrt strdup])
+AC_CHECK_FUNCS([floor pow sqrt strdup strerror])
 AC_CHECK_FUNCS([strndup])
-AC_CHECK_FUNCS([strrchr strchrnul])
+AC_CHECK_FUNCS([strchr strrchr strchrnul])
 AC_CHECK_FUNCS([strtoul strtod])
 
 AC_CONFIG_HEADERS([src/config.h:src/config.hin])

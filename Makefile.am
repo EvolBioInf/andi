@@ -1,6 +1,8 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AM_DISTCHECK_CONFIGURE_FLAGS="--enable-unit-tests"
 
+.PHONY: all
+
 if !BUILD_WITH_LIBDIVSUFSORT
 OPT_PSUFSORT = opt/psufsort
 endif
@@ -35,3 +37,14 @@ ChangeLog: configure.ac
 .PHONY: code-docs
 code-docs:
 	cd docs && $(MAKE) code-docs;
+
+noinst_LIBRARIES= libcompat.a
+libcompat_a_SOURCES= opt/compat-string.h opt/compat-stdlib.h
+
+if !HAVE_STRCHRNUL
+libcompat_a_SOURCES+= opt/strchrnul.c
+endif
+
+if !HAVE_REALLOCARRAY
+libcompat_a_SOURCES+= opt/reallocarray.c
+endif

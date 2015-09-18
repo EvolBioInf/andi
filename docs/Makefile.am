@@ -1,5 +1,5 @@
 dist_man_MANS = andi.1
-dist_pdf_DATA = Doxyfile manual/andi-manual.pdf
+dist_pdf_DATA = manual/andi-manual.pdf
 
 .PHONY: code-docs
 code-docs:
@@ -14,7 +14,7 @@ manual/andi-manual.pdf: $(manual_files)
 	-which pdflatex && echo "Missing pdflatex" > $@
 	-cd manual && which pdflatex && pdflatex andi-manual.tex
 
-dist_noinst_DATA= $(manual_files)
+dist_noinst_DATA= Doxyfile $(manual_files)
 
 maintainer-clean-local:
 	rm -f manual/*{aux,log,out,toc} manual/andi-manual.pdf

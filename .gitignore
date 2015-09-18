@@ -8,6 +8,7 @@ seedms
 testRMQ
 src/config.h
 src/stamp-h1
+src/config.hin
 
 #docs
 docs/doxygen_sqlite3.db

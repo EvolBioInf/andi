@@ -8,7 +8,7 @@ OPT_PSUFSORT = opt/psufsort
 endif
 
 SUBDIRS = . $(OPT_PSUFSORT) libs opt src docs
-DIST_SUBDIRS = $(SUBDIRS) test opt/psufsort
+DIST_SUBDIRS = . libs opt src docs test opt/psufsort
 
 # Conditionaly build the tests
 if BUILD_TESTS

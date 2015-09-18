@@ -4,10 +4,12 @@
  *
  * This file contains utility functions for working with DNA sequences.
  */
-#include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #include <limits.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <compat-stdlib.h>
 #include "sequence.h"
 #include "global.h"
 
@@ -30,12 +32,13 @@ void dsa_push( dsa_t *A, seq_t S){
 	if( A->size < A->capacity){
 		A->data[A->size++] = S;
 	} else {
-		seq_t* ptr = realloc(A->data, sizeof(seq_t) * A->capacity * 2);
+		// use the near-optimal growth factor of 1.5
+		seq_t* ptr = reallocarray(A->data, A->capacity / 2, sizeof(seq_t) * 3);
 		if(ptr == NULL){
 			err(errno, "out of memory?");
 		}
 
-		A->capacity *= 2;
+		A->capacity = (A->capacity / 2) * 3;
 		A->data = ptr;
 		A->data[A->size++] = S;
 	}

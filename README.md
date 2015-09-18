@@ -39,6 +39,7 @@ You can use simply `andi` with your genomes in `FASTA` format.
 
 From this distance matrix the phylogeny can be inferred via neighbor-joining. Check the [manual](docs/manual/andi-manual.pdf). for a more thorough description.
 
+
 # Links and Additional Resources
 
 The release of this software is accompanied by a paper from [Haubold et al.](http://bioinformatics.oxfordjournals.org/content/31/8/1169). It explains the used *anchor distance* strategy in great detail. The `maf2phy.awk` script used in the validation process is located under `scripts`. Simulations were done using our own [simK](http://guanine.evolbio.mpg.de/bioBox/) tool.
@@ -57,6 +58,8 @@ Copyright © 2014, 2015 Fabian Klötzl
 License GPLv3+: GNU GPL version 3 or later.
 
 This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law. The full license text is available at <http://gnu.org/licenses/gpl.html>.
+
+Some files may be licensed differently.
 
 ## Contact
 

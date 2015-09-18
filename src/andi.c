@@ -179,8 +179,8 @@ int main( int argc, char *argv[]){
 	if(dsa_init(&dsa)){
 		errx(errno,"Out of memory.");
 	}
-	FILE *in = NULL;
-	const char *name;
+
+	const char *file_name;
 
 	// parse all files
 	int minfiles = FLAGS & F_JOIN ? 2 : 1;
@@ -189,24 +189,16 @@ int main( int argc, char *argv[]){
 			if( minfiles <= 0) break;
 
 			// if no files are supplied, read from stdin
-			in = stdin;
-			name = "stdin";
+			file_name = "-";
 		} else {
-			name = *argv++;
-			in = fopen( name, "r");
-			if( !in) {
-				warn("%s", name);
-				continue;
-			}
+			file_name = *argv++;
 		}
 
 		if( FLAGS & F_JOIN){
-			read_fasta_join( in, &dsa, name);
+			read_fasta_join( file_name, &dsa);
 		} else {
-			read_fasta( in, &dsa);
+			read_fasta( file_name, &dsa);
 		}
-
-		fclose(in);
 	}
 
 

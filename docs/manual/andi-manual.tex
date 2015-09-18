@@ -344,8 +344,7 @@ The unit tests are located in the \andi repository under the \lstinline$./test$ 
 These minor issues are known. I intend to fix them, when I have time.
 
 \begin{enumerate}
-  \item Stripping the filename from its path in join mode will not work properly under Windows because of the different path separator.
-  \item I currently do not check for integer multiplication overflows in mallocs. To fix this, I might be using \lstinline$reallocarray$ from BSD.
+  \item This code will not work under Windows. At two places Unix-only code is used: filepath-seperators are assumed to be / and file-descriptors are used for I/O.
 \end{enumerate}
 
 

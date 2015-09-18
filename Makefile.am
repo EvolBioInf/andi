@@ -1,12 +1,14 @@
 ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
 AM_DISTCHECK_CONFIGURE_FLAGS="--enable-unit-tests"
 
+.PHONY: all
+
 if !BUILD_WITH_LIBDIVSUFSORT
 OPT_PSUFSORT = opt/psufsort
 endif
 
-SUBDIRS = . $(OPT_PSUFSORT) src docs
-DIST_SUBDIRS = . $(OPT_PSUFSORT) src docs test opt/psufsort
+SUBDIRS = . $(OPT_PSUFSORT) libs opt src docs
+DIST_SUBDIRS = . libs opt src docs test opt/psufsort
 
 # Conditionaly build the tests
 if BUILD_TESTS
@@ -15,7 +17,7 @@ SUBDIRS+= test
 
 TESTS = test/test_esa test/test_seq test/test_random.sh test/test_join.sh
 
-$(TESTS): all
+$(TESTS): src/andi
 #	$(MAKE) -C test
 
 endif # BUILD_TESTS

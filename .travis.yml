@@ -26,5 +26,12 @@ script:
 - ./configure --enable-unit-tests CFLAGS='-fprofile-arcs -ftest-coverage' CXXFLAGS='-fprofile-arcs -ftest-coverage'
 - make
 - make check
+- make distcheck
+- tar xzvf andi-*.tar.gz
+- cd andi-*
+- ./configure --enable-unit-tests --without-libdivsufsort
+- make
+- make check
+- cd ..
 after_success:
 - coveralls --exclude libdivsufsort-2.0.1 --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'

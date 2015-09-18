@@ -17,7 +17,7 @@ SUBDIRS+= test
 
 TESTS = test/test_esa test/test_seq test/test_random.sh test/test_join.sh
 
-$(TESTS): all
+$(TESTS): src/andi
 #	$(MAKE) -C test
 
 endif # BUILD_TESTS

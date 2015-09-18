@@ -98,6 +98,7 @@ AC_CONFIG_FILES([
  docs/Makefile
  docs/andi.1
  opt/psufsort/Makefile
+ libs/Makefile
 ])
 AC_OUTPUT
 

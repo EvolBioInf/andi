@@ -93,7 +93,6 @@ typedef struct dynstr {
 	size_t capacity, count;
 } dynstr;
 
-void *reallocarray(void *optr, size_t nmemb, size_t size);
 static inline int dynstr_init(dynstr *ds);
 static inline int dynstr_put(dynstr *ds, char c);
 static inline void dynstr_free(dynstr *ds);

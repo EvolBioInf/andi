@@ -7,8 +7,8 @@ if !BUILD_WITH_LIBDIVSUFSORT
 OPT_PSUFSORT = opt/psufsort
 endif
 
-SUBDIRS = . $(OPT_PSUFSORT) src docs
-DIST_SUBDIRS = . $(OPT_PSUFSORT) src docs test opt/psufsort
+SUBDIRS = . $(OPT_PSUFSORT) libs src docs
+DIST_SUBDIRS = $(SUBDIRS) test opt opt/psufsort
 
 # Conditionaly build the tests
 if BUILD_TESTS

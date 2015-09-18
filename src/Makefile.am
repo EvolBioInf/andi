@@ -10,7 +10,7 @@ andi_SOURCES = andi.c esa.c process.c sequence.c io.c global.h esa.h process.h s
 andi_CPPFLAGS = $(OPENMP_CFLAGS) -I$(top_srcdir)/libs -I$(top_srcdir)/opt -std=gnu99
 andi_CFLAGS = $(OPENMP_CFLAGS) -W -Wall -Wno-missing-field-initializers
 andi_CXXFLAGS = $(OPENMP_CXXFLAGS) -W -Wall
-andi_LDADD = $(PSUFSORT) $(top_builddir)/libs/libpfasta.a $(top_builddir)/libcompat.a
+andi_LDADD = $(PSUFSORT) $(top_builddir)/libs/libpfasta.a $(top_builddir)/opt/libcompat.a
 nodist_EXTRA_andi_SOURCES = $(DUMMY)
 
 .PHONY: perf

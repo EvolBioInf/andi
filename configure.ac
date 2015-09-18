@@ -93,12 +93,13 @@ AC_CONFIG_HEADERS([src/config.h:src/config.hin])
 
 AC_CONFIG_FILES([
  Makefile
+ docs/andi.1
+ docs/Makefile
+ libs/Makefile
+ opt/Makefile
+ opt/psufsort/Makefile
  src/Makefile
  test/Makefile
- docs/Makefile
- docs/andi.1
- opt/psufsort/Makefile
- libs/Makefile
 ])
 AC_OUTPUT
 

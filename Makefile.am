@@ -7,8 +7,8 @@ if !BUILD_WITH_LIBDIVSUFSORT
 OPT_PSUFSORT = opt/psufsort
 endif
 
-SUBDIRS = . $(OPT_PSUFSORT) libs src docs
-DIST_SUBDIRS = $(SUBDIRS) test opt opt/psufsort
+SUBDIRS = . $(OPT_PSUFSORT) libs opt src docs
+DIST_SUBDIRS = $(SUBDIRS) test opt/psufsort
 
 # Conditionaly build the tests
 if BUILD_TESTS
@@ -38,13 +38,3 @@ ChangeLog: configure.ac
 code-docs:
 	cd docs && $(MAKE) code-docs;
 
-noinst_LIBRARIES= libcompat.a
-libcompat_a_SOURCES= opt/compat-string.h opt/compat-stdlib.h
-
-if !HAVE_STRCHRNUL
-libcompat_a_SOURCES+= opt/strchrnul.c
-endif
-
-if !HAVE_REALLOCARRAY
-libcompat_a_SOURCES+= opt/reallocarray.c
-endif

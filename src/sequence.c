@@ -17,12 +17,14 @@ void normalize( seq_t *S);
 
 /** Create a new dynamic array for sequences. */
 int dsa_init(dsa_t *A){
-	A->data = malloc(sizeof(seq_t) * 2);
+	// allocate at least 4 slots so the growth by 1.5 below doesn't get stuck
+	// at 3 slots.
+	A->data = malloc(sizeof(seq_t) * 4);
 	if(!A->data){
 		return 1;
 	}
 
-	A->capacity = 2;
+	A->capacity = 4;
 	A->size = 0;
 	return 0;
 }

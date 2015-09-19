@@ -1,6 +1,6 @@
 #!/bin/sh -f
 
-./src/andi --help || exit 1
+./src/andi --help > /dev/null || exit 1
 
 # Simple join test
 ./test/test_fasta -l 1000 -L 1000 -d 0.1 > p1.fasta

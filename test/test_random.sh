@@ -1,6 +1,6 @@
 #!/bin/sh -f
 
-./src/andi --help || exit 1
+./src/andi --help > /dev/null || exit 1
 
 LENGTH=100000
 

@@ -78,8 +78,13 @@ AC_TYPE_INT32_T
 AC_TYPE_UINT8_T
 AC_HEADER_STDBOOL
 
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
+# Until someone convinces me otherwise, I will deactivate the macros
+# AC_FUNC_MALLOC and AC_FUNC_REALLOC. They only check if `malloc(0)` retuns a
+# non-null pointer. This breaks the build on systems using uClibc, including
+# my laptop.
+# As requesting zero bytes is not useful, and implementation-defined behaviour,
+# I should be avoided in the first place. Thus I really don't need these checks.
+
 AC_CHECK_FUNCS([floor pow sqrt strdup strerror])
 AC_CHECK_FUNCS([strndup])
 AC_CHECK_FUNCS([strchr strrchr strchrnul])

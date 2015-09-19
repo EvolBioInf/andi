@@ -23,7 +23,8 @@ $(TESTS): src/andi
 endif # BUILD_TESTS
 
 
-dist_noinst_DATA = README ChangeLog README.md andi-manual.pdf
+dist_noinst_DATA = README ChangeLog README.md
+dist_pdf_DATA = andi-manual.pdf
 
 # This is a small hack to satisfy both GitHub and the GNU coding style.
 README: README.md
@@ -40,9 +41,3 @@ ChangeLog: configure.ac
 .PHONY: code-docs
 code-docs:
 	cd docs && $(MAKE) code-docs;
-
-docs/manual/andi-manual.pdf: $(SUBDIRS)
-
-# copy the manual to top dir, so it is more visible
-andi-manual.pdf: docs/manual/andi-manual.pdf
-	cp $^ $@

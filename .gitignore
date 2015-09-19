@@ -25,7 +25,7 @@ docs/andi.1
 *.backup
 *.bbl
 *.blg
-
+!andi-manual.pdf
 
 *.in
 !docs/andi.1.in

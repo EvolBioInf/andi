@@ -1,5 +1,7 @@
 #!/bin/sh -f
 
+./src/andi --help || exit 1
+
 LENGTH=100000
 
 for dist in 0.001 0.01 0.02 0.05 0.1 0.2 0.3

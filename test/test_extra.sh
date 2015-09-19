@@ -12,5 +12,5 @@
 ./src/andi test_extra.fasta -m > extra_m.out
 diff extra.out extra_m.out || exit 1
 
-rm -f test_extra.fasta
+rm -f test_extra.fasta extra.out extra_m.out
 

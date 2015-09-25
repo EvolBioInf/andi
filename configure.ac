@@ -83,7 +83,7 @@ AC_HEADER_STDBOOL
 # non-null pointer. This breaks the build on systems using uClibc, including
 # my laptop.
 # As requesting zero bytes is not useful, and implementation-defined behaviour,
-# I should be avoided in the first place. Thus I really don't need these checks.
+# it should be avoided in the first place. Thus I really don't need these checks.
 
 AC_CHECK_FUNCS([floor pow sqrt strdup strerror])
 AC_CHECK_FUNCS([strndup])

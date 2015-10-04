@@ -14,7 +14,7 @@ andi_LDADD = $(PSUFSORT) $(top_builddir)/libs/libpfasta.a $(top_builddir)/opt/li
 nodist_EXTRA_andi_SOURCES = $(DUMMY)
 
 .PHONY: perf
-perf: CFLAGS+= -g -O3 -ggdb
+perf: CFLAGS+= -g -O3 -ggdb -fno-omit-frame-pointer
 perf: andi
 
 .PHONY: asan

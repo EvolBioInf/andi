@@ -22,6 +22,7 @@ static void esa_init_cache_dfs( esa_s *, char *str, size_t pos, lcp_inter_t in);
 static void esa_init_cache_fill( esa_s *, char *str, size_t pos, lcp_inter_t in);
 
 static lcp_inter_t get_interval( const esa_s *, lcp_inter_t ij, char a);
+static lcp_inter_t get_interval_compound( const esa_s *, lcp_inter_t ij, char a);
 lcp_inter_t get_match( const esa_s *, const char *query, size_t qlen);
 static lcp_inter_t get_match_from( const esa_s *, const char *query, size_t qlen, saidx_t k, lcp_inter_t ij);
 
@@ -124,7 +125,7 @@ void esa_init_cache_dfs( esa_s *C, char *str, size_t pos, const lcp_inter_t in){
 	// iterate over all nucleotides
 	for( int code = 0; code < 4; ++code){
 		str[pos] = code2char(code);
-		ij = get_interval(C, in, str[pos]);
+		ij = get_interval_compound(C, in, str[pos]);
 
 		// fail early
 		if( ij.i == -1 && ij.j == -1){
@@ -236,6 +237,7 @@ int esa_init_FVC(esa_s *self){
 	return 0;
 }
 
+int esa_init_compound( esa_s *self);
 /** @brief Initializes an ESA.
  *
  * This function initializes an ESA with respect to the provided sequence.
@@ -262,12 +264,49 @@ int esa_init( esa_s *C, const seq_t *S){
 	result = esa_init_CLD(C);
 	if(result) return result;
 
-	result = esa_init_FVC(C);
-	if( result) return result;
+	// result = esa_init_FVC(C);
+	// if( result) return result;
+
+	esa_init_compound(C);
 
 	result = esa_init_cache(C);
 	if(result) return result;
 
+
+	return 0;
+}
+
+int esa_init_compound( esa_s *self){
+	size_t len = self->len;
+
+	compound_s *ComTab = malloc((len+1)*sizeof(compound_s));
+	if(!ComTab) return 1;
+
+	saidx_t *SA = self->SA;
+	saidx_t *LCP = self->LCP;
+	saidx_t *CLD = self->CLD;
+	char *FVC = self->FVC;
+
+	size_t i;
+	for(i=0;i<len+1;i++){
+		ComTab[i].LCP = LCP[i];
+	}
+
+	for(i=0;i<len+1;i++){
+		ComTab[i].CLD = CLD[i];
+	}
+
+	for(i=0;i<len;i++){
+		saidx_t p = SA[i];
+		saidx_t l = ComTab[i].LCP;
+		const char *ptr = self->S+p+l;
+		ComTab[i].FVC[0] = *ptr++;
+		ComTab[i].FVC[1] = *ptr++;
+		ComTab[i].FVC[2] = *ptr++;
+		ComTab[i].FVC[3] = *ptr;
+	}
+
+	self->ComTab = ComTab;
 	return 0;
 }
 
@@ -278,6 +317,7 @@ void esa_free( esa_s *self){
 	free( self->CLD);
 	free( self->cache);
 	free( self->FVC);
+	free( self->ComTab);
 	*self = (esa_s){};
 }
 
@@ -519,6 +559,86 @@ static lcp_inter_t get_interval( const esa_s *self, lcp_inter_t ij, char a){
 	return ij;
 }
 
+
+#define CTR(i) (ComTab[(i)].CLD)
+#define CTL(i) (ComTab[(i-1)].CLD)
+
+static lcp_inter_t get_interval_compound( const esa_s *self, lcp_inter_t ij, char a){
+	saidx_t i = ij.i;
+	saidx_t j = ij.j;
+
+	const saidx_t *SA = self->SA;
+	const char *S = self->S;
+	const compound_s *ComTab = self->ComTab;
+
+	// check for singleton or empty interval
+	if( i == j ){
+		if( S[SA[i] + ij.l] != a){
+			ij.i = ij.j = -1;
+		}
+		return ij;
+	}
+
+	int m = ij.m;
+	int l = ij.l;
+
+	// #define CHAR(i,l) (l-ComTab[i].LCP < 4 ?  : S[SA[i] + l])
+
+//	char c = S[SA[i] + l];
+	char c;
+	if( l - ComTab[i].LCP < 4){
+		c = ComTab[i].FVC[l-ComTab[i].LCP];
+	} else {
+		c = S[SA[i] + l];
+	}
+	goto SoSueMe;
+
+	do {
+		c = ComTab[i].FVC[0];
+
+		SoSueMe:
+		if( c == a){
+			/* found ! */
+			saidx_t n = CTL(m);
+
+			ij = (lcp_inter_t){
+				.i = i,
+				.j = m-1,
+				.m = n,
+				.l = ComTab[n].LCP
+			};
+
+			return ij;
+		}
+
+		if( c > a){
+			break;
+		}
+
+		i = m;
+
+		if( i == j ){
+			break; // singleton interval, or `a` not found
+		}
+
+		m = CTR(m);
+	} while ( /*m != "bottom" && */ ComTab[m].LCP == l);
+
+	// final sanity check
+	if( i != ij.i ? ComTab[i].FVC[0] == a : S[SA[i] + l] == a){
+		ij.i = i;
+		ij.j = j;
+		/* Also return the length of the LCP interval including `a` and
+		 * possibly even more characters. Note: l + 1 <= LCP[m] */
+		ij.l = ComTab[m].LCP;
+		ij.m = m;
+	} else {
+		ij.i = ij.j = -1;
+	}
+
+	return ij;
+}
+
 /** @brief Compute the longest match of a query with the subject.
  *
  * The *longest match* is the core concept of `andi`. Its simply defined as the
@@ -570,7 +690,7 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 	// Loop over the query until a mismatch is found
 	do {
 		// Get the subinterval for the next character.
-		ij = get_interval( C, ij, query[k]);
+		ij = get_interval_compound( C, ij, query[k]);
 		i = ij.i;
 		j = ij.j;
 		
@@ -593,13 +713,29 @@ lcp_inter_t get_match_from( const esa_s *C, const char *query, size_t qlen, said
 		// By definition, the kth letter of the query was matched.
 		k++;
 
-		// Extend the match
-		for( int p = SA[i]; k < l; k++){
-			if( S[p+k] != query[k] ){
-				res.l = k;
-				return res;
+
+//		const compound_s *ComTab = C->ComTab;
+
+		// if( l - k < 3 ){
+		// 	// hack
+		// 	for(;k<l; k++){
+		// 		if( ComTab[i].FVC[l-k+1]!= query[k]){
+		// 			res.l = k;
+		// 			return res;
+		// 		}
+		// 	}
+		// } else {
+		// if( k<l){
+			// regular
+			// Extend the match
+			for( int p = SA[i]; k < l; k++){
+				if( S[p+k] != query[k] ){
+					res.l = k;
+					return res;
+				}
 			}
-		}
+		// }
+
 	} while ( k < (ssize_t)qlen);
 
 	res.l = qlen;

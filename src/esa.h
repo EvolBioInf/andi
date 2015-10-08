@@ -41,6 +41,10 @@ typedef struct {
 	saidx_t m;
 } lcp_inter_t;
 
+typedef struct compound_s {
+	saidx_t LCP, CLD;
+	char FVC[4];
+} compound_s;
 /** 
  * @brief The ESA type.
  * 
@@ -64,7 +68,10 @@ typedef struct esa_s {
 	char *FVC;
 	/** This is the child array. */
 	saidx_t *CLD;
+
+	compound_s *ComTab;
 } esa_s;
+
 
 lcp_inter_t get_match_cached( const esa_s *, const char *query, size_t qlen);
 lcp_inter_t get_match( const esa_s *, const char *query, size_t qlen);

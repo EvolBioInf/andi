@@ -156,7 +156,7 @@ char *revcomp( const char *str, size_t len){
 	char c, d;
 	char local_non_acgt = 0;
 	
-	while( len --> 0 ){
+	do {
 		c = *s--;
 		
 		switch( c){
@@ -171,7 +171,7 @@ char *revcomp( const char *str, size_t len){
 		}
 		
 		*r++ = d;
-	}
+	} while ( --len );
 	
 	if( local_non_acgt ){
 		#pragma omp atomic

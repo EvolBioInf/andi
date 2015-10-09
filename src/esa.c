@@ -229,7 +229,7 @@ int esa_init_FVC(esa_s *self){
 	const int *LCP= self->LCP;
 
 	FVC[0] = '\0';
-	for(size_t i=len; i--; FVC++, SA++, LCP++){
+	for(size_t i=len; i; i--, FVC++, SA++, LCP++){
 		*FVC = S[*SA + *LCP];
 	}
 

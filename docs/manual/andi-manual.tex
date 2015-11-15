@@ -46,7 +46,7 @@
 \newcommand{\thymine}{\textsc{m}\oldstylenums{2}\xspace}
 \newcommand{\local}{\textsc{m}\oldstylenums{1}\xspace}
 \newcommand{\algo}[1]{\textsc{{#1}}}
-\newcommand{\andi}{\algo{andi} }
+\newcommand{\andi}{\algo{andi}\xspace}
 \newcommand{\word}[1]{\textsf{\small#1}}
 \newcommand{\wchar}[1]{\textsf{\small#1}}
 \newcommand{\eco}{\textsc{eco}\oldstylenums{29}\xspace}
@@ -94,7 +94,7 @@
 \section*{Abstract}
 This is the documentation of the \andi program for estimating the evolutionary distance between closely related genomes. These distances can be used to rapidly infer phylogenies for big sets of genomes. Because \andi does not compute full alignments, it is so efficient that it scales well up to thousands of bacterial genomes.
 
-This is scientific software. Please cite our paper \cite{andi} if you use \andi in your publication. Also refer to the paper for the iterna of \andi. Additionally, there is a Master's thesis with even more in depth analysis of \andi \cite{kloetzl}.
+This is scientific software. Please cite our paper \cite{andi} if you use \andi in your publication. Also refer to the paper for the internals of \andi. Additionally, there is a Master's thesis with even more in depth analysis of \andi \cite{kloetzl}.
 
 \vspace*{1cm}
 \section*{License}
@@ -104,11 +104,33 @@ This document is release under the Creative Commons Attribution Share-Alike lice
 
 \chapter{Installation} %%%%%
 
-The easiest way to obtain your own copy of \algo{andi}, is to download the latest \href{https://github.com/EvolBioInf/andi/releases}{release} from GitHub. Please note, that \andi requires \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
+\section{Package Manager}
 
-\andi runs best under a \algo{Unix} commandline such as \lstinline$bash$. All following examples are also intended for that environment.
+The easiest way to install \andi is via a package manager. This also handles all dependencies for you.
 
-\section{Installing from Source Package} \label{sub:regular}
+\noindent OS X with homebrew:
+
+\begin{lstlisting}
+~ %  brew install science/andi
+\end{lstlisting}
+
+\noindent ArchLinux:
+
+\begin{lstlisting}
+~ %  aura -A andi
+\end{lstlisting}
+
+\noindent Debian and Ubuntu (soon):
+
+\begin{lstlisting}
+~ %  sudo apt-get install andi
+\end{lstlisting}
+
+\andi is intended to run in a \algo{Unix} commandline such as \lstinline$bash$ or \lstinline$zsh$. All examples in this document are also intended for that environment. You can verify that \andi was installed correctly by executing \lstinline$andi -h$. This should give you a list of all available options (see Section~\ref{sec:options}).
+
+\section{Source Package} \label{sub:regular}
+
+Download the latest \href{https://github.com/EvolBioInf/andi/releases}{release} from GitHub. Please note, that \andi requires \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
 
 Once you have downloaded the package, unzip it and change into the newly created directory. 
 
@@ -191,7 +213,7 @@ S1        0.0000 0.0979
 S2        0.0979 0.0000
 \end{lstlisting}
 
-The output of \andi is a matrix in \algo{Phylip} style: On the first line the number of compared sequences is given, \lstinline!2! in our example. Then the matrix is printed, where each line is preceded by the name of the $i$th sequence. Note that the matrix is symmetric and the main diagonal contains only zeros. The numbers themselves are evolutionary distances, estimates as substitution rates.
+The output of \andi is a matrix in \algo{Phylip} style: On the first line the number of compared sequences is given, \lstinline!2! in our example. Then the matrix is printed, where each line is preceded by the name of the $i$th sequence. Note that the matrix is symmetric and the main diagonal contains only zeros. The numbers themselves are evolutionary distances, estimated from substitution rates.
 
 
 \section{Input} \label{sec:join}
@@ -222,7 +244,7 @@ S2        0.0979 0.0000
 
 If the computation completed successfully, \andi exits with the status code 0. Otherwise, the value of \lstinline$errno$ is used as the exit code. \andi can also produce warnings and error messages for the user's convenience. These messages are printed to \lstinline$stderr$ and thus do not interfere with the normal output.
 
-\section{Options}
+\section{Options} \label{sec:options}
 
 \andi takes a small number of commandline options, of which even fewer are of interest on a day-to-day basis. If \lstinline$andi -h$ displays a \lstinline$-t$ option, then \andi was compiled with multi-threading support (implemented using \algo{OpenMP}). By default \andi uses all available processors. However, to restrict the number of threads, use \lstinline$-t$.
 
@@ -299,9 +321,9 @@ EOF
 
 \chapter{DevOps} %%%%%
 
-\andi is written in C/C++; mostly C99 with some parts in C++11. The sources are released on \algo{GitHub} as \emph{free software} under the \textsc{Gnu General Public License version~3} \cite{GPL}. Prebundled packages using \algo{autoconf} are also available, with the latest release being {v0.9} at the time of writing.
+\andi is written in C/C++; mostly C99 with some parts in C++11. The sources are released on \algo{GitHub} as \emph{free software} under the \textsc{Gnu General Public License version~3} \cite{GPL}. Prebundled packages using \algo{autoconf} are also available, with the latest release being {\version} at the time of writing.
 
-If you are interested in the internals of \andi, consult the paper \cite{andi} or my master thesis \cite{kloetzl}. Both explain the used approach in detail. The latter emphasizes the used algorithms, data structures and their efficient implementation.
+If you are interested in the internals of \algo{andi}, consult the paper \cite{andi} or my Master's thesis \cite{kloetzl}. Both explain the used approach in detail. The latter emphasizes the used algorithms, data structures and their efficient implementation.
 
 \section{Dependencies}
 
@@ -344,7 +366,7 @@ The unit tests are located in the \andi repository under the \lstinline$./test$ 
 These minor issues are known. I intend to fix them, when I have time.
 
 \begin{enumerate}
-  \item This code will not work under Windows. At two places Unix-only code is used: filepath-seperators are assumed to be / and file-descriptors are used for I/O.
+  \item This code will not work under Windows. At two places Unix-only code is used: filepath-seperators are assumed to be \lstinline$/$ and file-descriptors are used for I/O.
 \end{enumerate}
 
 

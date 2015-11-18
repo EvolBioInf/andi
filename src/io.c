@@ -118,11 +118,16 @@ void print_distances( const data_t *D, const seq_t *sequences, size_t n){
 
 	for( i=0; i<n && (!use_scientific || !failed); i++){
 		for( j=0; j<n; j++){
-			if( D(i,j).distance > 0 && D(i,j).distance < 0.001 ){
-				use_scientific = 1;
-			}
 			if( isnan(D(i,j).distance)){
 				failed = 1;
+			} else if( D(i,j).distance > 0 && D(i,j).distance < 0.001 ){
+				use_scientific = 1;
+			} else if( i < j && D(i,j).coverage < 0.05 && D(j,i).coverage < 0.05){
+				const char str[] = {
+					"For the two sequences '%s' and '%s' less than 5%% "
+					"homology were found (%f and %f, respectively)."
+				};
+				warnx(str, sequences[i].name, sequences[j].name, D(i,j).coverage, D(j,i).coverage);
 			}
 		}
 	}

@@ -113,13 +113,17 @@ fail:
 void print_distances( const data_t *D, const seq_t *sequences, size_t n){
 
 	int use_scientific = 0;
-	int failed = 0;
 	size_t i,j;
 
-	for( i=0; i<n && (!use_scientific || !failed); i++){
+	for( i=0; i<n; i++){
 		for( j=0; j<n; j++){
 			if( isnan(D(i,j).distance)){
-				failed = 1;
+				const char str[] = {
+					"For the two sequences '%s' and '%s' the distance computation "
+					"failed and is reported as nan. "
+					"Please refer to the documentation for further details."
+				};
+				warnx(str, sequences[i].name, sequences[j].name);
 			} else if( D(i,j).distance > 0 && D(i,j).distance < 0.001 ){
 				use_scientific = 1;
 			} else if( i < j && D(i,j).coverage < 0.05 && D(j,i).coverage < 0.05){
@@ -130,11 +134,6 @@ void print_distances( const data_t *D, const seq_t *sequences, size_t n){
 				warnx(str, sequences[i].name, sequences[j].name, D(i,j).coverage, D(j,i).coverage);
 			}
 		}
-	}
-
-	if( failed){
-		warnx("Some distance computations failed and are reported as nan. "
-			"Please refer to the documentation for further details.");
 	}
 
 	printf("%zu\n", n);

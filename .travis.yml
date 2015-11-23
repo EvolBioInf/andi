@@ -9,9 +9,9 @@ before_install:
 - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
 - sudo apt-get install libglib2.0-dev
-- wget https://libdivsufsort.googlecode.com/files/libdivsufsort-2.0.1.tar.gz
-- tar -xzvf libdivsufsort-2.0.1.tar.gz
-- cd libdivsufsort-2.0.1
+- wget https://github.com/y-256/libdivsufsort/archive/master.tar.gz
+- tar -xzvf master.tar.gz
+- cd libdivsufsort-master
 - mkdir build
 - cd build
 - cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="/usr/local" ..
@@ -34,4 +34,4 @@ script:
 - make check
 - cd ..
 after_success:
-- coveralls --exclude libdivsufsort-2.0.1 --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'
+- coveralls --exclude libdivsufsort-master -E '^andi-.*' --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'

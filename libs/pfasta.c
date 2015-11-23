@@ -56,7 +56,7 @@
 	do {                                                                       \
 		pf->errno__ = errno;                                                   \
 		pf->errstr = NULL;                                                     \
-		return errno;                                                          \
+		return -2;                                                             \
 	} while (0)
 
 #define PF_EXIT_FORWARD() return -1
@@ -71,14 +71,15 @@
 	do {                                                                       \
 		pf->errno__ = errno;                                                   \
 		pf->errstr = NULL;                                                     \
-		return_code = errno;                                                   \
+		return_code = -2;                                                      \
 		goto cleanup;                                                          \
 	} while (0)
 
-#define PF_FAIL_STR(str)                                                       \
+#define PF_FAIL_STR(...)                                                       \
 	do {                                                                       \
 		pf->errno__ = 0;                                                       \
-		pf->errstr = str;                                                      \
+		(void) snprintf(pf->errstr_buf, PF_ERROR_STRING_LENGTH, __VA_ARGS__);  \
+		pf->errstr = pf->errstr_buf;                                           \
 		return_code = -1;                                                      \
 		goto cleanup;                                                          \
 	} while (0)
@@ -151,6 +152,10 @@ static inline int buffer_peek(const pfasta_file *pf) {
  * @returns 0 iff successful.
  */
 static inline int buffer_adv(pfasta_file *pf) {
+	if (buffer_peek(pf) == '\n') {
+		pf->line++;
+	}
+
 	if (pf->readptr < pf->fillptr - 1) {
 		pf->readptr++;
 		return 0;
@@ -192,6 +197,8 @@ void pfasta_free(pfasta_file *pf) {
 	pf->buffer = pf->readptr = pf->fillptr = pf->errstr = NULL;
 	pf->errno__ = 0;
 	pf->fd = -1;
+	pf->line = 0;
+	pf->unexpected_char = '\0';
 }
 
 /** @brief Creates a new parser for the given file. This includes allocating the
@@ -209,6 +216,8 @@ int pfasta_parse(pfasta_file *pf, int file_descriptor) {
 	pf->errno__ = 0;
 	pf->buffer = pf->readptr = pf->fillptr = pf->errstr = NULL;
 	pf->fd = file_descriptor;
+	pf->line = 1;
+	pf->unexpected_char = '\0';
 
 	if (buffer_init(pf) != 0) PF_FAIL_FORWARD();
 
@@ -244,8 +253,11 @@ int pfasta_read(pfasta_file *pf, pfasta_seq *ps) {
 	*ps = (pfasta_seq){NULL, NULL, NULL};
 	int return_code = 0;
 
-	if (buffer_peek(pf) == EOF) return 1;
-	if (buffer_peek(pf) != '>') PF_FAIL_STR("Expected '>'");
+	int c = buffer_peek(pf);
+	if (c == EOF) return 1;
+	if (c != '>') {
+		PF_FAIL_STR("Expected '>', but found '%c' on line %zu", c, pf->line);
+	}
 
 	if (pfasta_read_name(pf, ps) < 0) PF_FAIL_FORWARD();
 	if (isblank(buffer_peek(pf))) {
@@ -278,13 +290,16 @@ int pfasta_read_name(pfasta_file *pf, pfasta_seq *ps) {
 		if (buffer_adv(pf) != 0) PF_FAIL_FORWARD();
 
 		int c = buffer_peek(pf);
-		if (c == EOF) PF_FAIL_STR("Unexpected EOF in sequence name");
+		if (c == EOF) {
+			PF_FAIL_STR("Unexpected EOF in sequence name on line %zu",
+			            pf->line);
+		}
 		if (!isgraph(c)) break;
 
 		if (dynstr_put(&name, c) != 0) PF_FAIL_ERRNO();
 	}
 
-	if (dynstr_len(&name) == 0) PF_FAIL_STR("Empty name");
+	if (dynstr_len(&name) == 0) PF_FAIL_STR("Empty name on line %zu", pf->line);
 
 	ps->name = dynstr_move(&name);
 
@@ -309,8 +324,11 @@ int pfasta_read_comment(pfasta_file *pf, pfasta_seq *ps) {
 		if (buffer_adv(pf) != 0) PF_FAIL_FORWARD();
 
 		int c = buffer_peek(pf);
-		if (c == EOF) PF_FAIL_STR("Unexpected EOF in sequence comment");
 		if (c == '\n') break;
+		if (c == EOF) {
+			PF_FAIL_STR("Unexpected EOF in sequence comment on line %zu",
+			            pf->line);
+		}
 
 		if (dynstr_put(&comment, c) != 0) PF_FAIL_ERRNO();
 	}
@@ -335,7 +353,8 @@ int pfasta_read_seq(pfasta_file *pf, pfasta_seq *ps) {
 	if (dynstr_init(&seq) != 0) PF_FAIL_ERRNO();
 
 	while (1) {
-		assert(buffer_peek(pf) == '\n');
+		// The only guaranty is !graph && !blank
+		assert(!isgraph(buffer_peek(pf)) && !isblank(buffer_peek(pf)));
 
 		// deal with the first character explicitly
 		if (buffer_adv(pf) != 0) PF_FAIL_FORWARD();
@@ -351,14 +370,20 @@ int pfasta_read_seq(pfasta_file *pf, pfasta_seq *ps) {
 
 			c = buffer_peek(pf);
 			if (c == '\n') break;
+			if (c == EOF) break;
 
 		regular:
-			if (!isgraph(c)) PF_FAIL_STR("Unexpected character in sequence");
+			if (!isgraph(c)) {
+				PF_FAIL_STR("Unexpected character '%c' in sequence on line %zu",
+				            c, pf->line);
+			}
 			if (dynstr_put(&seq, c) != 0) PF_FAIL_ERRNO();
 		}
 	}
 
-	if (dynstr_len(&seq) == 0) PF_FAIL_STR("Empty sequence");
+	if (dynstr_len(&seq) == 0) {
+		PF_FAIL_STR("Empty sequence on line %zu", pf->line);
+	}
 	ps->seq = dynstr_move(&seq);
 
 cleanup:

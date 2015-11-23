@@ -18,11 +18,20 @@
 #ifndef PFASTA_H
 #define PFASTA_H
 
+/** The following is the maximum length of an error string. It has to be
+ * carefully chosen, so that all calls to PF_FAIL_STR succeed. For instance,
+ * the line number can account for up to 20 characters.
+ */
+#define PF_ERROR_STRING_LENGTH 100
+
 typedef struct pfasta_file {
 	char *buffer, *readptr, *fillptr;
 	char *errstr;
 	int errno__;
 	int fd;
+	size_t line;
+	char errstr_buf[PF_ERROR_STRING_LENGTH];
+	char unexpected_char;
 } pfasta_file;
 
 typedef struct pfasta_seq {

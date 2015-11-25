@@ -235,7 +235,8 @@ void usage(void){
 		"  -r, --raw         Calculates raw distances; default: Jukes-Cantor corrected\n"
 		"  -v, --verbose     Prints additional information\n"
 #ifdef _OPENMP
-		"  -t <INT>          The number of threads to be used; by default, all available processors are used\n"
+		"  -t, --threads <INT> \n"
+		"                    The number of threads to be used; by default, all available processors are used\n"
 #endif
 		"  -h, --help        Display this help and exit\n"
 		"      --version     Output version information and acknowledgments\n"

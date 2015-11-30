@@ -23,13 +23,13 @@ script:
 - export LD_LIBRARY_PATH=/usr/local/lib:/usr/local:$LD_LIBRARY_PATH
 - export OMP_NUM_THREADS=4
 - autoreconf -fvi -Im4
-- ./configure --enable-unit-tests CFLAGS='-fprofile-arcs -ftest-coverage' CXXFLAGS='-fprofile-arcs -ftest-coverage' --without-zsh-completion-dir
+- ./configure --enable-unit-tests CFLAGS='-fprofile-arcs -ftest-coverage' CXXFLAGS='-fprofile-arcs -ftest-coverage'
 - make
 - make check
 - make distcheck
 - tar xzvf andi-*.tar.gz
 - cd andi-*
-- ./configure --enable-unit-tests --without-libdivsufsort --without-zsh-completion-dir
+- ./configure --enable-unit-tests --without-libdivsufsort
 - make
 - make check
 - cd ..

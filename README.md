@@ -14,7 +14,7 @@ For the latest [stable release](https://github.com/EvolBioInf/andi/releases) of 
 
 ## Prerequisites
 
-This program has the following external dependency: [libdivsufsort](https://code.google.com/p/libdivsufsort/). Please make sure you installed `libdivsufsort` before attempting a build. If you did get the source, not as a tarball, but straight from the git repository, you will also need the autotools. Run `autoreconf -i` to generate the configure script and continue with the next step.
+This program has the following external dependencies: [libdivsufsort](https://code.google.com/p/libdivsufsort/) and the [GSL](https://www.gnu.org/software/gsl/). Please make sure you installed both before attempting a build. If you did get the source, not as a tarball, but straight from the git repository, you will also need the autotools. Run `autoreconf -i` to generate the configure script and continue with the next step.
 
 
 ## Compiling

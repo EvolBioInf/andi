@@ -30,14 +30,14 @@ Excessive build instructions are located in `INSTALL`. If the build was successf
 	$ andi --help
 	$ man andi
 
-You can use simply `andi` with your genomes in `FASTA` format.
+You can simply use `andi` with your genomes in `FASTA` format.
 
 	$ andi S1.fasta S2.fasta
 	2
 	S1     0.0  0.1
 	s2     0.1  0.0
 
-From this distance matrix the phylogeny can be inferred via neighbor-joining. Check the [manual](andi-manual.pdf). for a more thorough description.
+From this distance matrix the phylogeny can be inferred via neighbor-joining. Check the [manual](andi-manual.pdf) for a more thorough description.
 
 
 # Links and Additional Resources

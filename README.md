@@ -4,7 +4,7 @@
 
 This is the `andi` program for estimating the evolutionary distance between closely related genomes. These distances can be used to rapidly infer phylogenies for big sets of genomes. Because `andi` does not compute full alignments, it is so efficient that it scales even up to thousands of bacterial genomes.
 
-This readme covers all necessary instructions for the impatient to get `andi` up and running. For extensive instructions please consult the [manual](docs/manual/andi-manual.pdf).
+This readme covers all necessary instructions for the impatient to get `andi` up and running. For extensive instructions please consult the [manual](andi-manual.pdf).
 
 
 # Build Instructions
@@ -37,7 +37,8 @@ You can use simply `andi` with your genomes in `FASTA` format.
 	S1     0.0  0.1
 	s2     0.1  0.0
 
-From this distance matrix the phylogeny can be inferred via neighbor-joining. Check the [manual](docs/manual/andi-manual.pdf). for a more thorough description.
+From this distance matrix the phylogeny can be inferred via neighbor-joining. Check the [manual](andi-manual.pdf). for a more thorough description.
+
 
 # Links and Additional Resources
 
@@ -57,6 +58,8 @@ Copyright © 2014, 2015 Fabian Klötzl
 License GPLv3+: GNU GPL version 3 or later.
 
 This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law. The full license text is available at <http://gnu.org/licenses/gpl.html>.
+
+Some files may be licensed differently.
 
 ## Contact
 

@@ -229,7 +229,7 @@ int esa_init_FVC(esa_s *self){
 	const int *LCP= self->LCP;
 
 	FVC[0] = '\0';
-	for(size_t i=len; i--; FVC++, SA++, LCP++){
+	for(size_t i=len; i; i--, FVC++, SA++, LCP++){
 		*FVC = S[*SA + *LCP];
 	}
 
@@ -648,7 +648,7 @@ lcp_inter_t get_match_cached( const esa_s *C, const char *query, size_t qlen){
 	if( qlen <= CACHE_LENGTH) return get_match( C, query, qlen);
 
 	ssize_t offset = 0;
-	for( size_t i = 0; i< CACHE_LENGTH; i++){
+	for( size_t i = 0; i< CACHE_LENGTH && offset >= 0; i++){
 		offset <<= 2;
 		offset |= char2code(query[i]);
 	}

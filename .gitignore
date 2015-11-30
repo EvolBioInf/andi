@@ -8,6 +8,8 @@ seedms
 testRMQ
 src/config.h
 src/stamp-h1
+src/config.hin
+src/config.hin~
 
 #docs
 docs/doxygen_sqlite3.db
@@ -24,9 +26,12 @@ docs/andi.1
 *.backup
 *.bbl
 *.blg
+!andi-manual.pdf
 
 *.in
 !docs/andi.1.in
+!docs/manual/version.tex.in
+docs/manual/version.tex
 *.log
 **/Makefile
 configure.scan

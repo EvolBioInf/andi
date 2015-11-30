@@ -4,10 +4,12 @@
  *
  * This file contains utility functions for working with DNA sequences.
  */
-#include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #include <limits.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <compat-stdlib.h>
 #include "sequence.h"
 #include "global.h"
 
@@ -15,12 +17,14 @@ void normalize( seq_t *S);
 
 /** Create a new dynamic array for sequences. */
 int dsa_init(dsa_t *A){
-	A->data = malloc(sizeof(seq_t) * 2);
+	// allocate at least 4 slots so the growth by 1.5 below doesn't get stuck
+	// at 3 slots.
+	A->data = malloc(sizeof(seq_t) * 4);
 	if(!A->data){
 		return 1;
 	}
 
-	A->capacity = 2;
+	A->capacity = 4;
 	A->size = 0;
 	return 0;
 }
@@ -30,12 +34,13 @@ void dsa_push( dsa_t *A, seq_t S){
 	if( A->size < A->capacity){
 		A->data[A->size++] = S;
 	} else {
-		seq_t* ptr = realloc(A->data, sizeof(seq_t) * A->capacity * 2);
+		// use the near-optimal growth factor of 1.5
+		seq_t* ptr = reallocarray(A->data, A->capacity / 2, sizeof(seq_t) * 3);
 		if(ptr == NULL){
 			err(errno, "out of memory?");
 		}
 
-		A->capacity *= 2;
+		A->capacity = (A->capacity / 2) * 3;
 		A->data = ptr;
 		A->data[A->size++] = S;
 	}
@@ -151,7 +156,7 @@ char *revcomp( const char *str, size_t len){
 	char c, d;
 	char local_non_acgt = 0;
 	
-	while( len --> 0 ){
+	do {
 		c = *s--;
 		
 		switch( c){
@@ -166,7 +171,7 @@ char *revcomp( const char *str, size_t len){
 		}
 		
 		*r++ = d;
-	}
+	} while ( --len );
 	
 	if( local_non_acgt ){
 		#pragma omp atomic

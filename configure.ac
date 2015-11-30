@@ -1,4 +1,4 @@
-AC_INIT([andi], [0.9.4-beta])
+AC_INIT([andi], [0.9.5-beta])
 AM_INIT_AUTOMAKE([-Wall foreign ])
 
 AC_CONFIG_MACRO_DIR([m4])
@@ -28,7 +28,7 @@ AS_IF([test "x$have_gsl" = "xno"],[
 
 # By default try to build with libdivsufsort.
 AC_ARG_WITH([libdivsufsort],
-    AS_HELP_STRING([--without-libdivsufsort], [Build without libdivsufsort and use psufsort instead.]))
+	AS_HELP_STRING([--without-libdivsufsort], [Build without libdivsufsort and use psufsort instead.]))
 
 AS_IF([test "x$with_libdivsufsort" != "xno"],
 	[
@@ -74,8 +74,27 @@ if test "x${try_unit_tests}" = xyes; then
 	AX_CXX_COMPILE_STDCXX_11([],[mandatory])
 fi
 
+# ZSH Completion
+AC_ARG_WITH([zsh-completion-dir],
+	AS_HELP_STRING([--with-zsh-completion-dir[=PATH]],
+		[Install the zsh auto-completion script in this directory. @<:@default=yes@:>@]),
+	[],
+	[with_zsh_completion_dir=yes])
+
+AS_IF([test "x$with_zsh_completion_dir" = "xyes"],
+	[
+		ZSH_COMPLETION_DIR="/usr/share/zsh/site-functions"
+	],
+	[
+		ZSH_COMPLETION_DIR="$with_zsh_completion_dir"
+	]
+)
+
+AC_SUBST([ZSH_COMPLETION_DIR])
+AM_CONDITIONAL([ENABLE_ZSH_COMPLETION],[test "x$with_zsh_completion_dir" != "xno"])
+
 # Check for various headers including those used by libdivsufsort.
-AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h stdint.h inttypes.h err.h errno.h])
+AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h stdint.h inttypes.h err.h errno.h fcntl.h])
 
 AC_C_INLINE
 AC_TYPE_SIZE_T
@@ -84,22 +103,34 @@ AC_TYPE_INT32_T
 AC_TYPE_UINT8_T
 AC_HEADER_STDBOOL
 
-AC_FUNC_MALLOC
-AC_FUNC_REALLOC
-AC_CHECK_FUNCS([floor pow sqrt strdup])
+# Until someone convinces me otherwise, I will deactivate the macros
+# AC_FUNC_MALLOC and AC_FUNC_REALLOC. They only check if `malloc(0)` retuns a
+# non-null pointer. This breaks the build on systems using uClibc, including
+# my laptop.
+# As requesting zero bytes is not useful, and implementation-defined behaviour,
+# it should be avoided in the first place. Thus I really don't need these checks.
+
+AC_CHECK_FUNCS([floor pow sqrt strdup strerror])
 AC_CHECK_FUNCS([strndup])
-AC_CHECK_FUNCS([strrchr strchrnul])
+AC_CHECK_FUNCS([strchr strrchr strchrnul])
 AC_CHECK_FUNCS([strtoul strtod])
+AC_CHECK_FUNCS([reallocarray])
+
+AM_CONDITIONAL([HAVE_REALLOCARRAY], [test "x$ac_cv_func_reallocarray" = xyes])
+AM_CONDITIONAL([HAVE_STRCHRNUL], [test "x$ac_cv_func_strchrnul" = xyes])
 
 AC_CONFIG_HEADERS([src/config.h:src/config.hin])
 
 AC_CONFIG_FILES([
  Makefile
+ docs/andi.1
+ docs/Makefile
+ libs/Makefile
+ opt/Makefile
+ opt/psufsort/Makefile
+ scripts/Makefile
  src/Makefile
  test/Makefile
- docs/Makefile
- docs/andi.1
- opt/psufsort/Makefile
 ])
 AC_OUTPUT
 

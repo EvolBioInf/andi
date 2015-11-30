@@ -12,7 +12,7 @@ The output is a symmetrical distance matrix in \fIPHYLIP\fR format, with each en
 .SH OPTIONS
 .TP
 \fB\-j\fR, \fB\-\-join\fR
-Use this mode if each of your \fIFASTA\fR files represents one assembly with numerous contigs. \fBandi\fR will then treat all of the contained sequences per file as a single genome. In this mode at least one file name must be provided via command line arguments. For the output the filename is used to identify each sequence.
+Use this mode if each of your \fIFASTA\fR files represents one assembly with numerous contigs. \fBandi\fR will then treat all of the contained sequences per file as a single genome. In this mode at least one filename must be provided via command line arguments. For the output the filename is used to identify each sequence.
 .TP
 \fB\-m\fR, \fB\-\-low-memory\fR
 In multithreaded mode, \fBandi\fR requires memory linear to the amount of threads. The low memory mode changes this to a constant demand independent from the used number of threads. Unfortunately, this comes at a significant runtime cost.

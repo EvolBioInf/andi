@@ -3,30 +3,17 @@
  * @brief This file contains the definitions for various io methods.
  */
 #define _GNU_SOURCE
-#include <stdio.h>
-#include <unistd.h>
+#include <fcntl.h>
 #include <math.h>
+#include <stdio.h>
 #include <string.h>
-#include "io.h"
+#include <unistd.h>
+
+#include <pfasta.h>
+#include <compat-string.h>
+
 #include "global.h"
-
-#include <kseq.h>
-
-// was: KSEQ_INIT(FILE*, read)
-KSEQ_INIT(int, read);
-
-
-#ifndef HAVE_STRCHRNUL
-
-/* @brief Here follows a simple implementation of the GNU function `strchrnul`.
- * Please check the gnulib manual for details.
- */
-char *strchrnul(const char *s, int c){
-	char *p = strchr(s,c);
-
-	return p != NULL ? p : strchr(s, '\0');
-}
-#endif
+#include "io.h"
 
 /**
  * @brief Joins all sequences from a file into a single long sequence.
@@ -41,12 +28,12 @@ char *strchrnul(const char *s, int c){
  * @param dsa - An array that holds found sequences.
  * @param name - The name of the file to be used for the name of the sequence.
  */
-void read_fasta_join( FILE *in, dsa_t *dsa, const char *name){
-	if( !in || !dsa || !name) return;
+void read_fasta_join( const char* file_name, dsa_t *dsa){
+	if( !file_name || !dsa ) return;
 
 	dsa_t single;
 	dsa_init(&single);
-	read_fasta( in, &single);
+	read_fasta( file_name, &single);
 	
 	if( dsa_size( &single) == 0 ){
 		return;
@@ -59,8 +46,8 @@ void read_fasta_join( FILE *in, dsa_t *dsa, const char *name){
 	 * This obviously fails on Windows.
 	 */
 
-	const char *left = strrchr( name, '/'); // find the last path separator
-	left = (left == NULL) ? name : left + 1; // left is the position one of to the right of the path separator
+	const char *left = strrchr( file_name, '/'); // find the last path separator
+	left = (left == NULL) ? file_name : left + 1; // left is the position one of to the right of the path separator
 	
 	const char *dot = strchrnul( left, '.'); // find the extension
 	
@@ -75,24 +62,42 @@ void read_fasta_join( FILE *in, dsa_t *dsa, const char *name){
  * @param in - The file pointer to read from.
  * @param dsa - An array that holds found sequences.
  */
-void read_fasta( FILE *in, dsa_t *dsa){
-	if( !in || !dsa) return;
+void read_fasta( const char* file_name, dsa_t *dsa){
+	if( !file_name || !dsa) return;
+
+	int file_descriptor = strcmp(file_name, "-") ? open(file_name, O_RDONLY) : STDIN_FILENO;
+	if (file_descriptor < 0) warn("%s", file_name);
+
 	int l;
 	int check;
+
 	seq_t top = {};
-	
-	kseq_t *seq = kseq_init(fileno(in));
-	
-	while( ( l = kseq_read(seq)) >= 0){
-		check = seq_init( &top, seq->seq.s, seq->name.s);
+	pfasta_file pf;
+
+	if ((l = pfasta_parse(&pf, file_descriptor)) != 0) {
+		warnx("%s: %s", file_name, pfasta_strerror(&pf));
+		goto fail;
+	}
+
+	pfasta_seq ps;
+	while ((l = pfasta_read(&pf, &ps)) == 0) {
+		check = seq_init( &top, ps.seq, ps.name);
 
 		// skip broken sequences
 		if( check != 0) continue;
 		
 		dsa_push( dsa, top);
+		pfasta_seq_free(&ps);
 	}
-	
-	kseq_destroy(seq);
+
+	if (l < 0) {
+		warnx("%s: %s", file_name, pfasta_strerror(&pf));
+		pfasta_seq_free(&ps);
+	}
+
+fail:
+	pfasta_free(&pf);
+	close(file_descriptor);
 }
 
 
@@ -108,23 +113,27 @@ void read_fasta( FILE *in, dsa_t *dsa){
 void print_distances( const data_t *D, const seq_t *sequences, size_t n){
 
 	int use_scientific = 0;
-	int failed = 0;
 	size_t i,j;
 
-	for( i=0; i<n && (!use_scientific || !failed); i++){
+	for( i=0; i<n; i++){
 		for( j=0; j<n; j++){
-			if( D(i,j).distance > 0 && D(i,j).distance < 0.001 ){
-				use_scientific = 1;
-			}
 			if( isnan(D(i,j).distance)){
-				failed = 1;
+				const char str[] = {
+					"For the two sequences '%s' and '%s' the distance computation "
+					"failed and is reported as nan. "
+					"Please refer to the documentation for further details."
+				};
+				warnx(str, sequences[i].name, sequences[j].name);
+			} else if( D(i,j).distance > 0 && D(i,j).distance < 0.001 ){
+				use_scientific = 1;
+			} else if( i < j && D(i,j).coverage < 0.05 && D(j,i).coverage < 0.05){
+				const char str[] = {
+					"For the two sequences '%s' and '%s' less than 5%% "
+					"homology were found (%f and %f, respectively)."
+				};
+				warnx(str, sequences[i].name, sequences[j].name, D(i,j).coverage, D(j,i).coverage);
 			}
 		}
-	}
-
-	if( failed){
-		warnx("Some distance computations failed and are reported as nan. "
-			"Please refer to the documentation for further details.");
 	}
 
 	printf("%zu\n", n);

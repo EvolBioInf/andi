@@ -247,10 +247,11 @@ int main( int argc, char *argv[]){
  */
 void usage(void){
 	const char str[]= {
-		"Usage: andi [-jrvb] [-p FLOAT] [-t INT] FILES...\n"
+		"Usage: andi [-bjrv] [-p FLOAT] [-t INT] FILES...\n"
 		"\tFILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.\n"
 		"Options:\n"
-		"  -b, --bootstrap <INT> Print additional bootstrap matrices\n"
+		"  -b, --bootstrap <INT> \n"
+		"                    Print additional bootstrap matrices\n"
 		"  -j, --join        Treat all sequences from one file as a single genome\n"
 		"  -m, --low-memory  Use less memory at the cost of speed\n"
 		"  -p <FLOAT>        Significance of an anchor pair; default: 0.05\n"

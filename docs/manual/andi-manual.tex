@@ -131,7 +131,7 @@ The easiest way to install \andi is via a package manager. This also handles all
 
 \section{Source Package} \label{sub:regular}
 
-Download the latest \href{https://github.com/EvolBioInf/andi/releases}{release} from GitHub. Please note, that \andi requires \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
+Download the latest \href{https://github.com/EvolBioInf/andi/releases}{release} from GitHub. Please note, that \andi requires the \algo{Gnu Scientific Library} and optionally \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
 
 Once you have downloaded the package, unzip it and change into the newly created directory. 
 
@@ -266,6 +266,18 @@ In the above examples the runtime dropped from \SI{0.613}{\second}, to \SI{0.362
 
 By default, the distances computed by \andi are \emph{Jukes-Cantor} corrected \cite{jukescantor}. This means, the output is substitution rates, which is greater than the mismatch rate. To obtain the pure mismatch rate, use the \lstinline$--raw$ switch.
 
+Since version 0.9.4 \andi includes a bootstrapping method. It can be activated via the \lstinline$--bootstrap$ or \lstinline$-b$ switch. This option takes a numeric argument representing the number of matrices to create. The output can then be piped into \algo{phylip}.
+
+\begin{lstlisting}
+~ %  andi -b 2 ../test/1M.1.fasta
+2
+S1        0.0000 0.1067
+S2        0.1067 0.0000
+2
+S1        0.0000 0.1071
+S2        0.1071 0.0000
+\end{lstlisting}
+
 \section{Example: \algo{eco29}}
 
 Here follows a real-world example of how to use \algo{andi}. It makes heavy use of the commandline and tools like \algo{Phylip}. If you prefer \algo{R}, check out this excellent \href{http://holtlab.net/2015/05/08/r-code-to-infer-tree-from-andi-output/}{blog post} by Kathryn Holt.
@@ -333,6 +345,7 @@ Here is a complete list of dependencies required for developing \algo{andi}.
 \begin{itemize}
   \item A C and a C++11 compiler,
   \item the \algo{autotools},
+  \item the \algo{Gnu Scientific Library},
   \item \algo{Pdflatex} with various packages for the manual,
   \item \algo{Git},
   \item \algo{glib2} for the unit tests,

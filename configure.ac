@@ -28,7 +28,7 @@ AS_IF([test "x$have_gsl" = "xno"],[
 
 # By default try to build with libdivsufsort.
 AC_ARG_WITH([libdivsufsort],
-	AS_HELP_STRING([--without-libdivsufsort], [Build without libdivsufsort and use psufsort instead.]))
+    AS_HELP_STRING([--without-libdivsufsort], [Build without libdivsufsort and use psufsort instead.]))
 
 AS_IF([test "x$with_libdivsufsort" != "xno"],
 	[
@@ -74,25 +74,6 @@ if test "x${try_unit_tests}" = xyes; then
 	AX_CXX_COMPILE_STDCXX_11([],[mandatory])
 fi
 
-# ZSH Completion
-AC_ARG_WITH([zsh-completion-dir],
-	AS_HELP_STRING([--with-zsh-completion-dir[=PATH]],
-		[Install the zsh auto-completion script in this directory. @<:@default=yes@:>@]),
-	[],
-	[with_zsh_completion_dir=yes])
-
-AS_IF([test "x$with_zsh_completion_dir" = "xyes"],
-	[
-		ZSH_COMPLETION_DIR="/usr/share/zsh/site-functions"
-	],
-	[
-		ZSH_COMPLETION_DIR="$with_zsh_completion_dir"
-	]
-)
-
-AC_SUBST([ZSH_COMPLETION_DIR])
-AM_CONDITIONAL([ENABLE_ZSH_COMPLETION],[test "x$with_zsh_completion_dir" != "xno"])
-
 # Check for various headers including those used by libdivsufsort.
 AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h stdint.h inttypes.h err.h errno.h fcntl.h])
 
@@ -128,7 +109,6 @@ AC_CONFIG_FILES([
  libs/Makefile
  opt/Makefile
  opt/psufsort/Makefile
- scripts/Makefile
  src/Makefile
  test/Makefile
 ])

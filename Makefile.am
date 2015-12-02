@@ -10,15 +10,17 @@ endif
 SUBDIRS = . $(OPT_PSUFSORT) libs opt src docs
 DIST_SUBDIRS = . libs opt src docs test opt/psufsort
 
-# Conditionaly build the tests
+# Conditionally build the tests
 if BUILD_TESTS
 
 SUBDIRS+= test
 
+AM_TESTS_ENVIRONMENT= \
+	RANDOM_SEED='@SEED@' ; export RANDOM_SEED ;
+
 TESTS = test/test_esa test/test_seq test/test_extra.sh test/test_random.sh test/test_join.sh
 
 $(TESTS): src/andi
-#	$(MAKE) -C test
 
 endif # BUILD_TESTS
 

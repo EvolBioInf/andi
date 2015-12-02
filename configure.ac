@@ -52,6 +52,8 @@ The latter may result in longer runtimes.])
 
 AM_CONDITIONAL([BUILD_WITH_LIBDIVSUFSORT],[test "x${with_libdivsufsort}" != "xno"])
 
+
+
 # The unit tests require GLIB2. So by default do not build the test.
 # If enabled, check for glib.
 
@@ -61,6 +63,16 @@ AC_ARG_ENABLE([unit-tests],
 	)
 
 AM_CONDITIONAL([BUILD_TESTS],[test "x${try_unit_tests}" = xyes])
+
+# The user may set a seed for the unit tests, so that builds are reproducible.
+# A value of 0 makes the tests random.
+AC_ARG_WITH([seed],
+	[AS_HELP_STRING([--with-seed=INT],
+		[random seed for reproducible builds. @<:@default: 0@:>@])],
+	[SEED=$withval],
+	[SEED=0])
+
+AC_SUBST([SEED])
 
 if test "x${try_unit_tests}" = xyes; then
 
@@ -73,6 +85,7 @@ if test "x${try_unit_tests}" = xyes; then
 
 	AX_CXX_COMPILE_STDCXX_11([],[mandatory])
 fi
+
 
 # Check for various headers including those used by libdivsufsort.
 AC_CHECK_HEADERS([limits.h stdlib.h string.h unistd.h stdint.h inttypes.h err.h errno.h fcntl.h])

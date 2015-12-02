@@ -23,8 +23,16 @@ int main(int argc, char *argv[]){
 	auto seqs = vector<double>{0};
 
 	int check;
-	while((check = getopt(argc, argv, "l:L:d:")) != -1){
+	while((check = getopt(argc, argv, "s:l:L:d:")) != -1){
 		switch(check) {
+			case 's':
+				{
+					seed = stoi(optarg);
+					if( seed == 0){
+						seed = rd();
+					}
+					break;
+				}
 			case 'l': length = stoi(optarg); break;
 			case 'L': line_length = stoi(optarg); break;
 			case 'd': seqs.push_back(stod(optarg)); break;
@@ -37,9 +45,11 @@ int main(int argc, char *argv[]){
 		seqs.push_back(0.1);
 	}
 
+	auto base_seed = seed;
+
 	for( int i=0; i< seqs.size(); i++){
 		cout << ">S" << i << endl;
-		print_seq( seed, rd(), length, line_length, seqs[i]);
+		print_seq( base_seed, seed++, length, line_length, seqs[i]);
 	}
 
 	return 0;

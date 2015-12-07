@@ -46,7 +46,7 @@ input {
 	<div class=container>
 		<div class="panel panel-default">
 			<div class="panel-heading">
-				<h2>andi <small>the anchor distance</small></h1></div>
+				<h2>andi <small>the anchor distance</small> — DEMO</h1></div>
 			<div class="panel-body">
 			This is a visualisation of the anchor distance, a fast way to estimate evolutionary distances between genomes. See our <a href=https://github.com/EvolBioInf/andi>GitHub repository</a> for links to the paper and code.
 			</div>
@@ -68,6 +68,7 @@ input {
 					<label>Anchor Length:
 						<input value=5 type=number id="anchor" min=2 max=10 placeholder=5 />
 					</label>
+					<button id=generate class="btn btn-success">Generate</button>
 				</form>
 			</div>
 		</div>
@@ -84,7 +85,7 @@ input {
 		<div class=row>
 			<div class=col-md-6>
 				<div class="well well-sm">
-					Substitutions: <span id="subst">0</span> Nucleotides: <span id="nucl">0</span> Estimated Distance: <span id="estimate">NaN</span>
+					Substitutions: <span id="subst">0</span> Homologues: <span id="nucl">0</span> Estimated Distance: <span id="estimate">NaN</span>
 				</div>
 			</div>
 			<div class=col-md-6>
@@ -266,7 +267,7 @@ var algorithm = {
 
 		this.index++;
 	}
-}
+};
 
 $('#step').on('click', function() {
 	algorithm.next();
@@ -308,6 +309,13 @@ $('#anchor').on('change', function() {
 	ANCHOR = +$(this).val();
 	generateSequencePair();
 });
+
+$('#generate').on('click', function(){
+	stop();
+	generateSequencePair();
+	return false;
+});
+
 	</script>
 </body>
 </html>

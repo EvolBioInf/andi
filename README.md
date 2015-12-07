@@ -42,7 +42,7 @@ From this distance matrix the phylogeny can be inferred via neighbor-joining. Ch
 
 # Links and Additional Resources
 
-The release of this software is accompanied by a paper from [Haubold et al.](http://bioinformatics.oxfordjournals.org/content/31/8/1169). It explains the used *anchor distance* strategy in great detail. The `maf2phy.awk` script used in the validation process is located under `scripts`. Simulations were done using our own [simK](http://guanine.evolbio.mpg.de/bioBox/) tool.
+The release of this software is accompanied by a paper from [Haubold et al.](http://bioinformatics.oxfordjournals.org/content/31/8/1169). It explains the used *anchor distance* strategy in great detail. The `maf2phy.awk` script used in the validation process is located under `scripts`. Simulations were done using our own [simK](http://guanine.evolbio.mpg.de/bioBox/) tool. For a demo visualising the internals of andi visit our [GitHub pages](http://evolbioinf.github.io/andi/).
 
 ## Data Sets
 

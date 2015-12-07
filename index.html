@@ -1,0 +1,313 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>andi visualisation</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+	<script src=http://code.jquery.com/jquery-2.1.4.min.js></script>
+	<style type="text/css">
+#qseq,
+#sseq {
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+	font-family: monospace;
+	font-size: 16px;
+}
+
+.anchor {
+	color: green;
+}
+
+.highlight {
+	color: red;
+}
+
+.processed {
+	color: gray;
+}
+
+.underline {
+	text-decoration: underline;
+}
+
+input {
+	width: 5em;
+}
+	</style>
+</head>
+
+<body>
+	<br>
+	<div class=container>
+		<div class="panel panel-default">
+			<div class="panel-heading">
+				<h2>andi <small>the anchor distance</small></h1></div>
+			<div class="panel-body">
+			This is a visualisation of the anchor distance, a fast way to estimate evolutionary distances between genomes. See our <a href=https://github.com/EvolBioInf/andi>GitHub repository</a> for links to the paper and code.
+			</div>
+		</div>
+		<div class=row>
+			<div class=col-md-6>
+				<button class="btn btn-primary" id="step">Single step</button>
+				<button class="btn" id="run">Run <span class="glyphicon glyphicon-play"></button>
+				<button class="btn hidden" id="stop">Stop <span class="glyphicon glyphicon-stop"></span></button>
+			</div>
+			<div class=col-md-6>
+				<form>
+					<label>Length:
+						<input value=1000 type=number id="length" min=100 max=2000 placeholder=1000 />
+					</label>
+					<label>Distance:
+						<input value=0.1 type=number id="distance" min="0.0" max="1" placeholder=0.1 step=0.01 />
+					</label>
+					<label>Anchor Length:
+						<input value=5 type=number id="anchor" min=2 max=10 placeholder=5 />
+					</label>
+				</form>
+			</div>
+		</div>
+		<div class=row>
+			<div class=col-md-6>
+				<h2>Query</h2>
+				<p id="qseq"></p>
+			</div>
+			<div class=col-md-6>
+				<h2>Subject</h2>
+				<p id="sseq"></p>
+			</div>
+		</div>
+		<div class=row>
+			<div class=col-md-6>
+				<div class="well well-sm">
+					Substitutions: <span id="subst">0</span> Nucleotides: <span id="nucl">0</span> Estimated Distance: <span id="estimate">NaN</span>
+				</div>
+			</div>
+			<div class=col-md-6>
+				<div class="well well-sm">
+					Anchors are <span class=anchor>green</span>. Non-anchor matches are <span class=processed>gray</span>. Homologous nucleotides are <span class=underline>underlined</span>.
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+function PRNG(seed) {
+	var that = Object.create(PRNG.prototype);
+	that.next();
+	that.state += seed;
+	that.next();
+	return that;
+}
+
+PRNG.prototype = {
+	state: 0,
+	inc: 1,
+	next: function() {
+		var oldstate = this.state;
+		this.state = ((oldstate * 123456789) | 0) + this.inc;
+		return oldstate >>> 16;
+	}
+};
+
+function sequence(length, seed, distance) {
+	var base_prng = PRNG(seed),
+		mut_prng = Math.random,
+		base = ['A', 'C', 'G', 'T'],
+		mut = {
+			A: ['C', 'G', 'T'],
+			C: ['A', 'G', 'T'],
+			G: ['A', 'C', 'T'],
+			T: ['A', 'C', 'G']
+		};
+
+	var sequence = Array(length);
+
+	for (var i = 0; i < length; ++i) {
+		var c = base[base_prng.next() & 3];
+		if (mut_prng() < distance) {
+			c = mut[c][(mut_prng() * 3) | 0];
+		}
+		sequence[i] = c;
+	}
+
+	return sequence;
+}
+
+var LENGTH = 1000;
+var SEED = 17296 * Math.random() | 0;
+var DISTANCE = 0.1;
+var ANCHOR = 5;
+
+var sall, qall, SNPS;
+
+function generateSequencePair() {
+	var S1 = sequence(LENGTH, SEED, 0),
+		S2 = sequence(LENGTH, SEED, DISTANCE);
+
+	SEED++;
+
+	$('#qseq').empty().append(
+		S1.map(function(nucleotide) {
+			return $('<span>', {
+				class: nucleotide,
+				text: nucleotide
+			});
+		})
+	);
+
+	$('#sseq').empty().append(
+		S2.map(function(nucleotide) {
+			return $('<span>', {
+				class: nucleotide,
+				text: nucleotide
+			});
+		})
+	);
+
+	if (algorithm) {
+		algorithm.index = 0;
+		algorithm.last_pos_s = algorithm.last_pos_q = 189;
+	}
+
+	sall = $('#sseq').children();
+	qall = $('#qseq').children();
+	SNPS = qall.filter(function(index) {
+		return $(this).text() != sall.eq(index).text();
+	});
+}
+
+generateSequencePair();
+
+function updateCounters() {
+	var nucl = $('#qseq > .anchor, #qseq > .underline').length,
+		snps = SNPS.filter('.underline').length;
+
+	$('#subst').text(snps);
+	$('#nucl').text(nucl);
+	$('#estimate').text(snps / nucl);
+}
+
+var algorithm = {
+	index: 0,
+	last_pos_s: 9999,
+	last_pos_q: 9999,
+	next: function() {
+		var c = qall.eq(this.index);
+		c.addClass('highlight');
+		// c.prev().addClass('processed');
+
+		if (this.index >= LENGTH) {
+			$('.highlight').removeClass('highlight');
+			stop();
+			return;
+		}
+
+		var str = $('#qseq > .highlight').text();
+
+		sall.removeClass('highlight');
+
+		var selector = '#sseq  .' + str.split('').join(' + .'),
+			match_s = $(selector);
+
+		for (var x = 0; x < str.length; x++) {
+			match_s.addClass('highlight');
+			match_s = match_s.prev();
+		}
+
+		match_s = $(selector);
+
+		if (match_s.length > 1) {
+			this.index++;
+			return;
+		}
+
+		if (match_s.length == 0) {
+			$('#qseq > .highlight').removeClass('highlight').addClass('processed');
+			this.index += 1;
+			return;
+		}
+
+		if (match_s.length == 1 && str.length > ANCHOR) {
+			var sanq = $('#sseq > .highlight').last();
+			var qanq = $('#qseq > .highlight').last();
+
+			while (sanq.text() == qanq.text() && sanq.text() != '') {
+				sanq.addClass('highlight');
+				qanq.addClass('highlight');
+				sanq = sanq.next();
+				qanq = qanq.next();
+				this.index++;
+			}
+
+			var this_pos_s = $('#sseq > .highlight').first().index();
+			var this_pos_q = $('#qseq > .highlight').first().index();
+
+			// Anchor!
+			var anchor_right_s = $('#sseq > .highlight').removeClass('highlight').addClass('anchor');
+			var anchor_right_q = $('#qseq > .highlight').removeClass('highlight').addClass('anchor');
+			this.index += 1;
+
+			if (this_pos_s > this.last_pos_s &&
+				this_pos_s - this.last_pos_s == this_pos_q - this.last_pos_q) {
+				// anchor pair!
+				anchor_right_s.prevUntil('.anchor').addClass('underline');
+				anchor_right_q.prevUntil('.anchor').addClass('underline');
+			}
+
+			this.last_pos_s = this_pos_s;
+			this.last_pos_q = this_pos_q;
+
+			return;
+		}
+
+		this.index++;
+	}
+}
+
+$('#step').on('click', function() {
+	algorithm.next();
+	updateCounters();
+});
+
+var timeoutnum = 0;
+$('#run').on('click', function() {
+	timeoutnum = setInterval(function() {
+		algorithm.next();
+		updateCounters();
+	}, 1000);
+	$(this).addClass('hidden');
+	$('#stop').removeClass('hidden');
+});
+
+function stop() {
+	clearInterval(timeoutnum);
+	$('#stop').addClass('hidden');
+	$('#run').removeClass('hidden');
+}
+
+$('#stop').on('click', stop);
+
+$('#length').on('change', function() {
+	stop();
+	LENGTH = +$(this).val();
+	generateSequencePair();
+});
+
+$('#distance').on('change', function() {
+	stop();
+	DISTANCE = +$(this).val();
+	generateSequencePair();
+});
+
+$('#anchor').on('change', function() {
+	stop();
+	ANCHOR = +$(this).val();
+	generateSequencePair();
+});
+	</script>
+</body>
+</html>

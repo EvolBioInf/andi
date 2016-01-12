@@ -23,7 +23,7 @@
 #include <omp.h>
 #endif
 
-double shuprop( size_t x, double g, size_t l);
+double shuprop(size_t x, double g, size_t l);
 int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n);
 
 /**
@@ -37,15 +37,15 @@ int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n);
  * @param l - The length of the subject.
  * @returns The minimum length of an anchor.
  */
-size_t minAnchorLength( double p, double g, size_t l){
+size_t minAnchorLength(double p, double g, size_t l) {
 	size_t x = 1;
-	
+
 	double prop = 0.0;
-	while( prop < 1 - p){
-		prop = shuprop( x, g/2, l);
+	while (prop < 1 - p) {
+		prop = shuprop(x, g / 2, l);
 		x++;
 	}
-	
+
 	return x;
 }
 
@@ -64,55 +64,56 @@ size_t minAnchorLength( double p, double g, size_t l){
  * @param k - analog.
  * @returns (n choose k)
  */
-size_t binomial_coefficient( size_t n, size_t k){
-	if( n <= 0 || k > n){
+size_t binomial_coefficient(size_t n, size_t k) {
+	if (n <= 0 || k > n) {
 		return 0;
 	}
-	
-	if( k == 0 || k == n ){
+
+	if (k == 0 || k == n) {
 		return 1;
 	}
-	
-	if( k > n-k ){
-		k = n-k;
+
+	if (k > n - k) {
+		k = n - k;
 	}
-	
+
 	size_t res = 1;
 
-	for( size_t i= 1; i <= k; i++){
+	for (size_t i = 1; i <= k; i++) {
 		res *= n - k + i;
 		res /= i;
 	}
-	
+
 	return res;
 }
 
 /**
- * @brief Given `x` this function calculates the probability of a shustring 
+ * @brief Given `x` this function calculates the probability of a shustring
  * with a length less than `x`.
  *
- * Let X be the longest shortest unique substring (shustring) at any position. Then
- * this function computes P{X <= x} with respect to the given parameter set. See
- * Haubold et al. (2009).
+ * Let X be the longest shortest unique substring (shustring) at any position.
+ * Then this function computes P{X <= x} with respect to the given parameter
+ * set. See Haubold et al. (2009).
  *
  * @param x - The maximum length of a shustring.
  * @param g - The the half of the relative amount of GC in the DNA.
  * @param l - The length of the subject.
  * @returns The probability of a certain shustring length.
  */
-double shuprop( size_t x, double p, size_t l){
+double shuprop(size_t x, double p, size_t l) {
 	double xx = (double)x;
 	double ll = (double)l;
 	size_t k;
-	
+
 	double s = 0.0;
-	
-	for(k=0; k<= x; k++){
+
+	for (k = 0; k <= x; k++) {
 		double kk = (double)k;
-		double t = pow(p,kk) * pow(0.5 - p, xx - kk);
-		
-		s += pow(2,xx) * (t * pow(1-t,ll)) * (double)binomial_coefficient(x,k);
-		if( s >= 1.0){
+		double t = pow(p, kk) * pow(0.5 - p, xx - kk);
+
+		s += pow(2, xx) * (t * pow(1 - t, ll)) *
+			 (double)binomial_coefficient(x, k);
+		if (s >= 1.0) {
 			s = 1.0;
 			break;
 		}
@@ -129,28 +130,31 @@ double shuprop( size_t x, double p, size_t l){
  * is a simple string. This function then looks for *anchors* -- long
  * substrings that exist in both sequences. Then it manually checks for
  * mutations between those anchors.
- * 
+ *
  * @return An estimate for the number of mutations within homologous regions.
  * @param C - The enhanced suffix array of the subject.
  * @param query - The actual query string.
- * @param query_length - The length of the query string. Needed for speed reasons.
+ * @param query_length - The length of the query string. Needed for speed
+ * reasons.
  */
-data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, double gc){
+data_t dist_anchor(const esa_s *C, const char *query, size_t query_length,
+				   double gc) {
 	size_t snps = 0; // Total number of found SNPs
 	size_t homo = 0; // Total number of homologous nucleotides.
-	
+
 	lcp_inter_t inter;
-	
+
 	size_t last_pos_Q = 0;
 	size_t last_pos_S = 0;
 	size_t last_length = 0;
-	// This variable indicates that the last anchor was the right anchor of a pair.
+	// This variable indicates that the last anchor was the right anchor of a
+	// pair.
 	size_t last_was_right_anchor = 0;
-	
+
 	size_t this_pos_Q = 0;
 	size_t this_pos_S;
 	size_t this_length;
-	
+
 	size_t num_right_anchors = 0;
 
 #ifdef DEBUG
@@ -163,47 +167,48 @@ data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, doub
 	double off_dem = 0.0;
 #endif
 
-	size_t threshold = minAnchorLength( 1-sqrt(1-RANDOM_ANCHOR_PROP), gc, C->len);
+	size_t threshold =
+		minAnchorLength(1 - sqrt(1 - RANDOM_ANCHOR_PROP), gc, C->len);
 
-	data_t retval = {0.0,0.0};
+	data_t retval = {0.0, 0.0};
 
 	// Iterate over the complete query.
-	while( this_pos_Q < query_length){
-		inter = get_match_cached( C, query + this_pos_Q, query_length - this_pos_Q);
+	while (this_pos_Q < query_length) {
+		inter =
+			get_match_cached(C, query + this_pos_Q, query_length - this_pos_Q);
 
 #ifdef DEBUG
 		num_matches++;
 #endif
 
 		this_length = inter.l <= 0 ? 0 : inter.l;
-		
-		if( inter.i == inter.j && this_length >= threshold)
-		{
+
+		if (inter.i == inter.j && this_length >= threshold) {
 			// We have reached a new anchor.
-			this_pos_S = C->SA[ inter.i];
+			this_pos_S = C->SA[inter.i];
 
 #ifdef DEBUG
 			num_anchors++;
 			length_anchors += this_length;
-			if( this_pos_S < (size_t)(C->len / 2)){
+			if (this_pos_S < (size_t)(C->len / 2)) {
 				num_anchors_in_rc++;
 			}
 #endif
 
 			// Check if this can be a right anchor to the last one.
-			if( this_pos_S > last_pos_S &&
-				this_pos_Q - last_pos_Q == this_pos_S - last_pos_S ){
+			if (this_pos_S > last_pos_S &&
+				this_pos_Q - last_pos_Q == this_pos_S - last_pos_S) {
 				num_right_anchors++;
 #ifdef DEBUG
-				if( this_pos_S < (size_t)(C->len / 2)){
+				if (this_pos_S < (size_t)(C->len / 2)) {
 					num_right_anchors_in_rc++;
 				}
 #endif
-			
+
 				// Count the SNPs in between.
 				size_t i;
-				for( i= last_length; i< this_pos_Q - last_pos_Q; i++){
-					if( C->S[ last_pos_S + i] != query[ last_pos_Q + i] ){
+				for (i = last_length; i < this_pos_Q - last_pos_Q; i++) {
+					if (C->S[last_pos_S + i] != query[last_pos_Q + i]) {
 						snps++;
 					}
 				}
@@ -211,95 +216,99 @@ data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, doub
 				last_was_right_anchor = 1;
 			} else {
 #ifdef DEBUG
-				double off = fabs((double)(this_pos_Q - last_pos_Q)- (double)(this_pos_S - last_pos_S));
-				if( off < 100 ){
+				double off = fabs((double)(this_pos_Q - last_pos_Q) -
+								  (double)(this_pos_S - last_pos_S));
+				if (off < 100) {
 					off_num += off;
 					off_dem++;
 				}
 #endif
-				if( last_was_right_anchor){
-					// If the last was a right anchor, but with the current one, we 
-					// cannot extend, then add its length.
+				if (last_was_right_anchor) {
+					// If the last was a right anchor, but with the current one,
+					// we cannot extend, then add its length.
 					homo += last_length;
-				} else if( (last_length / 2) >= threshold){
-					// The last anchor wasn't neither a left or right anchor. But,
-					// it was as long as an anchor pair. So still count it.
+				} else if ((last_length / 2) >= threshold) {
+					// The last anchor wasn't neither a left or right anchor.
+					// But, it was as long as an anchor pair. So still count it.
 					homo += last_length;
 				}
-				
+
 				last_was_right_anchor = 0;
 			}
-			
+
 			// Cache values for later
 			last_pos_Q = this_pos_Q;
 			last_pos_S = this_pos_S;
-			last_length= this_length;
+			last_length = this_length;
 		}
-		
+
 		// Advance
 		this_pos_Q += this_length + 1;
 	}
 
 #ifdef DEBUG
-	if( FLAGS & F_EXTRA_VERBOSE ){
-		const char str[] = {
-			"- threshold: %ld\n"
-			"- matches: %lu\n"
-			"- anchors: %lu (rc: %lu)\n"
-			"- right anchors: %lu (rc: %lu)\n"
-			"- avg length: %lf\n"
-			"- off: %f (skipped: %.0f)\n"
-			"\n"
-		};
+	if (FLAGS & F_EXTRA_VERBOSE) {
+		const char str[] = {"- threshold: %ld\n"
+							"- matches: %lu\n"
+							"- anchors: %lu (rc: %lu)\n"
+							"- right anchors: %lu (rc: %lu)\n"
+							"- avg length: %lf\n"
+							"- off: %f (skipped: %.0f)\n"
+							"\n"};
 
-		#pragma omp critical
+#pragma omp critical
 		{
-			fprintf(stderr, str, threshold, num_matches, num_anchors, num_anchors_in_rc, num_right_anchors, num_right_anchors_in_rc, (double)length_anchors/ num_anchors, off_num/off_dem, off_dem );
+			fprintf(stderr, str, threshold, num_matches, num_anchors,
+					num_anchors_in_rc, num_right_anchors,
+					num_right_anchors_in_rc,
+					(double)length_anchors / num_anchors, off_num / off_dem,
+					off_dem);
 		}
 	}
 #endif
-	
+
 	// Very special case: The sequences are identical
-	if( last_length >= query_length ){
+	if (last_length >= query_length) {
 		retval.coverage = 1.0;
 		return retval;
 	}
-	
-	// We might miss a few nucleotides if the last anchor was also a right anchor.
-	if( last_was_right_anchor ){
+
+	// We might miss a few nucleotides if the last anchor was also a right
+	// anchor.
+	if (last_was_right_anchor) {
 		homo += last_length;
 	}
-	
+
 	// Nearly identical sequences
-	if( homo == query_length){
-		retval.distance = (double)snps/(double)homo;
+	if (homo == query_length) {
+		retval.distance = (double)snps / (double)homo;
 		retval.coverage = 1.0;
 		return retval;
 	}
 
 	// Insignificant results. All abort the fail train.
-	if ( homo <= 3){
+	if (homo <= 3) {
 		retval.distance = NAN;
 		return retval;
 	}
-	
-	// Abort if we have more homologous nucleotides than just nucleotides. This might
-	// happen with sequences of different lengths.
-	if( homo >= (size_t) C->len ){
+
+	// Abort if we have more homologous nucleotides than just nucleotides. This
+	// might happen with sequences of different lengths.
+	if (homo >= (size_t)C->len) {
 		retval.distance = NAN;
 		retval.coverage = 1.0;
 		return retval;
 	}
-	
-	retval.distance = (double)snps/(double)homo;
-	retval.coverage = (double)homo/(double)query_length;
+
+	retval.distance = (double)snps / (double)homo;
+	retval.coverage = (double)homo / (double)query_length;
 	return retval;
 }
 
 /**
  * @brief Computes the distance matrix.
  *
- * The distMatrix() populates the D matrix with computed distances. It allocates D and
+ * The distMatrix() populates the D matrix with computed distances.
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
@@ -309,7 +318,7 @@ data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, doub
 /**
  * @brief Computes the distance matrix.
  *
- * The distMatrixLM() populates the D matrix with computed distances. It allocates D and
+ * The distMatrixLM() populates the D matrix with computed distances.
  * @param sequences An array of pointers to the sequences.
  * @param n The number of sequences.
  */
@@ -321,66 +330,66 @@ data_t dist_anchor( const esa_s *C, const char *query, size_t query_length, doub
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
  */
-void calculate_distances( seq_t* sequences, int n){
+void calculate_distances(seq_t *sequences, int n) {
 	int i;
 
 	// check the sequences
-	for( i=0;i<n;i++){
-		if( sequences[i].S == NULL || sequences[i].len == 0){
+	for (i = 0; i < n; i++) {
+		if (sequences[i].S == NULL || sequences[i].len == 0) {
 			errx(1, "Missing sequence: %s", sequences[i].name);
 		}
 
-		if( sequences[i].len < 1000){
+		if (sequences[i].len < 1000) {
 			FLAGS |= F_SHORT;
 		}
 	}
 
-	if( FLAGS & F_SHORT ){
-		warnx("One of the given input sequences is shorter than a thousand nucleotides. "
-			"This may result in inaccurate distances. Try an alignment instead.");
-	}
-	
-	// Warn about non ACGT residues.
-	if( FLAGS & F_NON_ACGT ){
-		warnx("The input sequences contained characters other than acgtACGT. "
-			"These were automatically stripped to ensure correct results.");
+	if (FLAGS & F_SHORT) {
+		warnx("One of the given input sequences is shorter than a thousand "
+			  "nucleotides. This may result in inaccurate distances. Try an "
+			  "alignment instead.");
 	}
 
-	data_t *M = malloc(n*n*sizeof(data_t));
-	if( !M){
-		err( errno, "Could not allocate enough memory for the comparison matrix. Try using --join or --low-memory.");
+	// Warn about non ACGT residues.
+	if (FLAGS & F_NON_ACGT) {
+		warnx("The input sequences contained characters other than acgtACGT. "
+			  "These were automatically stripped to ensure correct results.");
+	}
+
+	data_t *M = malloc(n * n * sizeof(data_t));
+	if (!M) {
+		err(errno, "Could not allocate enough memory for the comparison "
+				   "matrix. Try using --join or --low-memory.");
 	}
 
 	// compute the distances
-	if( FLAGS & F_LOW_MEMORY){
-		distMatrixLM( M, sequences, n);
+	if (FLAGS & F_LOW_MEMORY) {
+		distMatrixLM(M, sequences, n);
 	} else {
-		distMatrix( M, sequences, n);
+		distMatrix(M, sequences, n);
 	}
 
 	// print the results
-	print_distances( M, sequences, n);
-
+	print_distances(M, sequences, n);
 
 	// print additional information.
-	if( FLAGS & F_VERBOSE){
-		print_coverages( M, n);
+	if (FLAGS & F_VERBOSE) {
+		print_coverages(M, n);
 	}
 
 	// create new bootstrapped distance matrices
-	if( BOOTSTRAP ){
+	if (BOOTSTRAP) {
 		int res = calculate_bootstrap(M, sequences, n);
-		if( res){
+		if (res) {
 			warnx("Bootstrapping failed.");
 		}
 	}
 
-	
 	free(M);
 }
 
 /** Yet another hack. */
-#define B( X, Y) (B[ (X)*n + (Y) ])
+#define B(X, Y) (B[(X)*n + (Y)])
 
 /** @brief Computes a bootstrap from _pairwise_ aligments.
  *
@@ -400,30 +409,30 @@ void calculate_distances( seq_t* sequences, int n){
  *
  * @returns 0 iff successful.
  */
-int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n){
-	if( !M || !sequences || !n){
+int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n) {
+	if (!M || !sequences || !n) {
 		return 1;
 	}
 
 	// B is the new bootstrap matrix
 	data_t *B = malloc(n * n * sizeof(data_t));
-	if( !B) return 2;
+	if (!B) return 2;
 
 	gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
-	if( !rng){
+	if (!rng) {
 		free(B);
 		return 3;
 	}
 
 	// seed the random number generator with the current time
-	gsl_rng_set( rng, time(NULL));
+	gsl_rng_set(rng, time(NULL));
 
 	// Compute a number of new distance matrices
-	while( BOOTSTRAP--){
-		for( size_t i=0; i< n; i++){
-			for( size_t j=i; j<n; j++){
-				if( i == j){
-					B(i,j) = (data_t){0.0,0.0};
+	while (BOOTSTRAP--) {
+		for (size_t i = 0; i < n; i++) {
+			for (size_t j = i; j < n; j++) {
+				if (i == j) {
+					B(i, j) = (data_t){0.0, 0.0};
 					continue;
 				}
 				/* The classical bootstrapping process, as described by
@@ -432,17 +441,19 @@ int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n){
 					down to a simple binomial distribution around a mean of
 					the original distance. */
 
-				double ijnucl = M(i,j).coverage * (double)sequences[j].len;
-				double jinucl = M(j,i).coverage * (double)sequences[i].len;
+				double ijnucl = M(i, j).coverage * (double)sequences[j].len;
+				double jinucl = M(j, i).coverage * (double)sequences[i].len;
 				double homonucl = ijnucl + jinucl;
-				double avg_distance  = (M(i,j).distance * ijnucl + M(j,i).distance * jinucl)
-					/ (homonucl);
+				double avg_distance =
+					(M(i, j).distance * ijnucl + M(j, i).distance * jinucl) /
+					(homonucl);
 
 				// The actual coverage value doesn't matter, just ensure its > 0
 				data_t datum = {.coverage = 1.0};
 
-				datum.distance = gsl_ran_binomial( rng, avg_distance, homonucl) / homonucl;
-				B(j,i) = B(i,j) = datum;
+				datum.distance =
+					gsl_ran_binomial(rng, avg_distance, homonucl) / homonucl;
+				B(j, i) = B(i, j) = datum;
 			}
 		}
 

@@ -1,5 +1,6 @@
 /** @file
- * @brief This file is a preprocessor hack for the two functions `distMatrix` and `distMatrixLM`.
+ * @brief This file is a preprocessor hack for the two functions `distMatrix`
+ * and `distMatrixLM`.
  */
 #ifdef FAST
 #define NAME distMatrix
@@ -10,37 +11,40 @@
 #undef P_OUTER
 #undef P_INNER
 #define NAME distMatrixLM
-#define P_OUTER 
+#define P_OUTER
 #define P_INNER _Pragma("omp parallel for num_threads( THREADS)")
 #endif
 
-/** @brief This function calls dist_andi for pairs of subjects and queries, and thereby fills the distance matrix.
+/** @brief This function calls dist_andi for pairs of subjects and queries, and
+ *thereby fills the distance matrix.
  *
- * This function is actually two functions. It is one template that gets compiled into two functions via
+ * This function is actually two functions. It is one template that gets
+ *compiled into two functions via
  * preprocessor hacks. The reason is DRY (Do not Repeat Yourselves).
- *   The two functions only differ by their name and pragmas; i.e. They run in different parallel modes.
+ *   The two functions only differ by their name and pragmas; i.e. They run in
+ *different parallel modes.
  * `distMatrix` is faster than `distMatrixLM` but needs more memory.
  *
  * @param sequences - The sequences to compare
  * @param n - The number of sequences
  * @param M - A matrix for additional output data
  */
-void NAME( data_t *M, seq_t* sequences, size_t n){
+void NAME(data_t *M, seq_t *sequences, size_t n) {
 	size_t i;
 
 	//#pragma
 	P_OUTER
-	for(i=0;i<n;i++){
+	for (i = 0; i < n; i++) {
 		seq_t *subject = &sequences[i];
 		esa_s E;
 
-		seq_subject_init( subject);
-		if( esa_init( &E, subject)){
+		seq_subject_init(subject);
+		if (esa_init(&E, subject)) {
 			warnx("Failed to create index for %s.", subject->name);
 
-			for( size_t j=0; j< n; j++){
-				M(i,j).distance = (i==j) ? 0.0 : NAN;
-				M(i,j).coverage = 0.0;
+			for (size_t j = 0; j < n; j++) {
+				M(i, j).distance = (i == j) ? 0.0 : NAN;
+				M(i, j).coverage = 0.0;
 			}
 
 			continue;
@@ -50,23 +54,21 @@ void NAME( data_t *M, seq_t* sequences, size_t n){
 		size_t j;
 
 		P_INNER
-		for(j=0; j<n; j++){
-			if( j == i) {
-				M(i,j) = (data_t){0.0,0.0};
+		for (j = 0; j < n; j++) {
+			if (j == i) {
+				M(i, j) = (data_t){0.0, 0.0};
 				continue;
 			}
 
 			// TODO: Provide a nicer progress indicator.
-			if( FLAGS & F_EXTRA_VERBOSE ){
-				#pragma omp critical
-				{
-					fprintf( stderr, "comparing %zu and %zu\n", i, j);
-				}
+			if (FLAGS & F_EXTRA_VERBOSE) {
+#pragma omp critical
+				{ fprintf(stderr, "comparing %zu and %zu\n", i, j); }
 			}
 
 			size_t ql = sequences[j].len;
 
-			M(i,j) = dist_anchor( &E, sequences[j].S, ql, subject->gc);
+			M(i, j) = dist_anchor(&E, sequences[j].S, ql, subject->gc);
 		}
 
 		esa_free(&E);

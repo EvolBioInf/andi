@@ -35,26 +35,26 @@ typedef struct seq_s {
 	double gc;
 } seq_t;
 
-void seq_free( seq_t *S);
-void seq_subject_init( seq_t *S);
-void seq_subject_free( seq_t *S);
-int seq_init( seq_t *S, const char *seq, const char *name);
+void seq_free(seq_t *S);
+void seq_subject_init(seq_t *S);
+void seq_subject_free(seq_t *S);
+int seq_init(seq_t *S, const char *seq, const char *name);
 
 /**
  * A dynamically growing structure for sequences.
  */
 
 typedef struct dsa_s {
-	seq_t* data;
+	seq_t *data;
 	size_t capacity, size;
 } dsa_t;
 
 int dsa_init(dsa_t *A);
-void dsa_push( dsa_t *A, seq_t S);
-void dsa_free( dsa_t *A);
-size_t dsa_size( dsa_t *A);
-seq_t* dsa_data( dsa_t *A);
+void dsa_push(dsa_t *A, seq_t S);
+void dsa_free(dsa_t *A);
+size_t dsa_size(dsa_t *A);
+seq_t *dsa_data(dsa_t *A);
 
-seq_t dsa_join( dsa_t *dsa);
+seq_t dsa_join(dsa_t *dsa);
 
 #endif

@@ -1,14 +1,14 @@
 /**
  * @file
  *
- * This is the main file. It contains functions to parse the commandline arguments,
- * read files etc.
- * 
+ * This is the main file. It contains functions to parse the commandline
+ * arguments, read files etc.
+ *
  * @brief The main file
  * @author Fabian Klötzl
- 
+ *
  * @section License
- 
+ *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 3 of
@@ -53,136 +53,118 @@ void version(void);
  * the set flags it reads the input files and forwards the contained sequences
  * to processing.
  */
-int main( int argc, char *argv[]){
+int main(int argc, char *argv[]) {
 	int c;
 	int version_flag = 0;
 
-	struct option long_options[] = {
-		{"version", no_argument, &version_flag, 1},
-		{"help", no_argument, NULL, 'h'},
-		{"raw", no_argument, NULL, 'r'},
-		{"verbose", no_argument, NULL, 'v'},
-		{"join", no_argument, NULL, 'j'},
-		{"low-memory", no_argument, NULL, 'm'},
-		{"threads", required_argument, NULL, 't'},
-		{"bootstrap", required_argument, NULL, 'b'},
-		{0,0,0,0}
-	};
+	struct option long_options[] = {{"version", no_argument, &version_flag, 1},
+									{"help", no_argument, NULL, 'h'},
+									{"raw", no_argument, NULL, 'r'},
+									{"verbose", no_argument, NULL, 'v'},
+									{"join", no_argument, NULL, 'j'},
+									{"low-memory", no_argument, NULL, 'm'},
+									{"threads", required_argument, NULL, 't'},
+									{"bootstrap", required_argument, NULL, 'b'},
+									{0, 0, 0, 0}};
 
 #ifdef _OPENMP
 	// Use all available processors by default.
 	THREADS = omp_get_num_procs();
 #endif
-	
+
 	// parse arguments
-	while( 1 ){
-	
+	while (1) {
+
 		int option_index = 0;
-		
-		c = getopt_long( argc, argv, "jvhrt:p:mb:", long_options, &option_index);
-		
-		if( c == -1){
+
+		c = getopt_long(argc, argv, "jvhrt:p:mb:", long_options, &option_index);
+
+		if (c == -1) {
 			break;
 		}
-	
-		switch (c){
-			case 0:
-				break;
-			case 'h':
-				usage();
-				break;
-			case 'r':
-				FLAGS |= F_RAW;
-				break;
+
+		switch (c) {
+			case 0: break;
+			case 'h': usage(); break;
+			case 'r': FLAGS |= F_RAW; break;
 			case 'v':
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
 				break;
-			case 'p':
-				{
-					errno = 0;
-					char *end;
-					double prop = strtod( optarg, &end);
+			case 'p': {
+				errno = 0;
+				char *end;
+				double prop = strtod(optarg, &end);
 
-					if( errno || end == optarg || *end != '\0'){
-						warnx(
-							"Expected a floating point number for -p argument, but '%s' was given. "
-							"Skipping argument.", optarg
-						);
-						break;
-					}
-
-					if( prop < 0.0 || prop > 1.0 ){
-						warnx(
-							"A probability should be a value between 0 and 1; "
-							"Ignoring -p %f argument.", prop
-						);
-						break;
-					}
-
-					RANDOM_ANCHOR_PROP = prop;
+				if (errno || end == optarg || *end != '\0') {
+					warnx(
+						"Expected a floating point number for -p argument, but "
+						"'%s' was given. Skipping argument.",
+						optarg);
+					break;
 				}
-				break;
-			case 'm':
-				FLAGS |= F_LOW_MEMORY;
-				break;
-			case 'j':
-				FLAGS |= F_JOIN;
-				break;
-			case 't':
-				{
+
+				if (prop < 0.0 || prop > 1.0) {
+					warnx("A probability should be a value between 0 and 1; "
+						  "Ignoring -p %f argument.",
+						  prop);
+					break;
+				}
+
+				RANDOM_ANCHOR_PROP = prop;
+			} break;
+			case 'm': FLAGS |= F_LOW_MEMORY; break;
+			case 'j': FLAGS |= F_JOIN; break;
+			case 't': {
 #ifdef _OPENMP
-					errno = 0;
-					char *end;
-					long unsigned int threads = strtoul( optarg, &end, 10);
+				errno = 0;
+				char *end;
+				long unsigned int threads = strtoul(optarg, &end, 10);
 
-					if( errno || end == optarg || *end != '\0'){
-						warnx(
-							"Expected a number for -t argument, but '%s' was given. "
-							"Ignoring -t argument.", optarg
-						);
-						break;
-					}
+				if (errno || end == optarg || *end != '\0') {
+					warnx("Expected a number for -t argument, but '%s' was "
+						  "given. "
+						  "Ignoring -t argument.",
+						  optarg);
+					break;
+				}
 
-					if( threads > (long unsigned int) omp_get_num_procs() ){
-						warnx(
-							"The number of threads to be used, is greater then the number of available processors; "
-							"Ignoring -t %lu argument.", threads
-						);
-						break;
-					}
+				if (threads > (long unsigned int)omp_get_num_procs()) {
+					warnx(
+						"The number of threads to be used, is greater then the "
+						"number of available processors; Ignoring -t %lu "
+						"argument.",
+						threads);
+					break;
+				}
 
-					THREADS = threads;
+				THREADS = threads;
 #else
-					warnx("This version of andi was built without OpenMP and thus "
-						"does not support multi threading. Ignoring -t argument.");
+				warnx(
+					"This version of andi was built without OpenMP and thus "
+					"does not support multi threading. Ignoring -t argument.");
 #endif
-				}
-				break;
-			case 'b':
-				{
-					errno = 0;
-					char *end;
-					long unsigned int bootstrap = strtoul( optarg, &end, 10);
+			} break;
+			case 'b': {
+				errno = 0;
+				char *end;
+				long unsigned int bootstrap = strtoul(optarg, &end, 10);
 
-					if( errno || end == optarg || *end != '\0' || bootstrap == 0){
-						warnx(
-							"Expected a positive number for -b argument, but '%s' was given. "
-							"Ignoring -b argument.", optarg
-						);
-						break;
-					}
-
-					BOOTSTRAP = bootstrap - 1;
+				if (errno || end == optarg || *end != '\0' || bootstrap == 0) {
+					warnx(
+						"Expected a positive number for -b argument, but '%s' "
+						"was given. Ignoring -b argument.",
+						optarg);
+					break;
 				}
-				break;
+
+				BOOTSTRAP = bootstrap - 1;
+			} break;
 			case '?': /* intentional fall-through */
-			default:
-				usage();
-				break;
+			default: usage(); break;
 		}
 	}
-	
-	if( version_flag ){
+
+	if (version_flag) {
 		version();
 	}
 
@@ -190,22 +172,22 @@ int main( int argc, char *argv[]){
 	argv += optind;
 
 	// at least one file name must be given
-	if( FLAGS & F_JOIN && argc == 0 ){
+	if (FLAGS & F_JOIN && argc == 0) {
 		errx(1, "In join mode at least one filename needs to be supplied.");
 	}
-	
+
 	dsa_t dsa;
-	if(dsa_init(&dsa)){
-		errx(errno,"Out of memory.");
+	if (dsa_init(&dsa)) {
+		errx(errno, "Out of memory.");
 	}
 
 	const char *file_name;
 
 	// parse all files
 	int minfiles = FLAGS & F_JOIN ? 2 : 1;
-	for( ; ; minfiles-- ){
-		if( !*argv){
-			if( minfiles <= 0) break;
+	for (;; minfiles--) {
+		if (!*argv) {
+			if (minfiles <= 0) break;
 
 			// if no files are supplied, read from stdin
 			file_name = "-";
@@ -213,57 +195,59 @@ int main( int argc, char *argv[]){
 			file_name = *argv++;
 		}
 
-		if( FLAGS & F_JOIN){
-			read_fasta_join( file_name, &dsa);
+		if (FLAGS & F_JOIN) {
+			read_fasta_join(file_name, &dsa);
 		} else {
-			read_fasta( file_name, &dsa);
+			read_fasta(file_name, &dsa);
 		}
 	}
 
+	size_t n = dsa_size(&dsa);
 
-	size_t n = dsa_size( &dsa);
-	
-	if( FLAGS & F_VERBOSE){
-		fprintf( stderr, "Comparing %zu sequences\n", n);
-		fflush( stderr);
+	if (FLAGS & F_VERBOSE) {
+		fprintf(stderr, "Comparing %zu sequences\n", n);
+		fflush(stderr);
 	}
-	
-	seq_t *sequences = dsa_data( &dsa);
+
+	seq_t *sequences = dsa_data(&dsa);
 	// compute distance matrix
-	if( n >= 2){
+	if (n >= 2) {
 		calculate_distances(sequences, n);
 	} else {
-		warnx("I am truly sorry, but with less than two sequences (%zu given) there is nothing to compare.", n);
+		warnx("I am truly sorry, but with less than two sequences (%zu given) "
+			  "there is nothing to compare.",
+			  n);
 	}
 
-
-
-	dsa_free( &dsa);
+	dsa_free(&dsa);
 	return 0;
 }
 
 /**
  * Prints the usage to stdout and then exits successfully.
  */
-void usage(void){
-	const char str[]= {
+void usage(void) {
+	const char str[] = {
 		"Usage: andi [-bjrv] [-p FLOAT] [-t INT] FILES...\n"
-		"\tFILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.\n"
+		"\tFILES... can be any sequence of FASTA files. If no files are "
+		"supplied, stdin is used instead.\n"
 		"Options:\n"
 		"  -b, --bootstrap <INT> \n"
 		"                    Print additional bootstrap matrices\n"
-		"  -j, --join        Treat all sequences from one file as a single genome\n"
+		"  -j, --join        Treat all sequences from one file as a single "
+		"genome\n"
 		"  -m, --low-memory  Use less memory at the cost of speed\n"
 		"  -p <FLOAT>        Significance of an anchor pair; default: 0.05\n"
-		"  -r, --raw         Calculates raw distances; default: Jukes-Cantor corrected\n"
+		"  -r, --raw         Calculates raw distances; default: Jukes-Cantor "
+		"corrected\n"
 		"  -v, --verbose     Prints additional information\n"
 #ifdef _OPENMP
 		"  -t, --threads <INT> \n"
-		"                    The number of threads to be used; by default, all available processors are used\n"
+		"                    The number of threads to be used; by default, all "
+		"available processors are used\n"
 #endif
 		"  -h, --help        Display this help and exit\n"
-		"      --version     Output version information and acknowledgments\n"
-	};
+		"      --version     Output version information and acknowledgments\n"};
 
 	printf("%s", str);
 	exit(EXIT_SUCCESS);
@@ -271,25 +255,27 @@ void usage(void){
 
 /**
  * This function just prints the version string and then aborts
- * the program. It conforms to the [GNU Coding Standard](http://www.gnu.org/prep/standards/html_node/_002d_002dversion.html#g_t_002d_002dversion).
+ * the program. It conforms to the [GNU Coding
+ * Standard](http://www.gnu.org/prep/standards/html_node/_002d_002dversion.html#g_t_002d_002dversion).
  */
-void version(void){
-	const char str[]= {
-		"andi " VERSION  "\n"
+void version(void) {
+	const char str[] = {
+		"andi " VERSION "\n"
 		"Copyright (C) 2014, 2015 Fabian Klötzl\n"
-		"License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>\n"
+		"License GPLv3+: GNU GPL version 3 or later "
+		"<http://gnu.org/licenses/gpl.html>\n"
 		"This is free software: you are free to change and redistribute it.\n"
 		"There is NO WARRANTY, to the extent permitted by law.\n\n"
 		"Acknowledgments:\n"
 		"1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2015). "
-		"Fast and accurate estimation of evolutionary distances between closely related genomes\n"
-		"2) Algorithms: Ohlebusch, E. (2013). Bioinformatics Algorithms. Sequence Analysis, "
-		"Genome Rearrangements, and Phylogenetic Reconstruction. pp 118f.\n"
-		"3) SA construction: Mori, Y. (2005). Short description of improved two-stage suffix "
-		"sorting alorithm. http://homepage3.nifty.com/wpage/software/itssort.txt\n"
-	};
+		"Fast and accurate estimation of evolutionary distances between "
+		"closely related genomes\n"
+		"2) Algorithms: Ohlebusch, E. (2013). Bioinformatics Algorithms. "
+		"Sequence Analysis, Genome Rearrangements, and Phylogenetic "
+		"Reconstruction. pp 118f.\n"
+		"3) SA construction: Mori, Y. (2005). Short description of improved "
+		"two-stage suffix sorting alorithm. "
+		"http://homepage3.nifty.com/wpage/software/itssort.txt\n"};
 	printf("%s", str);
 	exit(EXIT_SUCCESS);
 }
-
-

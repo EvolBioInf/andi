@@ -31,7 +31,7 @@ extern double RANDOM_ANCHOR_PROP;
 
 extern long unsigned int BOOTSTRAP;
 
-/** 
+/**
  * This enum contains the available flags. Please note that all
  * available options are a power of 2.
  */
@@ -47,4 +47,3 @@ enum {
 };
 
 #endif
-

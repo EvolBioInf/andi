@@ -19,11 +19,12 @@ int main(int argc, char *argv[]){
 	auto seed = rd();
 	int length = 1000;
 	int line_length = 70;
+	int raw = 0;
 
 	auto seqs = vector<double>{0};
 
 	int check;
-	while((check = getopt(argc, argv, "s:l:L:d:")) != -1){
+	while((check = getopt(argc, argv, "s:l:L:d:r")) != -1){
 		switch(check) {
 			case 's':
 				{
@@ -36,6 +37,7 @@ int main(int argc, char *argv[]){
 			case 'l': length = stoi(optarg); break;
 			case 'L': line_length = stoi(optarg); break;
 			case 'd': seqs.push_back(stod(optarg)); break;
+			case 'r': raw = 1; break;
 			case '?':
 			default: usage(); return 1;
 		}
@@ -43,6 +45,14 @@ int main(int argc, char *argv[]){
 
 	if( seqs.size() < 2){
 		seqs.push_back(0.1);
+	}
+
+	if( !raw){
+		for(auto& dist : seqs) {
+			auto d = dist;
+			auto p = 0.75 - 0.75 * exp(-(4.0/3.0) * d);
+			dist = p;
+		}
 	}
 
 	auto base_seed = seed;

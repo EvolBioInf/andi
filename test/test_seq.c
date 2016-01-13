@@ -24,7 +24,9 @@ void test_seq_full(){
 	seq_t S;
 
 	seq_init( &S, "ACGTTGCA", "name");
-	seq_subject_init( &S);
+	int check = seq_subject_init( &S);
+
+	g_assert_cmpint(check, ==, 0);
 
 	g_assert_cmpstr(S.RS, ==, "TGCAACGT#ACGTTGCA");
 	g_assert_cmpuint(S.RSlen, ==, 8*2+1);

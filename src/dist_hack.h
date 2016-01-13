@@ -38,8 +38,7 @@ void NAME(data_t *M, seq_t *sequences, size_t n) {
 		seq_t *subject = &sequences[i];
 		esa_s E;
 
-		seq_subject_init(subject);
-		if (esa_init(&E, subject)) {
+		if (seq_subject_init(subject) || esa_init(&E, subject)) {
 			warnx("Failed to create index for %s.", subject->name);
 
 			for (size_t j = 0; j < n; j++) {

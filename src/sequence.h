@@ -36,7 +36,7 @@ typedef struct seq_s {
 } seq_t;
 
 void seq_free(seq_t *S);
-void seq_subject_init(seq_t *S);
+int seq_subject_init(seq_t *S);
 void seq_subject_free(seq_t *S);
 int seq_init(seq_t *S, const char *seq, const char *name);
 

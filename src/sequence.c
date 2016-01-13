@@ -149,32 +149,23 @@ char *revcomp(const char *str, size_t len) {
 	if (!str || !rev) return NULL;
 
 	char *r = rev;
-	const char *s = str + len - 1;
-
+	const char *s = &str[len - 1];
 	rev[len] = '\0';
 
-	char c, d;
-	char local_non_acgt = 0;
-
 	do {
-		c = *s--;
+		char d;
 
-		switch (c) {
+		switch (*s--) {
 			case 'A': d = 'T'; break;
 			case 'T': d = 'A'; break;
 			case 'G': d = 'C'; break;
 			case 'C': d = 'G'; break;
 			case '!': d = ';'; break; // rosebud
-			default: local_non_acgt = 1; continue;
+			default: continue;
 		}
 
 		*r++ = d;
 	} while (--len);
-
-	if (local_non_acgt) {
-#pragma omp atomic
-		FLAGS |= F_NON_ACGT;
-	}
 
 	return rev;
 }
@@ -191,7 +182,7 @@ char *catcomp(char *s, size_t len) {
 
 	char *rev = revcomp(s, len);
 
-	char *temp = (char *)realloc(rev, 2 * len + 2);
+	char *temp = realloc(rev, 2 * len + 2);
 	if (!temp) {
 		free(rev);
 		return NULL;
@@ -210,9 +201,9 @@ char *catcomp(char *s, size_t len) {
  *
  * This function computes the relative amount of G and C in the total sequence.
  */
-double calc_gc(seq_t *S) {
+double calc_gc(const seq_t *S) {
 	size_t GC = 0;
-	char *p = S->S;
+	const char *p = S->S;
 
 	for (; *p; p++) {
 		if (*p == 'G' || *p == 'C') {
@@ -220,15 +211,16 @@ double calc_gc(seq_t *S) {
 		}
 	}
 
-	return S->gc = (double)GC / S->len;
+	return (double)GC / S->len;
 }
 
 /** @brief Prepares a sequences to be used as the subject in a comparison. */
-void seq_subject_init(seq_t *S) {
-	calc_gc(S);
-
+int seq_subject_init(seq_t *S) {
+	S->gc = calc_gc(S);
 	S->RS = catcomp(S->S, S->len);
+	if (!S->RS) return 1;
 	S->RSlen = 2 * S->len + 1;
+	return 0;
 }
 
 /** @brief Frees some memory unused for when a sequence is only used as query.

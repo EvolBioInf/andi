@@ -161,14 +161,6 @@ void print_distances(const data_t *D, const seq_t *sequences, size_t n) {
 			if (!(FLAGS & F_RAW)) {
 				val = -0.75 * log(1.0 - (4.0 / 3.0) * val); // jukes cantor
 			}
-			// fix negative zero
-			if (val <= 0.0) {
-				val = 0.0;
-			}
-
-			if (!(FLAGS & F_RAW)) {
-				val = -0.75 * log(1.0 - (4.0 / 3.0) * val); // jukes cantor
-			}
 
 			// fix negative zero
 			if (val <= 0.0) {

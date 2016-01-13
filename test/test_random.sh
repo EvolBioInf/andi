@@ -40,6 +40,7 @@ do
 			echo "The last test computed a distance deviating more than two percent from its intended value."
 			echo "See test_random.fasta for the used sequences."
 			echo "./test/test_fasta -s $SEED -l $LENGTH -d $dist"
+			head -n 1 ./test/test_random.fasta
 			exit 1;
 		fi
 	done

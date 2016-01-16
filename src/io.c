@@ -69,7 +69,11 @@ void read_fasta(const char *file_name, dsa_t *dsa) {
 
 	int file_descriptor =
 		strcmp(file_name, "-") ? open(file_name, O_RDONLY) : STDIN_FILENO;
-	if (file_descriptor < 0) warn("%s", file_name);
+
+	if (file_descriptor < 0) {
+		warn("%s", file_name);
+		return;
+	}
 
 	int l;
 	int check;

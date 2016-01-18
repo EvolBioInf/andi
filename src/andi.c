@@ -111,7 +111,8 @@ int main(int argc, char *argv[]) {
 				}
 
 				RANDOM_ANCHOR_PROP = prop;
-			} break;
+				break;
+			}
 			case 'm': FLAGS |= F_LOW_MEMORY; break;
 			case 'j': FLAGS |= F_JOIN; break;
 			case 't': {
@@ -122,8 +123,7 @@ int main(int argc, char *argv[]) {
 
 				if (errno || end == optarg || *end != '\0') {
 					warnx("Expected a number for -t argument, but '%s' was "
-						  "given. "
-						  "Ignoring -t argument.",
+						  "given. Ignoring -t argument.",
 						  optarg);
 					break;
 				}
@@ -143,7 +143,8 @@ int main(int argc, char *argv[]) {
 					"This version of andi was built without OpenMP and thus "
 					"does not support multi threading. Ignoring -t argument.");
 #endif
-			} break;
+				break;
+			}
 			case 'b': {
 				errno = 0;
 				char *end;
@@ -158,7 +159,8 @@ int main(int argc, char *argv[]) {
 				}
 
 				BOOTSTRAP = bootstrap - 1;
-			} break;
+				break;
+			}
 			case '?': /* intentional fall-through */
 			default: usage(); break;
 		}

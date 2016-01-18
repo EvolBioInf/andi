@@ -28,7 +28,7 @@ int main(int argc, char *argv[]){
 		switch(check) {
 			case 's':
 				{
-					seed = stoi(optarg);
+					seed = static_cast<unsigned int>(stol(optarg));
 					if( seed == 0){
 						seed = rd();
 					}

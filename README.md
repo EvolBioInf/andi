@@ -46,7 +46,7 @@ The release of this software is accompanied by a paper from [Haubold et al.](htt
 
 ## Data Sets
 
-1. 29. E. coli strains: [data](http://guanine.evolbio.mpg.de/andi/eco29.fasta.gz)
+1. 29 E. coli and Shigella strains: [data](http://guanine.evolbio.mpg.de/andi/eco29.fasta.gz)
 2. 109 E. coli ST131 strains ([paper](http://www.pnas.org/content/early/2014/03/28/1322678111.abstract)): 
 	* [99 newly sequenced strains](https://github.com/BeatsonLab-MicrobialGenomics/ST131_99)
 	* [10 previously published strains](http://guanine.evolbio.mpg.de/andi/st131_extra.tgz)

@@ -59,4 +59,5 @@ model model_average(const model *, const model *);
 double model_coverage(const model *);
 double estimate_RAW(const model *);
 double estimate_JC(const model *);
+double estimate_KIMURA(const model *);
 model model_bootstrap(const model);

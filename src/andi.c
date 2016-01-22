@@ -171,8 +171,10 @@ int main(int argc, char *argv[]) {
 					MODEL = M_RAW;
 				} else if (strcasecmp(optarg, "JC") == 0) {
 					MODEL = M_JC;
+				} else if (strcasecmp(optarg, "KIMURA") == 0) {
+					MODEL = M_KIMURA;
 				} else {
-					warnx("Ignoring argument for --model. Expected RAW or JC");
+					warnx("Ignoring argument for --model. Expected Raw JC or Kimura");
 				}
 				break;
 			}
@@ -263,7 +265,7 @@ void usage(void) {
 		"  -j, --join        Treat all sequences from one file as a single "
 		"genome\n"
 		"  -l, --low-memory  Use less memory at the cost of speed\n"
-		"  -m, --model <RAW|JC>\n"
+		"  -m, --model <Raw|JC|Kimura>\n"
 		"                    Pick an evolutionary model\n"
 		"  -p <FLOAT>        Significance of an anchor pair; default: 0.05\n"
 		"  -r, --raw         Calculates raw distances; default: Jukes-Cantor "

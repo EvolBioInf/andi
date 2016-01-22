@@ -134,6 +134,7 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 	switch (MODEL) {
 		case M_RAW: estimate = &estimate_RAW; break;
 		case M_JC: estimate = &estimate_JC; break;
+		case M_KIMURA: estimate = &estimate_KIMURA; break;
 	}
 
 	for (i = 0; i < n; i++) {

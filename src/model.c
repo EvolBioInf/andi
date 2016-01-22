@@ -103,6 +103,26 @@ double estimate_JC(const model *MM) {
 	return dist <= 0.0 ? 0.0 : dist;
 }
 
+/** @brief computes the evolutionary distance using K80.
+ *
+ * @param MM - The mutation matrix.
+ * @returns The corrected Kimura distance.
+ */
+double estimate_KIMURA(const model *MM) {
+	size_t nucl = model_total(MM);
+	size_t transitions = model_sum(MM, AtoG, CtoT);
+	size_t transversions = model_sum(MM, AtoC, AtoT, GtoC, GtoT);
+
+	double P = (double)transitions / (double)nucl;
+	double Q = (double)transversions / (double)nucl;
+
+	double tmp = 1.0 - 2.0 * P - Q;
+	double dist = -0.25 * log((1.0-2.0*Q) * tmp * tmp);
+
+	// fix negative zero
+	return dist <= 0.0 ? 0.0 : dist;
+}
+
 /* @brief Bootstrap a mutation matrix.
  *
  * The classical bootstrapping process, as described by Felsenstein, resamples

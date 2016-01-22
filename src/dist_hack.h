@@ -29,7 +29,7 @@
  * @param n - The number of sequences
  * @param M - A matrix for additional output data
  */
-void NAME(data_t *M, seq_t *sequences, size_t n) {
+void NAME(struct model *M, seq_t *sequences, size_t n) {
 	size_t i;
 
 	//#pragma
@@ -39,14 +39,7 @@ void NAME(data_t *M, seq_t *sequences, size_t n) {
 		esa_s E;
 
 		if (seq_subject_init(subject) || esa_init(&E, subject)) {
-			warnx("Failed to create index for %s.", subject->name);
-
-			for (size_t j = 0; j < n; j++) {
-				M(i, j).distance = (i == j) ? 0.0 : NAN;
-				M(i, j).coverage = 0.0;
-			}
-
-			continue;
+			errx(1, "Failed to create index for %s.", subject->name);
 		}
 
 		// now compare every other sequence to i
@@ -55,7 +48,7 @@ void NAME(data_t *M, seq_t *sequences, size_t n) {
 		P_INNER
 		for (j = 0; j < n; j++) {
 			if (j == i) {
-				M(i, j) = (data_t){0.0, 0.0};
+				M(i, j) = (struct model){.seq_len = 9, .counts = {9}};
 				continue;
 			}
 

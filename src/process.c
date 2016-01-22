@@ -11,9 +11,10 @@
 #include <stdio.h>
 #include "esa.h"
 #include "global.h"
+#include "io.h"
+#include "model.h"
 #include "process.h"
 #include "sequence.h"
-#include "io.h"
 
 #include <time.h>
 #include <gsl/gsl_rng.h>
@@ -24,7 +25,8 @@
 #endif
 
 double shuprop(size_t x, double g, size_t l);
-int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n);
+int calculate_bootstrap(const struct model *M, const seq_t *sequences,
+						size_t n);
 
 /**
  * @brief Calculates the minimum anchor length.
@@ -137,10 +139,9 @@ double shuprop(size_t x, double p, size_t l) {
  * @param query_length - The length of the query string. Needed for speed
  * reasons.
  */
-data_t dist_anchor(const esa_s *C, const char *query, size_t query_length,
-				   double gc) {
-	size_t snps = 0; // Total number of found SNPs
-	size_t homo = 0; // Total number of homologous nucleotides.
+model dist_anchor(const esa_s *C, const char *query, size_t query_length,
+				  double gc) {
+	struct model ret = {.seq_len = query_length, .counts = {0}};
 
 	lcp_inter_t inter;
 
@@ -169,8 +170,6 @@ data_t dist_anchor(const esa_s *C, const char *query, size_t query_length,
 
 	size_t threshold =
 		minAnchorLength(1 - sqrt(1 - RANDOM_ANCHOR_PROP), gc, C->len);
-
-	data_t retval = {0.0, 0.0};
 
 	// Iterate over the complete query.
 	while (this_pos_Q < query_length) {
@@ -206,13 +205,8 @@ data_t dist_anchor(const esa_s *C, const char *query, size_t query_length,
 #endif
 
 				// Count the SNPs in between.
-				size_t i;
-				for (i = last_length; i < this_pos_Q - last_pos_Q; i++) {
-					if (C->S[last_pos_S + i] != query[last_pos_Q + i]) {
-						snps++;
-					}
-				}
-				homo += this_pos_Q - last_pos_Q;
+				model_count(&ret, C->S + last_pos_S, query + last_pos_Q,
+							this_pos_Q - last_pos_Q);
 				last_was_right_anchor = 1;
 			} else {
 #ifdef DEBUG
@@ -226,11 +220,13 @@ data_t dist_anchor(const esa_s *C, const char *query, size_t query_length,
 				if (last_was_right_anchor) {
 					// If the last was a right anchor, but with the current one,
 					// we cannot extend, then add its length.
-					homo += last_length;
+					model_count(&ret, C->S + last_pos_S, query + last_pos_Q,
+								last_length);
 				} else if ((last_length / 2) >= threshold) {
 					// The last anchor wasn't neither a left or right anchor.
 					// But, it was as long as an anchor pair. So still count it.
-					homo += last_length;
+					model_count(&ret, C->S + last_pos_S, query + last_pos_Q,
+								last_length);
 				}
 
 				last_was_right_anchor = 0;
@@ -269,40 +265,17 @@ data_t dist_anchor(const esa_s *C, const char *query, size_t query_length,
 
 	// Very special case: The sequences are identical
 	if (last_length >= query_length) {
-		retval.coverage = 1.0;
-		return retval;
+		model_count(&ret, C->S + last_pos_S, query, query_length);
+		return ret;
 	}
 
 	// We might miss a few nucleotides if the last anchor was also a right
 	// anchor.
 	if (last_was_right_anchor) {
-		homo += last_length;
+		model_count(&ret, C->S + last_pos_S, query + last_pos_Q, last_length);
 	}
 
-	// Nearly identical sequences
-	if (homo == query_length) {
-		retval.distance = (double)snps / (double)homo;
-		retval.coverage = 1.0;
-		return retval;
-	}
-
-	// Insignificant results. All abort the fail train.
-	if (homo <= 3) {
-		retval.distance = NAN;
-		return retval;
-	}
-
-	// Abort if we have more homologous nucleotides than just nucleotides. This
-	// might happen with sequences of different lengths.
-	if (homo >= (size_t)C->len) {
-		retval.distance = NAN;
-		retval.coverage = 1.0;
-		return retval;
-	}
-
-	retval.distance = (double)snps / (double)homo;
-	retval.coverage = (double)homo / (double)query_length;
-	return retval;
+	return ret;
 }
 
 /**
@@ -356,7 +329,7 @@ void calculate_distances(seq_t *sequences, int n) {
 			  "These were automatically stripped to ensure correct results.");
 	}
 
-	data_t *M = malloc(n * n * sizeof(data_t));
+	model *M = malloc(n * n * sizeof(*M));
 	if (!M) {
 		err(errno, "Could not allocate enough memory for the comparison "
 				   "matrix. Try using --join or --low-memory.");
@@ -370,7 +343,7 @@ void calculate_distances(seq_t *sequences, int n) {
 	}
 
 	// print the results
-	print_distances(M, sequences, n);
+	print_distances(M, sequences, n, 1);
 
 	// print additional information.
 	if (FLAGS & F_VERBOSE) {
@@ -393,12 +366,8 @@ void calculate_distances(seq_t *sequences, int n) {
 
 /** @brief Computes a bootstrap from _pairwise_ aligments.
  *
- * Doing bootstrapping for alignments with only two sequences is easy. As
- * we only count substitutions, this boils down to a binomial distribution.
- * `n` is the number of homologous sites, and `p` is the (uncorrected)
- * substitution rate. Thus the bootstrapped distance `q` is `B(n;p)/n`.
- * Note that `E(q) = p` and `Var(q) = p*(1-p)/n`. So in the limit of long
- * sequences (i.e. big `n`) `q` almost certainly converges to `p`.
+ * Doing bootstrapping for alignments with only two sequences is easy. It boils
+ * down to a simple multi-nomial process over the substitution matrix.
  *
  * @param M - the initial distance matrix
  * @param sequences - a list of the sequences, containing their lengths
@@ -409,58 +378,36 @@ void calculate_distances(seq_t *sequences, int n) {
  *
  * @returns 0 iff successful.
  */
-int calculate_bootstrap(const data_t *M, const seq_t *sequences, size_t n) {
+int calculate_bootstrap(const struct model *M, const seq_t *sequences,
+						size_t n) {
 	if (!M || !sequences || !n) {
 		return 1;
 	}
 
 	// B is the new bootstrap matrix
-	data_t *B = malloc(n * n * sizeof(data_t));
+	struct model *B = malloc(n * n * sizeof(*B));
 	if (!B) return 2;
-
-	gsl_rng *rng = gsl_rng_alloc(gsl_rng_default);
-	if (!rng) {
-		free(B);
-		return 3;
-	}
-
-	// seed the random number generator with the current time
-	gsl_rng_set(rng, time(NULL));
 
 	// Compute a number of new distance matrices
 	while (BOOTSTRAP--) {
 		for (size_t i = 0; i < n; i++) {
 			for (size_t j = i; j < n; j++) {
 				if (i == j) {
-					B(i, j) = (data_t){0.0, 0.0};
+					B(i, j) = (struct model){.seq_len = 1.0, .counts = {1.0}};
 					continue;
 				}
-				/* The classical bootstrapping process, as described by
-					Felsenstein, resamples all nucleotides of a MSA. As andi
-					only computes a pairwise alignment, this process boils
-					down to a simple binomial distribution around a mean of
-					the original distance. */
 
-				double ijnucl = M(i, j).coverage * (double)sequences[j].len;
-				double jinucl = M(j, i).coverage * (double)sequences[i].len;
-				double homonucl = ijnucl + jinucl;
-				double avg_distance =
-					(M(i, j).distance * ijnucl + M(j, i).distance * jinucl) /
-					(homonucl);
+				// Bootstrapping should only be used with averaged distances.
+				model datum = model_average(&M(i, j), &M(j, i));
+				datum = model_bootstrap(datum);
 
-				// The actual coverage value doesn't matter, just ensure its > 0
-				data_t datum = {.coverage = 1.0};
-
-				datum.distance =
-					gsl_ran_binomial(rng, avg_distance, homonucl) / homonucl;
 				B(j, i) = B(i, j) = datum;
 			}
 		}
 
-		print_distances(B, sequences, n);
+		print_distances(B, sequences, n, 0);
 	}
 
 	free(B);
-	gsl_rng_free(rng);
 	return 0;
 }

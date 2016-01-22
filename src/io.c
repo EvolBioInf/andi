@@ -112,32 +112,55 @@ fail:
  *
  * This function pretty prints the distance matrix. For small distances
  * scientific notation is used.
+ *
  * @param D - The distance matrix
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
+ * @param warnings - Print warnings? Set to 0 for bootstrapped matrices.
  */
-void print_distances(const data_t *D, const seq_t *sequences, size_t n) {
-
-	int use_scientific = 0;
+void print_distances(const struct model *D, const seq_t *sequences, size_t n,
+					 int warnings) {
 	size_t i, j;
+	int use_scientific = 0;
+
+	double *DD = malloc(n * n * sizeof(*DD));
+	if (!DD) err(errno, "meh.");
+
+#define DD(X, Y) (DD[(X)*n + (Y)])
+
+	typedef double(estimate_fn)(const model *);
+	estimate_fn *estimate;
+
+	switch (MODEL) {
+		case M_RAW: estimate = &estimate_RAW; break;
+		case M_JC: estimate = &estimate_JC; break;
+	}
 
 	for (i = 0; i < n; i++) {
 		for (j = 0; j < n; j++) {
-			if (isnan(D(i, j).distance)) {
+			model datum = D(i, j);
+
+			if (!(FLAGS & F_EXTRA_VERBOSE)) {
+				datum = model_average(&D(i, j), &D(j, i));
+			}
+
+			double dist = DD(i, j) = estimate(&datum);
+			double coverage = model_coverage(&datum);
+
+			if (isnan(dist) && warnings) {
 				const char str[] = {
 					"For the two sequences '%s' and '%s' the distance "
 					"computation failed and is reported as nan. "
 					"Please refer to the documentation for further details."};
 				warnx(str, sequences[i].name, sequences[j].name);
-			} else if (D(i, j).distance > 0 && D(i, j).distance < 0.001) {
+			} else if (dist > 0 && dist < 0.001) {
 				use_scientific = 1;
-			} else if (i < j && D(i, j).coverage < 0.05 &&
-					   D(j, i).coverage < 0.05) {
+			} else if (i < j && coverage < 0.05 && warnings) {
 				const char str[] = {
 					"For the two sequences '%s' and '%s' less than 5%% "
 					"homology were found (%f and %f, respectively)."};
 				warnx(str, sequences[i].name, sequences[j].name,
-					  D(i, j).coverage, D(j, i).coverage);
+					  model_coverage(&D(i, j)), model_coverage(&D(j, i)));
 			}
 		}
 	}
@@ -149,33 +172,13 @@ void print_distances(const data_t *D, const seq_t *sequences, size_t n) {
 		printf("%-9.9s", sequences[i].name);
 
 		for (j = 0; j < n; j++) {
-			// print average, weighted by covered nucleotides
-			double val = 0;
-			if (i != j) {
-				double ijnucl = D(i, j).coverage * (double)sequences[j].len;
-				double jinucl = D(j, i).coverage * (double)sequences[i].len;
-				val = (D(i, j).distance * ijnucl + D(j, i).distance * jinucl) /
-					  (ijnucl + jinucl);
-			}
-
-			if (FLAGS & F_EXTRA_VERBOSE) {
-				val = D(i, j).distance;
-			}
-
-			if (!(FLAGS & F_RAW)) {
-				val = -0.75 * log(1.0 - (4.0 / 3.0) * val); // jukes cantor
-			}
-
-			// fix negative zero
-			if (val <= 0.0) {
-				val = 0.0;
-			}
-
 			// use scientific notation for small numbers
-			printf(use_scientific ? " %1.4e" : " %1.4f", val);
+			printf(use_scientific ? " %1.4e" : " %1.4f", DD(i, j));
 		}
 		printf("\n");
 	}
+
+	free(DD);
 }
 
 /**
@@ -183,12 +186,12 @@ void print_distances(const data_t *D, const seq_t *sequences, size_t n) {
  * @param D - The distance matrix
  * @param n - The number of sequences.
  */
-void print_coverages(const data_t *D, size_t n) {
+void print_coverages(const struct model *D, size_t n) {
 	size_t i, j;
 	printf("\nCoverage:\n");
 	for (i = 0; i < n; i++) {
 		for (j = 0; j < n; j++) {
-			printf("%1.4e ", D(i, j).coverage);
+			printf("%1.4e ", model_coverage(&D(i, j)));
 		}
 		printf("\n");
 	}

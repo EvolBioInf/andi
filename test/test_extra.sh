@@ -9,8 +9,8 @@
 # Test low-memory mode
 ./test/test_fasta -l 10000 > test_extra.fasta
 ./src/andi test_extra.fasta > extra.out
-./src/andi test_extra.fasta -m > extra_m.out
-diff extra.out extra_m.out || exit 1
+./src/andi test_extra.fasta --low-memory > extra_low_memory.out
+diff extra.out extra_low_memory.out || exit 1
 
-rm -f test_extra.fasta extra.out extra_m.out
+rm -f test_extra.fasta extra.out extra_low_memory.out
 

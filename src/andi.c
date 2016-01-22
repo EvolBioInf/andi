@@ -22,12 +22,14 @@
  *
  */
 
+#include <assert.h>
+#include <errno.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <getopt.h>
-#include <errno.h>
+#include <time.h>
+#include <gsl/gsl_rng.h>
 #include "global.h"
 #include "process.h"
 #include "io.h"
@@ -42,6 +44,8 @@ int FLAGS = 0;
 int THREADS = 1;
 long unsigned int BOOTSTRAP = 0;
 double RANDOM_ANCHOR_PROP = 0.05;
+gsl_rng *RNG = NULL;
+int MODEL = M_JC;
 
 void usage(void);
 void version(void);
@@ -59,12 +63,12 @@ int main(int argc, char *argv[]) {
 
 	struct option long_options[] = {{"version", no_argument, &version_flag, 1},
 									{"help", no_argument, NULL, 'h'},
-									{"raw", no_argument, NULL, 'r'},
 									{"verbose", no_argument, NULL, 'v'},
 									{"join", no_argument, NULL, 'j'},
 									{"low-memory", no_argument, NULL, 'l'},
 									{"threads", required_argument, NULL, 't'},
 									{"bootstrap", required_argument, NULL, 'b'},
+									{"model", required_argument, NULL, 'm'},
 									{0, 0, 0, 0}};
 
 #ifdef _OPENMP
@@ -77,7 +81,8 @@ int main(int argc, char *argv[]) {
 
 		int option_index = 0;
 
-		c = getopt_long(argc, argv, "jvhrt:p:mb:", long_options, &option_index);
+		c = getopt_long(argc, argv, "jvht:p:m:b:l", long_options,
+						&option_index);
 
 		if (c == -1) {
 			break;
@@ -86,7 +91,6 @@ int main(int argc, char *argv[]) {
 		switch (c) {
 			case 0: break;
 			case 'h': usage(); break;
-			case 'r': FLAGS |= F_RAW; break;
 			case 'v':
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
 				break;
@@ -113,7 +117,7 @@ int main(int argc, char *argv[]) {
 				RANDOM_ANCHOR_PROP = prop;
 				break;
 			}
-			case 'm': FLAGS |= F_LOW_MEMORY; break;
+			case 'l': FLAGS |= F_LOW_MEMORY; break;
 			case 'j': FLAGS |= F_JOIN; break;
 			case 't': {
 #ifdef _OPENMP
@@ -159,6 +163,17 @@ int main(int argc, char *argv[]) {
 				}
 
 				BOOTSTRAP = bootstrap - 1;
+				break;
+			}
+			case 'm': {
+				// valid options are 'RAW' and 'JC'
+				if (strcasecmp(optarg, "RAW") == 0) {
+					MODEL = M_RAW;
+				} else if (strcasecmp(optarg, "JC") == 0) {
+					MODEL = M_JC;
+				} else {
+					warnx("Ignoring argument for --model. Expected RAW or JC");
+				}
 				break;
 			}
 			case '?': /* intentional fall-through */
@@ -211,6 +226,14 @@ int main(int argc, char *argv[]) {
 		fflush(stderr);
 	}
 
+	RNG = gsl_rng_alloc(gsl_rng_default);
+	if (!RNG) {
+		err(1, "RNG allocation failed.");
+	}
+
+	// seed the random number generator with the current time
+	gsl_rng_set(RNG, time(NULL));
+
 	seq_t *sequences = dsa_data(&dsa);
 	// compute distance matrix
 	if (n >= 2) {
@@ -222,6 +245,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	dsa_free(&dsa);
+	gsl_rng_free(RNG);
 	return 0;
 }
 
@@ -230,7 +254,7 @@ int main(int argc, char *argv[]) {
  */
 void usage(void) {
 	const char str[] = {
-		"Usage: andi [-bjrv] [-p FLOAT] [-t INT] FILES...\n"
+		"Usage: andi [-bjlrv] [-p FLOAT] [-m MODEL] [-t INT] FILES...\n"
 		"\tFILES... can be any sequence of FASTA files. If no files are "
 		"supplied, stdin is used instead.\n"
 		"Options:\n"
@@ -238,7 +262,9 @@ void usage(void) {
 		"                    Print additional bootstrap matrices\n"
 		"  -j, --join        Treat all sequences from one file as a single "
 		"genome\n"
-		"  -m, --low-memory  Use less memory at the cost of speed\n"
+		"  -l, --low-memory  Use less memory at the cost of speed\n"
+		"  -m, --model <RAW|JC>\n"
+		"                    Pick an evolutionary model\n"
 		"  -p <FLOAT>        Significance of an anchor pair; default: 0.05\n"
 		"  -r, --raw         Calculates raw distances; default: Jukes-Cantor "
 		"corrected\n"

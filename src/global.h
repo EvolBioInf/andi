@@ -7,6 +7,8 @@
  */
 #ifndef _GLOBAL_H_
 #define _GLOBAL_H_
+#include <gsl/gsl_rng.h>
+
 #include "config.h"
 
 /**
@@ -29,7 +31,22 @@ extern int THREADS;
  */
 extern double RANDOM_ANCHOR_PROP;
 
+/**
+ * The number of matrices that should be bootstrapped.
+ */
 extern long unsigned int BOOTSTRAP;
+
+/**
+ * A globel random number generator. Has to be seedable.
+ */
+extern gsl_rng *RNG;
+
+/**
+ * The evolutionary model.
+ */
+extern int MODEL;
+
+enum { M_RAW, M_JC, M_KIMURA };
 
 /**
  * This enum contains the available flags. Please note that all
@@ -37,7 +54,6 @@ extern long unsigned int BOOTSTRAP;
  */
 enum {
 	F_NONE = 0,
-	F_RAW = 1,
 	F_VERBOSE = 2,
 	F_EXTRA_VERBOSE = 4,
 	F_NON_ACGT = 8,

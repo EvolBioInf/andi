@@ -105,7 +105,7 @@ AC_HEADER_STDBOOL
 # it should be avoided in the first place. Thus I really don't need these checks.
 
 AC_CHECK_FUNCS([floor pow sqrt strdup strerror])
-AC_CHECK_FUNCS([strndup])
+AC_CHECK_FUNCS([strndup strcasecmp])
 AC_CHECK_FUNCS([strchr strrchr strchrnul])
 AC_CHECK_FUNCS([strtoul strtod])
 AC_CHECK_FUNCS([reallocarray])

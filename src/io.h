@@ -9,16 +9,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include "sequence.h"
-
-/** @brief The data structure can be used to store output data resulting
- * from the computation of distance.
- */
-typedef struct data_s {
-	/** The distance */
-	double distance;
-	/** The coverage */
-	double coverage;
-} data_t;
+#include "model.h"
 
 /**
  * This is a neat hack for dealing with matrices.
@@ -29,7 +20,7 @@ typedef struct data_s {
 void read_fasta(const char *, dsa_t *dsa);
 void read_fasta_join(const char *, dsa_t *dsa);
 
-void print_distances(const data_t *D, const seq_t *sequences, size_t n);
-void print_coverages(const data_t *D, size_t n);
+void print_distances(const struct model *, const seq_t *, size_t, int);
+void print_coverages(const struct model *, size_t);
 
 #endif // _IO_H_

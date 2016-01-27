@@ -256,7 +256,7 @@ int main(int argc, char *argv[]) {
  */
 void usage(void) {
 	const char str[] = {
-		"Usage: andi [-bjlrv] [-p FLOAT] [-m MODEL] [-t INT] FILES...\n"
+		"Usage: andi [-jlv] [-b INT] [-p FLOAT] [-m MODEL] [-t INT] FILES...\n"
 		"\tFILES... can be any sequence of FASTA files. If no files are "
 		"supplied, stdin is used instead.\n"
 		"Options:\n"
@@ -266,10 +266,8 @@ void usage(void) {
 		"genome\n"
 		"  -l, --low-memory  Use less memory at the cost of speed\n"
 		"  -m, --model <Raw|JC|Kimura>\n"
-		"                    Pick an evolutionary model\n"
+		"                    Pick an evolutionary model; default: JC\n"
 		"  -p <FLOAT>        Significance of an anchor pair; default: 0.05\n"
-		"  -r, --raw         Calculates raw distances; default: Jukes-Cantor "
-		"corrected\n"
 		"  -v, --verbose     Prints additional information\n"
 #ifdef _OPENMP
 		"  -t, --threads <INT> \n"

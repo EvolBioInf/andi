@@ -153,16 +153,19 @@ Once you have downloaded the package, unzip it and change into the newly created
 Now \andi should be ready for use. Try invoking the help.
 
 \begin{lstlisting}
-~/andi-0.9 %  andi -h
-Usage: andi [-jrv] [-p FLOAT] FILES...
-	FILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.
+Usage: andi [-jlv] [-b INT] [-p FLOAT] [-m MODEL] [-t INT] FILES...
+  FILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.
 Options:
+  -b, --bootstrap <INT>
+                    Print additional bootstrap matrices
   -j, --join        Treat all sequences from one file as a single genome
-  -m, --low-memory  Use less memory at the cost of speed
+  -l, --low-memory  Use less memory at the cost of speed
+  -m, --model <Raw|JC|Kimura>
+                    Pick an evolutionary model; default: JC
   -p <FLOAT>        Significance of an anchor pair; default: 0.05
-  -r, --raw         Calculates raw distances; default: Jukes-Cantor corrected
   -v, --verbose     Prints additional information
-  -t <INT>          The number of threads to be used; default: 1
+  -t, --threads <INT>
+                    The number of threads to be used; by default, all available processors are used
   -h, --help        Display this help and exit
       --version     Output version information and acknowledgments
 \end{lstlisting}
@@ -264,7 +267,7 @@ S2        0.0995 0.0000
 
 In the above examples the runtime dropped from \SI{0.613}{\second}, to \SI{0.362}{\second} using two threads. Giving \andi more threads than input genomes leads to no further speed improvement. \, The other important option is \lstinline$--join$ (see Section~\ref{sec:join}).
 
-By default, the distances computed by \andi are \emph{Jukes-Cantor} corrected \cite{jukescantor}. This means, the output is substitution rates, which is greater than the mismatch rate. To obtain the pure mismatch rate, use the \lstinline$--raw$ switch.
+By default, the distances computed by \andi are \emph{Jukes-Cantor} corrected \cite{jukescantor}. Other evolutionary models are also implemented (Kimura, raw). The \listinline $--model$ parameter can be used to switch between them.
 
 Since version 0.9.4 \andi includes a bootstrapping method. It can be activated via the \lstinline$--bootstrap$ or \lstinline$-b$ switch. This option takes a numeric argument representing the number of matrices to create. The output can then be piped into \algo{phylip}.
 

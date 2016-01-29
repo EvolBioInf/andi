@@ -3,6 +3,7 @@
  * estimation of evolutionary distances thereof.
  */
 
+#include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
 #include <gsl/gsl_randist.h>
@@ -117,7 +118,7 @@ double estimate_KIMURA(const model *MM) {
 	double Q = (double)transversions / (double)nucl;
 
 	double tmp = 1.0 - 2.0 * P - Q;
-	double dist = -0.25 * log((1.0-2.0*Q) * tmp * tmp);
+	double dist = -0.25 * log((1.0 - 2.0 * Q) * tmp * tmp);
 
 	// fix negative zero
 	return dist <= 0.0 ? 0.0 : dist;
@@ -153,6 +154,44 @@ model model_bootstrap(const model MM) {
 	return datum;
 }
 
+#define unlikely(x) __builtin_expect((x), 0)
+void model_count_equal(model *MM, const char *S, size_t len) {
+	size_t local_counts[4] = {0};
+	size_t j = 0;
+	for (; len > 0; len -= j) {
+		uint8_t u8counts[4] = {0};
+
+		j = 255;
+		if (len < 255) j = len;
+
+		for (size_t jj = 0; jj < j; jj++, S++) {
+			char s = *S;
+
+			// Skip special characters.
+			if (unlikely(s < 'A')) {
+				continue;
+			}
+
+			unsigned char nibble_s = s & 7;
+
+			static const unsigned int mm1 = 0x20031000;
+
+			unsigned char foo = (mm1 >> (4 * nibble_s)) & 0x3;
+			u8counts[foo]++;
+		}
+
+		for (int i = 0; i != 4; ++i) {
+			local_counts[i] += u8counts[i];
+		}
+	}
+
+	for (int i = 0; i != 4; ++i) {
+		static const unsigned int map4 = 0x9740;
+		unsigned int base = (map4 >> (4 * i)) & 0xf;
+		MM->counts[base] += local_counts[i];
+	}
+}
+
 /**
  * @brief Count the substitutions and add them to the mutation matrix.
  *
@@ -163,47 +202,48 @@ model model_bootstrap(const model MM) {
  */
 void model_count(model *MM, const char *S, const char *Q, size_t len) {
 	size_t local_counts[MUTCOUNTS] = {0};
-	for (; len--; S++, Q++) {
-		char s = *S;
-		char q = *Q;
+	size_t j = 0;
+	for (; len > 0; len -= j) {
+		uint8_t u8counts[MUTCOUNTS] = {0};
 
+		j = 255;
+		if (len < 255) j = len;
 
-#define unlikely(x)     __builtin_expect((x),0)
+		for (size_t jj = j; jj--; S++, Q++) {
+			char s = *S;
+			char q = *Q;
 
-		// Skip special characters.
-		if (unlikely(s < 'A' || q < 'A')) {
-			continue;
+			// Skip special characters.
+			if (unlikely(s < 'A' || q < 'A')) {
+				continue;
+			}
+
+			unsigned char nibble_s = s & 7;
+			unsigned char nibble_q = q & 7;
+
+			static const unsigned int mm1 = 0x20031000;
+
+			unsigned char foo = (mm1 >> (4 * nibble_s)) & 0x3;
+			unsigned char baz = (mm1 >> (4 * nibble_q)) & 0x3;
+
+			if (baz > foo) {
+				int temp = foo;
+				foo = baz;
+				baz = temp;
+			}
+
+			static const unsigned int map4 = 0x9740;
+			unsigned int base = (map4 >> (4 * baz)) & 0xf;
+			unsigned int index = base + (foo - baz);
+
+			// unsigned char index = (bar >> ((mm1 >> (4*nibble_q)) & 0x3)) &
+			// 0xf;
+			u8counts[index]++;
 		}
 
-		unsigned char nibble_s = s & 7;
-		unsigned char nibble_q = q & 7;
-
-		static const unsigned int mm1 = 0x20031000;
-
-		// static const unsigned char map1[8] = {0, 0, 0, 1, 3, 0, 0, 2};
-		// static const unsigned char map2[4][4] = {
-		// 	{AtoA, AtoC, AtoG, AtoT},
-		// 	{CtoA, CtoC, CtoG, CtoT},
-		// 	{GtoA, GtoC, GtoG, GtoT},
-		// 	{TtoA, TtoC, TtoG, TtoT}
-		// };
-
-		unsigned char foo = (mm1 >> (4*nibble_s)) & 0x3;
-		unsigned char baz = (mm1 >> (4*nibble_q)) & 0x3;
-
-		if (baz > foo) {
-			int temp = foo;
-			foo = baz;
-			baz = temp;
+		for (int i = 0; i != MUTCOUNTS; ++i) {
+			local_counts[i] += u8counts[i];
 		}
-
-		static const unsigned int map4 = 0x9740;
-		unsigned int base = (map4 >> (4*baz)) & 0xf;
-		unsigned int index = base + (foo - baz);
-
-
-		//unsigned char index = (bar >> ((mm1 >> (4*nibble_q)) & 0x3)) & 0xf;
-		local_counts[index]++;
 	}
 
 	for (int i = 0; i != MUTCOUNTS; ++i) {

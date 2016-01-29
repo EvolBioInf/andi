@@ -203,10 +203,12 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 					num_right_anchors_in_rc++;
 				}
 #endif
+				// classify nucleotides in the qanchor
+				model_count_equal(&ret, query + last_pos_Q, last_length);
 
 				// Count the SNPs in between.
-				model_count(&ret, C->S + last_pos_S, query + last_pos_Q,
-							this_pos_Q - last_pos_Q);
+				model_count(&ret, C->S + last_pos_S + last_length, query + last_pos_Q + last_length,
+							this_pos_Q - last_pos_Q - last_length);
 				last_was_right_anchor = 1;
 			} else {
 #ifdef DEBUG
@@ -220,13 +222,11 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 				if (last_was_right_anchor) {
 					// If the last was a right anchor, but with the current one,
 					// we cannot extend, then add its length.
-					model_count(&ret, C->S + last_pos_S, query + last_pos_Q,
-								last_length);
+					model_count_equal(&ret, C->S + last_pos_S, last_length);
 				} else if ((last_length / 2) >= threshold) {
 					// The last anchor wasn't neither a left or right anchor.
 					// But, it was as long as an anchor pair. So still count it.
-					model_count(&ret, C->S + last_pos_S, query + last_pos_Q,
-								last_length);
+					model_count_equal(&ret, C->S + last_pos_S, last_length);
 				}
 
 				last_was_right_anchor = 0;

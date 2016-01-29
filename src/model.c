@@ -162,52 +162,51 @@ model model_bootstrap(const model MM) {
  * @param len - The length of the alignment
  */
 void model_count(model *MM, const char *S, const char *Q, size_t len) {
+	size_t local_counts[MUTCOUNTS] = {0};
 	for (; len--; S++, Q++) {
 		char s = *S;
 		char q = *Q;
 
+
+#define unlikely(x)     __builtin_expect((x),0)
+
 		// Skip special characters.
-		if (s == ';' || s == '!' || s == '#' || q == ';' || q == '!') {
+		if (unlikely(s < 'A' || q < 'A')) {
 			continue;
 		}
 
-		size_t index = 0;
+		unsigned char nibble_s = s & 7;
+		unsigned char nibble_q = q & 7;
 
-		if (s == q) {
-			switch (s) {
-				case 'A': index = AtoA; break;
-				case 'C': index = CtoC; break;
-				case 'G': index = GtoG; break;
-				case 'T': index = TtoT; break;
-			}
+		static const unsigned int mm1 = 0x20031000;
 
-			MM->counts[index]++;
-			continue;
+		// static const unsigned char map1[8] = {0, 0, 0, 1, 3, 0, 0, 2};
+		// static const unsigned char map2[4][4] = {
+		// 	{AtoA, AtoC, AtoG, AtoT},
+		// 	{CtoA, CtoC, CtoG, CtoT},
+		// 	{GtoA, GtoC, GtoG, GtoT},
+		// 	{TtoA, TtoC, TtoG, TtoT}
+		// };
+
+		unsigned char foo = (mm1 >> (4*nibble_s)) & 0x3;
+		unsigned char baz = (mm1 >> (4*nibble_q)) & 0x3;
+
+		if (baz > foo) {
+			int temp = foo;
+			foo = baz;
+			baz = temp;
 		}
 
-		if (s > q) {
-			char c = s;
-			s = q;
-			q = c;
-		}
+		static const unsigned int map4 = 0x9740;
+		unsigned int base = (map4 >> (4*baz)) & 0xf;
+		unsigned int index = base + (foo - baz);
 
-		switch (s) {
-			case 'A':
-				switch (q) {
-					case 'C': index = AtoC; break;
-					case 'G': index = AtoG; break;
-					case 'T': index = AtoT; break;
-				}
-				break;
-			case 'C':
-				switch (q) {
-					case 'G': index = CtoG; break;
-					case 'T': index = CtoT; break;
-				}
-				break;
-			case 'G': index = GtoT; break;
-		}
 
-		MM->counts[index]++;
+		//unsigned char index = (bar >> ((mm1 >> (4*nibble_q)) & 0x3)) & 0xf;
+		local_counts[index]++;
+	}
+
+	for (int i = 0; i != MUTCOUNTS; ++i) {
+		MM->counts[i] += local_counts[i];
 	}
 }

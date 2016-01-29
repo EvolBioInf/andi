@@ -157,32 +157,21 @@ model model_bootstrap(const model MM) {
 #define unlikely(x) __builtin_expect((x), 0)
 void model_count_equal(model *MM, const char *S, size_t len) {
 	size_t local_counts[4] = {0};
-	size_t j = 0;
-	for (; len > 0; len -= j) {
-		uint8_t u8counts[4] = {0};
+	for (; len--;) {
+		char s = *S++;
 
-		j = 255;
-		if (len < 255) j = len;
-
-		for (size_t jj = 0; jj < j; jj++, S++) {
-			char s = *S;
-
-			// Skip special characters.
-			if (unlikely(s < 'A')) {
-				continue;
-			}
-
-			unsigned char nibble_s = s & 7;
-
-			static const unsigned int mm1 = 0x20031000;
-
-			unsigned char foo = (mm1 >> (4 * nibble_s)) & 0x3;
-			u8counts[foo]++;
+		// Skip special characters.
+		if (unlikely(s < 'A')) {
+			continue;
 		}
 
-		for (int i = 0; i != 4; ++i) {
-			local_counts[i] += u8counts[i];
-		}
+		unsigned char nibble_s = s & 7;
+		unsigned char foo;
+
+		static const unsigned int mm1 = 0x20031000;
+
+		foo = (mm1 >> (4 * nibble_s)) & 0x3;
+		local_counts[foo]++;
 	}
 
 	for (int i = 0; i != 4; ++i) {

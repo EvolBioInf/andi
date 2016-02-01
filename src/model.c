@@ -3,6 +3,7 @@
  * estimation of evolutionary distances thereof.
  */
 
+#include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
 #include <gsl/gsl_randist.h>
@@ -117,7 +118,7 @@ double estimate_KIMURA(const model *MM) {
 	double Q = (double)transversions / (double)nucl;
 
 	double tmp = 1.0 - 2.0 * P - Q;
-	double dist = -0.25 * log((1.0-2.0*Q) * tmp * tmp);
+	double dist = -0.25 * log((1.0 - 2.0 * Q) * tmp * tmp);
 
 	// fix negative zero
 	return dist <= 0.0 ? 0.0 : dist;
@@ -154,6 +155,41 @@ model model_bootstrap(const model MM) {
 }
 
 /**
+ * @brief Given an anchor, classify nucleotides.
+ *
+ * For anchors we already know that the nucleotides of the subject and the query
+ * are equal. Thus only one sequence has to be analysed. See `model_count` for
+ * an explanation of the algorithm.
+ *
+ * @param MM - The mutation matrix
+ * @param S - The subject
+ * @param len - The anchor length
+ */
+void model_count_equal(model *MM, const char *S, size_t len) {
+	size_t local_counts[4] = {0};
+
+	for (; len--;) {
+		char s = *S++;
+
+		if (s < 'A') {
+			continue;
+		}
+
+		unsigned char nibble_s = s & 7;
+
+		static const unsigned int mm1 = 0x20031000;
+
+		unsigned char index = (mm1 >> (4 * nibble_s)) & 0x3;
+		local_counts[index]++;
+	}
+
+	MM->counts[AtoA] += local_counts[0];
+	MM->counts[CtoC] += local_counts[1];
+	MM->counts[GtoG] += local_counts[2];
+	MM->counts[TtoT] += local_counts[3];
+}
+
+/**
  * @brief Count the substitutions and add them to the mutation matrix.
  *
  * @param MM - The mutation matrix.
@@ -162,52 +198,58 @@ model model_bootstrap(const model MM) {
  * @param len - The length of the alignment
  */
 void model_count(model *MM, const char *S, const char *Q, size_t len) {
+	size_t local_counts[MUTCOUNTS] = {0};
+
 	for (; len--; S++, Q++) {
 		char s = *S;
 		char q = *Q;
 
 		// Skip special characters.
-		if (s == ';' || s == '!' || s == '#' || q == ';' || q == '!') {
+		if (s < 'A' || q < 'A') {
 			continue;
 		}
 
-		size_t index = 0;
+		/* We want to map characters:
+		 *  A → 0
+		 *  C → 1
+		 *  G → 2
+		 *  T → 3
+		 * The trick used below is that the three lower bits of the
+		 * characters are unique. Thus, they can be used to compute the mapping
+		 * above. The mapping itself is done via tricky bitwise operations.
+		 */
 
-		if (s == q) {
-			switch (s) {
-				case 'A': index = AtoA; break;
-				case 'C': index = CtoC; break;
-				case 'G': index = GtoG; break;
-				case 'T': index = TtoT; break;
-			}
+		unsigned char nibble_s = s & 7;
+		unsigned char nibble_q = q & 7;
 
-			MM->counts[index]++;
-			continue;
+		static const unsigned int mm1 = 0x20031000;
+
+		// Pick the correct two bits representing s and q.
+		unsigned char foo = (mm1 >> (4 * nibble_s)) & 0x3;
+		unsigned char baz = (mm1 >> (4 * nibble_q)) & 0x3;
+
+		/*
+		 * The mutation matrix is symmetric. For convenience we define the
+		 * mutation XtoY with X > Y.
+		 */
+		if (baz > foo) {
+			int temp = foo;
+			foo = baz;
+			baz = temp;
 		}
 
-		if (s > q) {
-			char c = s;
-			s = q;
-			q = c;
-		}
+		/*
+		 * Finally, we want to map the indices to the correct mutation. This is
+		 * done by utilising the mutation types in model.h.
+		 */
+		static const unsigned int map4 = 0x9740;
+		unsigned int base = (map4 >> (4 * baz)) & 0xf;
+		unsigned int index = base + (foo - baz);
 
-		switch (s) {
-			case 'A':
-				switch (q) {
-					case 'C': index = AtoC; break;
-					case 'G': index = AtoG; break;
-					case 'T': index = AtoT; break;
-				}
-				break;
-			case 'C':
-				switch (q) {
-					case 'G': index = CtoG; break;
-					case 'T': index = CtoT; break;
-				}
-				break;
-			case 'G': index = GtoT; break;
-		}
+		local_counts[index]++;
+	}
 
-		MM->counts[index]++;
+	for (int i = 0; i != MUTCOUNTS; ++i) {
+		MM->counts[i] += local_counts[i];
 	}
 }

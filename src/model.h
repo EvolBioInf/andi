@@ -54,6 +54,7 @@ typedef struct model {
 	size_t seq_len;
 } model;
 
+void model_count_equal(model *, const char *, size_t);
 void model_count(model *, const char *, const char *, size_t);
 model model_average(const model *, const model *);
 double model_coverage(const model *);

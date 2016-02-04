@@ -267,7 +267,7 @@ S2        0.0995 0.0000
 
 In the above examples the runtime dropped from \SI{0.613}{\second}, to \SI{0.362}{\second} using two threads. Giving \andi more threads than input genomes leads to no further speed improvement. \, The other important option is \lstinline$--join$ (see Section~\ref{sec:join}).
 
-By default, the distances computed by \andi are \emph{Jukes-Cantor} corrected \cite{jukescantor}. Other evolutionary models are also implemented (Kimura, raw). The \listinline $--model$ parameter can be used to switch between them.
+By default, the distances computed by \andi are \emph{Jukes-Cantor} corrected \cite{jukescantor}. Other evolutionary models are also implemented (Kimura, raw). The \lstinline$--model$ parameter can be used to switch between them.
 
 Since version 0.9.4 \andi includes a bootstrapping method. It can be activated via the \lstinline$--bootstrap$ or \lstinline$-b$ switch. This option takes a numeric argument representing the number of matrices to create. The output can then be piped into \algo{phylip}.
 

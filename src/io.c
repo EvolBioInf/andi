@@ -145,7 +145,7 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 				datum = model_average(&D(i, j), &D(j, i));
 			}
 
-			double dist = DD(i, j) = estimate(&datum);
+			double dist = DD(i, j) = i == j ? 0.0 : estimate(&datum);
 			double coverage = model_coverage(&datum);
 
 			if (isnan(dist) && warnings) {

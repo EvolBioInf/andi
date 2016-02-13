@@ -6,6 +6,7 @@
 #ifndef _ESA_H_
 #define _ESA_H_
 
+#include <sys/types.h>
 #include "sequence.h"
 #include "config.h"
 

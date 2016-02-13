@@ -32,6 +32,10 @@ AC_ARG_WITH([libdivsufsort],
 
 AS_IF([test "x$with_libdivsufsort" != "xno"],
 	[
+		# The libdivsufsort header contains some Microsoft extension making
+		# compilation fail on certain systems (i.e. OS X). Add the following
+		# flag so the build runs smoothly.
+		CPPFLAGS="$CPPFLAGS -fms-extensions"
 		AC_CHECK_HEADERS([divsufsort.h],[have_libdivsufsort=yes],[have_libdivsufsort=no])
 		AC_CHECK_LIB(divsufsort, divsufsort, [], [have_libdivsufsort=no])
 	],

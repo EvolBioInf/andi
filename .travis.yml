@@ -24,6 +24,8 @@ install:
   - cd libdivsufsort-master && mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$LIBDIVDIR" ..
   - make && make install
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew install gsl; fi
+  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew install glib; fi
 before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 
@@ -34,7 +36,7 @@ script:
 - cd $TRAVIS_BUILD_DIR
 - autoreconf -fvi -Im4
 - export MYFLAGS="-fprofile-arcs -ftest-coverage -I$LIBDIVDIR/include"
-- ./configure --enable-unit-tests LDFLAGS="-L$LIBDIVDIR/lib" CFLAGS="$MYFLAGS" CXXFLAGS="$MYFLAGS"
+- ./configure --enable-unit-tests LDFLAGS="-L$LIBDIVDIR/lib" CFLAGS="$MYFLAGS" CXXFLAGS="$MYFLAGS" || cat config.log
 - make
 - make check
 - make distcheck DISTCHECK_CONFIGURE_FLAGS="LDFLAGS=\"-L$LIBDIVDIR/lib\" CFLAGS=\"-I$LIBDIVDIR/include\" CXXFLAGS=\"-I$LIBDIVDIR/include\""

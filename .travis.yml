@@ -31,6 +31,7 @@ before_install:
 
 # - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
 script:
+- export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$LIBDIVDIR/lib"
 - export LD_LIBRARY_PATH="$LIBDIVDIR:$LIBDIVDIR/lib"
 - export LIBRARY_PATH="$LIBDIVDIR:$LIBRARY_PATH"
 - cd $TRAVIS_BUILD_DIR

@@ -207,7 +207,8 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 				model_count_equal(&ret, query + last_pos_Q, last_length);
 
 				// Count the SNPs in between.
-				model_count(&ret, C->S + last_pos_S + last_length, query + last_pos_Q + last_length,
+				model_count(&ret, C->S + last_pos_S + last_length,
+							query + last_pos_Q + last_length,
 							this_pos_Q - last_pos_Q - last_length);
 				last_was_right_anchor = 1;
 			} else {

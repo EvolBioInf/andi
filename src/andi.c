@@ -174,7 +174,8 @@ int main(int argc, char *argv[]) {
 				} else if (strcasecmp(optarg, "KIMURA") == 0) {
 					MODEL = M_KIMURA;
 				} else {
-					warnx("Ignoring argument for --model. Expected Raw JC or Kimura");
+					warnx("Ignoring argument for --model. Expected Raw JC or "
+						  "Kimura");
 				}
 				break;
 			}

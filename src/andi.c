@@ -225,7 +225,8 @@ int main(int argc, char *argv[]) {
 	size_t n = dsa_size(&dsa);
 
 	if (n < 2) {
-		errx("I am truly sorry, but with less than two sequences (%zu given) "
+		errx(1,
+			 "I am truly sorry, but with less than two sequences (%zu given) "
 			 "there is nothing to compare.",
 			 n);
 	}

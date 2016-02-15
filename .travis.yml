@@ -28,12 +28,12 @@ install:
   - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew install glib; fi
 before_install:
   - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
-  - export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$LIBDIVDIR/lib"
-  - export LD_LIBRARY_PATH="$LIBDIVDIR:$LIBDIVDIR/lib"
-  - export LIBRARY_PATH="$LIBDIVDIR:$LIBRARY_PATH"
 
 # - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
 script:
+- export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$LIBDIVDIR/lib"
+- export LD_LIBRARY_PATH="$LIBDIVDIR:$LIBDIVDIR/lib"
+- export LIBRARY_PATH="$LIBDIVDIR:$LIBRARY_PATH"
 - cd $TRAVIS_BUILD_DIR
 - autoreconf -fvi -Im4
 - export MYFLAGS="-fprofile-arcs -ftest-coverage -I$LIBDIVDIR/include"

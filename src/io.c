@@ -53,8 +53,10 @@ void read_fasta_join(const char *file_name, dsa_t *dsa) {
 
 	const char *dot = strchrnul(left, '.'); // find the extension
 
-	joined.name = strndup(
-		left, dot - left); // copy only the file name, not its path or extension
+	// copy only the file name, not its path or extension
+	joined.name = strndup(left, dot - left);
+	CHECK_MALLOC(joined.name);
+
 	dsa_push(dsa, joined);
 	dsa_free(&single);
 }

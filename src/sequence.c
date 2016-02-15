@@ -235,10 +235,8 @@ int seq_init(seq_t *S, const char *seq, const char *name) {
 
 	*S = (seq_t){.S = strdup(seq), .name = strdup(name)};
 
-	if (!S->S || !S->name) {
-		seq_free(S);
-		return 2;
-	}
+	CHECK_MALLOC(S->S);
+	CHECK_MALLOC(S->name);
 
 	normalize(S);
 

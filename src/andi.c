@@ -224,6 +224,12 @@ int main(int argc, char *argv[]) {
 
 	size_t n = dsa_size(&dsa);
 
+	if (n < 2) {
+		errx("I am truly sorry, but with less than two sequences (%zu given) "
+			 "there is nothing to compare.",
+			 n);
+	}
+
 	if (FLAGS & F_VERBOSE) {
 		fprintf(stderr, "Comparing %zu sequences\n", n);
 		fflush(stderr);
@@ -237,15 +243,8 @@ int main(int argc, char *argv[]) {
 	// seed the random number generator with the current time
 	gsl_rng_set(RNG, time(NULL));
 
-	seq_t *sequences = dsa_data(&dsa);
 	// compute distance matrix
-	if (n >= 2) {
-		calculate_distances(sequences, n);
-	} else {
-		warnx("I am truly sorry, but with less than two sequences (%zu given) "
-			  "there is nothing to compare.",
-			  n);
-	}
+	calculate_distances(dsa_data(&dsa), n);
 
 	dsa_free(&dsa);
 	gsl_rng_free(RNG);

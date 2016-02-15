@@ -386,7 +386,7 @@ int calculate_bootstrap(const struct model *M, const seq_t *sequences,
 
 	// B is the new bootstrap matrix
 	struct model *B = malloc(n * n * sizeof(*B));
-	if (!B) return 2;
+	CHECK_MALLOC(B);
 
 	// Compute a number of new distance matrices
 	while (BOOTSTRAP--) {

@@ -17,6 +17,7 @@
 #include <string.h>
 #include <assert.h>
 #include "esa.h"
+#include "global.h"
 
 static void esa_init_cache_dfs(esa_s *, char *str, size_t pos, lcp_inter_t in);
 static void esa_init_cache_fill(esa_s *, char *str, size_t pos, lcp_inter_t in);
@@ -70,12 +71,8 @@ ssize_t char2code(const char c) {
  * @returns 0 iff successful
  */
 int esa_init_cache(esa_s *self) {
-	lcp_inter_t *cache =
-		malloc((1 << (2 * CACHE_LENGTH)) * sizeof(lcp_inter_t));
-
-	if (!cache) {
-		return 1;
-	}
+	lcp_inter_t *cache = malloc((1 << (2 * CACHE_LENGTH)) * sizeof(*cache));
+	CHECK_MALLOC(cache);
 
 	self->cache = cache;
 
@@ -220,9 +217,7 @@ int esa_init_FVC(esa_s *self) {
 	size_t len = self->len;
 
 	char *FVC = self->FVC = malloc(len);
-	if (!FVC) {
-		return 1;
-	}
+	CHECK_MALLOC(FVC);
 
 	const char *S = self->S;
 	const int *SA = self->SA;
@@ -289,10 +284,8 @@ int esa_init_SA(esa_s *C) {
 		return 1;
 	}
 
-	C->SA = malloc(C->len * sizeof(saidx_t));
-	if (!C->SA) {
-		return 2;
-	}
+	C->SA = malloc(C->len * sizeof(*C->SA));
+	CHECK_MALLOC(C->SA);
 
 	saidx_t result = 1;
 
@@ -315,16 +308,15 @@ int esa_init_CLD(esa_s *C) {
 	if (!C || !C->LCP) {
 		return 1;
 	}
-	saidx_t *CLD = C->CLD = malloc((C->len + 1) * sizeof(saidx_t));
-	if (!C->CLD) {
-		return 2;
-	}
+	saidx_t *CLD = C->CLD = malloc((C->len + 1) * sizeof(*CLD));
+	CHECK_MALLOC(CLD);
 
 	saidx_t *LCP = C->LCP;
 
 	typedef struct pair_s { saidx_t idx, lcp; } pair_t;
 
-	pair_t *stack = malloc((C->len + 1) * sizeof(pair_t));
+	pair_t *stack = malloc((C->len + 1) * sizeof(*stack));
+	CHECK_MALLOC(stack);
 	pair_t *top = stack; // points at the topmost filled element
 	pair_t last;
 
@@ -383,21 +375,16 @@ int esa_init_LCP(esa_s *C) {
 
 	// Allocate new memory
 	// The LCP array is one element longer than S.
-	saidx_t *LCP = C->LCP = malloc((len + 1) * sizeof(saidx_t));
-	if (!LCP) {
-		return 3;
-	}
+	saidx_t *LCP = C->LCP = malloc((len + 1) * sizeof(*LCP));
+	CHECK_MALLOC(LCP);
 
 	LCP[0] = -1;
 	LCP[len] = -1;
 
 	// Allocate temporary arrays
-	saidx_t *PHI = malloc(len * sizeof(saidx_t));
+	saidx_t *PHI = malloc(len * sizeof(*PHI));
 	saidx_t *PLCP = PHI;
-	if (!PHI) {
-		free(PHI);
-		return 2;
-	}
+	CHECK_MALLOC(PHI);
 
 	PHI[SA[0]] = -1;
 	saidx_t k;

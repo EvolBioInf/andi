@@ -9,6 +9,7 @@
 #define _GLOBAL_H_
 #include <gsl/gsl_rng.h>
 
+#include <err.h>
 #include "config.h"
 
 /**
@@ -61,5 +62,17 @@ enum {
 	F_LOW_MEMORY = 32,
 	F_SHORT = 64
 };
+
+/**
+ * @brief This macro is used to unify the checks for the return value of malloc.
+ *
+ * @param PTR - The pointer getting checked.
+ */
+#define CHECK_MALLOC(PTR)                                                      \
+	do {                                                                       \
+		if (PTR == NULL) {                                                     \
+			err(errno, "Out of memory");                                       \
+		}                                                                      \
+	} while (0);
 
 #endif

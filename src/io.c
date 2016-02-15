@@ -124,7 +124,7 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 	int use_scientific = 0;
 
 	double *DD = malloc(n * n * sizeof(*DD));
-	if (!DD) err(errno, "meh.");
+	CHECK_MALLOC(DD);
 
 #define DD(X, Y) (DD[(X)*n + (Y)])
 

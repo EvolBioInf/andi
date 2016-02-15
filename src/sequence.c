@@ -19,10 +19,8 @@ void normalize(seq_t *S);
 int dsa_init(dsa_t *A) {
 	// allocate at least 4 slots so the growth by 1.5 below doesn't get stuck
 	// at 3 slots.
-	A->data = malloc(sizeof(seq_t) * 4);
-	if (!A->data) {
-		return 1;
-	}
+	A->data = malloc(sizeof(*A->data) * 4);
+	CHECK_MALLOC(A->data);
 
 	A->capacity = 4;
 	A->size = 0;
@@ -36,9 +34,7 @@ void dsa_push(dsa_t *A, seq_t S) {
 	} else {
 		// use the near-optimal growth factor of 1.5
 		seq_t *ptr = reallocarray(A->data, A->capacity / 2, sizeof(seq_t) * 3);
-		if (ptr == NULL) {
-			err(errno, "out of memory?");
-		}
+		CHECK_MALLOC(ptr);
 
 		A->capacity = (A->capacity / 2) * 3;
 		A->data = ptr;
@@ -101,9 +97,7 @@ seq_t dsa_join(dsa_t *A) {
 
 	// A single malloc for the whole new sequence
 	char *ptr = malloc(total);
-	if (ptr == NULL) {
-		return joined;
-	}
+	CHECK_MALLOC(ptr);
 	char *next = ptr;
 
 	// Copy all old sequences and add a `!` in between
@@ -145,8 +139,9 @@ void seq_free(seq_t *S) {
  * @return The reverse complement. The caller has to free it!
  */
 char *revcomp(const char *str, size_t len) {
+	if (!str) return NULL;
 	char *rev = malloc(len + 1);
-	if (!str || !rev) return NULL;
+	CHECK_MALLOC(rev);
 
 	char *r = rev;
 	const char *s = &str[len - 1];
@@ -183,10 +178,7 @@ char *catcomp(char *s, size_t len) {
 	char *rev = revcomp(s, len);
 
 	char *temp = realloc(rev, 2 * len + 2);
-	if (!temp) {
-		free(rev);
-		return NULL;
-	}
+	CHECK_MALLOC(temp);
 
 	rev = temp;
 	rev[len] = '#';

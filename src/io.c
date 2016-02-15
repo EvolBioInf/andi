@@ -24,9 +24,9 @@
  * "I didn't learn joined up handwriting for nothing, you know."
  * ~ Gilderoy Lockhart
  *
- * @param in - The file pointer to read from.
- * @param dsa - An array that holds found sequences.
- * @param name - The name of the file to be used for the name of the sequence.
+ * @param file_name - The name of the file to be used for reading. The name is
+ *  also used to infer the sequence name.
+ * @param dsa - (output parameter) An array that holds found sequences.
  */
 void read_fasta_join(const char *file_name, dsa_t *dsa) {
 	if (!file_name || !dsa) return;
@@ -47,9 +47,8 @@ void read_fasta_join(const char *file_name, dsa_t *dsa) {
 	 */
 
 	const char *left = strrchr(file_name, '/'); // find the last path separator
-	left = (left == NULL) ? file_name : left + 1; // left is the position one of
-												  // to the right of the path
-												  // separator
+	left = (left == NULL) ? file_name : left + 1;
+	// left is the position one of to the right of the path separator
 
 	const char *dot = strchrnul(left, '.'); // find the extension
 
@@ -63,8 +62,8 @@ void read_fasta_join(const char *file_name, dsa_t *dsa) {
 
 /**
  * @brief This function reads sequences from a file.
- * @param in - The file pointer to read from.
- * @param dsa - An array that holds found sequences.
+ * @param file_name - The file to read.
+ * @param dsa - (output parameter) An array that holds found sequences.
  */
 void read_fasta(const char *file_name, dsa_t *dsa) {
 	if (!file_name || !dsa) return;

@@ -128,48 +128,52 @@ void esa_init_cache_dfs(esa_s *C, char *str, size_t pos, const lcp_inter_t in) {
 			continue;
 		}
 
+		if (ij.l <= (ssize_t)(pos + 1)) {
+			// Continue one level deeper
+			// This is the usual case
+			esa_init_cache_dfs(C, str, pos + 1, ij);
+			continue;
+		}
+
 		// The LCP-interval is deeper than expected
-		if (ij.l > (ssize_t)(pos + 1)) {
-
-			// Check if it still fits into the cache
-			if ((size_t)ij.l < CACHE_LENGTH) {
-
-				// fill with dummy value
-				esa_init_cache_fill(C, str, pos + 1, in);
-
-				char non_acgt = 0;
-
-				// fast forward
-				size_t k = pos + 1;
-				for (; k < (size_t)ij.l; k++) {
-					// In some very edgy edge cases the lcp-interval `ij`
-					// contains a `;` or another non-acgt character. Since we
-					// cannot cache those, break.
-					char c = C->S[C->SA[ij.i] + k];
-					if (char2code(c) < 0) {
-						non_acgt = 1;
-						break;
-					}
-
-					str[k] = c;
-				}
-
-				if (non_acgt) {
-					esa_init_cache_fill(C, str, k, ij);
-				} else {
-					esa_init_cache_dfs(C, str, k, ij);
-				}
-
-				continue;
-			}
-
+		// Check if it still fits into the cache
+		if ((size_t)ij.l >= CACHE_LENGTH) {
 			// If the lcp-interval exceeds the cache depth, stop here and fill
 			esa_init_cache_fill(C, str, pos + 1, in);
 			continue;
 		}
 
-		// Continue one level deeper
-		esa_init_cache_dfs(C, str, pos + 1, ij);
+		/* At this point the prefix `str` of length `pos` has been found.
+		 * However, the call to `getInterval` above found an interval with
+		 * an LCP value bigger than `pos`. This means that not all elongations
+		 * (more precise: just one) of `str` appear in the subject. Thus fill
+		 * all values with the matched result to far and continue only with
+		 * the one special substring.
+		 */
+		esa_init_cache_fill(C, str, pos + 1, in);
+
+		char non_acgt = 0;
+
+		// fast forward
+		size_t k = pos + 1;
+		for (; k < (size_t)ij.l; k++) {
+			// In some very edgy edge cases the lcp-interval `ij`
+			// contains a `;` or another non-acgt character. Since we
+			// cannot cache those, break.
+			char c = C->S[C->SA[ij.i] + k];
+			if (char2code(c) < 0) {
+				non_acgt = 1;
+				break;
+			}
+
+			str[k] = c;
+		}
+
+		if (non_acgt) {
+			esa_init_cache_fill(C, str, k, ij);
+		} else {
+			esa_init_cache_dfs(C, str, k, ij);
+		}
 	}
 }
 

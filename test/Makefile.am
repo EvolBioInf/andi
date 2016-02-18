@@ -1,4 +1,4 @@
-check_PROGRAMS = test_esa test_seq test_fasta
+check_PROGRAMS = test_esa test_seq gen_fasta
 dist_noinst_DATA = test_extra.sh test_random.sh test_join.sh
 
 if !BUILD_WITH_LIBDIVSUFSORT
@@ -19,7 +19,7 @@ test_esa_LDADD = $(GLIB_LIBS) $(PSUFSORT) $(top_builddir)/opt/libcompat.a
 test_esa_CXXFLAGS = $(OPENMP_CXXFLAGS) -Wall -Wextra
 nodist_EXTRA_test_esa_SOURCES = $(DUMMY)
 
-test_fasta_SOURCES = test_fasta.cxx
+gen_fasta_SOURCES = gen_fasta.cxx
 
 .PHONY: all
 all: $(check_PROGRAMS)

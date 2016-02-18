@@ -1,5 +1,19 @@
 #!/usr/bin/python3
 
+# This scripts test the accuracy of andi with random inputs. For that
+# it uses the small program test_random to generate pairs of sequences
+# with a given distance. By default, test_random creates a new set of
+# sequences each time it is called. Thus, this test has a small, but
+# non-zero probability of failing. That is a problem with Debian's
+# reproducible builds effort. So this script acts as a wrapper around
+# this issue.
+#
+# Simply calling this script via
+#     % ./test/test_random.sh
+# checks a new test-case every time. But with the right parameter
+#     % RANDOM_SEED=1729 ./test/test_random.sh
+# one specific set of sequences is validated.
+
 from __future__ import print_function
 import sys
 import os
@@ -51,9 +65,11 @@ def tSimple(dist):
 		warnx("That was not a distance matrix:\n" + res_andi)
 		raise e
 
+	if len(ms) != 1:
+		warnx("Why did andi produce more than one distance matrix?")
+
 	try:
-		for m in ms:
-			matrix.m2dApprox(m, dist)
+		matrix.m2dApprox(ms[0], dist)
 	except Exception as e:
 		# read actual seed from temp.fasta
 		that_seed = SEED
@@ -78,3 +94,5 @@ if __name__ == '__main__':
 	for dist in [0.0, 0.001, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3]:
 		for _ in range(10):
 			tSimple(dist)
+
+	#rm temp.fasta

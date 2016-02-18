@@ -1,5 +1,5 @@
 check_PROGRAMS = test_esa test_seq gen_fasta
-dist_noinst_DATA = test_extra.sh test_random.sh test_join.sh
+dist_noinst_DATA = extra.sh test_random.sh join.sh
 
 if !BUILD_WITH_LIBDIVSUFSORT
 PSUFSORT=$(top_builddir)/opt/psufsort/libpsufsort.a

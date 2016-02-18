@@ -11,7 +11,7 @@ def warnx(*objs):
 	print("warnx:", *objs, file=sys.stderr)
 
 SEED = 0
-LENGTH = 10000
+LENGTH = 100000
 
 
 def tSimple(dist):
@@ -20,10 +20,14 @@ def tSimple(dist):
 	through andi. Then checks if the estimated distance is reasonably
 	close to $dist.
 	"""
+	global SEED
 
 	cmd_genFasta = ('./test/test_fasta', '-l', str(LENGTH), '-d', str(dist), '-s', str(SEED))
 	cmd_tee = ('tee', 'temp.fasta')
 	cmd_andi = ('./src/andi', '-t1')
+
+	if SEED != 0:
+		SEED += 1
 
 	try:
 		sub_genFasta = subprocess.Popen(cmd_genFasta, stdout=subprocess.PIPE)
@@ -56,9 +60,9 @@ def tSimple(dist):
 		if SEED == 0:
 			file = open("temp.fasta").read()
 			rSeed = re.compile(r'base_seed: (\d+)')
-			that_seed = rSeed.search(file).groups()[0]
+			that_seed = int(rSeed.search(file).groups()[0])
 
-		cmd_genFasta = cmd_genFasta[:-1] + (that_seed,)
+		cmd_genFasta = cmd_genFasta[:-1] + (str(that_seed),)
 		warnx("The last distance diverges more than two percent from its intended value.\n" +
 		 "Reproducible settings:\n" +
 		 "  " + " ".join(cmd_genFasta) + " |\n" +
@@ -70,9 +74,7 @@ def tSimple(dist):
 
 if __name__ == '__main__':
 	# derp
-	SEED = os.getenv('BASE_SEED', 0)
-	tSimple(0.1)
-	tSimple(0.2)
-	tSimple(0.3)
-	tSimple(0.4)
-	tSimple(0.5)
+	SEED = int(os.getenv('BASE_SEED', 0))
+	for dist in [0.0, 0.001, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3]:
+		for _ in range(10):
+			tSimple(dist)

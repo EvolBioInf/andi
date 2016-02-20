@@ -28,7 +28,7 @@ SEED = 0
 LENGTH = 100000
 
 
-def tSimple(dist):
+def simple(dist):
 	"""
 	Generates two sequences with distance $dist and pipe them
 	through andi. Then checks if the estimated distance is reasonably
@@ -36,7 +36,7 @@ def tSimple(dist):
 	"""
 	global SEED
 
-	cmd_genFasta = ('./test/test_fasta', '-l', str(LENGTH), '-d', str(dist), '-s', str(SEED))
+	cmd_gen_fasta = ('./test/gen_fasta', '-l', str(LENGTH), '-d', str(dist), '-s', str(SEED))
 	cmd_tee = ('tee', 'temp.fasta')
 	cmd_andi = ('./src/andi', '-t1')
 
@@ -44,12 +44,12 @@ def tSimple(dist):
 		SEED += 1
 
 	try:
-		sub_genFasta = subprocess.Popen(cmd_genFasta, stdout=subprocess.PIPE)
+		sub_gen_fasta = subprocess.Popen(cmd_gen_fasta, stdout=subprocess.PIPE)
 	except Exception as e:
-		warnx("Calling ./test/test_fasta failed. Maybe it was not build, yet?")
+		warnx("Calling ./test/gen_fasta failed. Maybe it was not build, yet?")
 		raise e
 
-	sub_tee = subprocess.Popen(cmd_tee, stdin=sub_genFasta.stdout, stdout=subprocess.PIPE)
+	sub_tee = subprocess.Popen(cmd_tee, stdin=sub_gen_fasta.stdout, stdout=subprocess.PIPE)
 
 	try:
 		res_andi = subprocess.check_output(cmd_andi, stdin=sub_tee.stdout).decode("utf-8")
@@ -78,10 +78,10 @@ def tSimple(dist):
 			rSeed = re.compile(r'base_seed: (\d+)')
 			that_seed = int(rSeed.search(file).groups()[0])
 
-		cmd_genFasta = cmd_genFasta[:-1] + (str(that_seed),)
+		cmd_gen_fasta = cmd_gen_fasta[:-1] + (str(that_seed),)
 		warnx("The last distance diverges more than two percent from its intended value.\n" +
 		 "Reproducible settings:\n" +
-		 "  " + " ".join(cmd_genFasta) + " |\n" +
+		 "  " + " ".join(cmd_gen_fasta) + " |\n" +
 		 "  " + " ".join(cmd_tee) + " |\n" +
 		 "  " + " ".join(cmd_andi))
 		exit(1)
@@ -93,6 +93,6 @@ if __name__ == '__main__':
 	SEED = int(os.getenv('BASE_SEED', 0))
 	for dist in [0.0, 0.001, 0.01, 0.02, 0.05, 0.1, 0.2, 0.3]:
 		for _ in range(10):
-			tSimple(dist)
+			simple(dist)
 
 	#rm temp.fasta

@@ -244,6 +244,20 @@ int main(int argc, char *argv[]) {
 	// seed the random number generator with the current time
 	gsl_rng_set(RNG, time(NULL));
 
+
+	// The sequence length is validated in seq_init.
+	if (FLAGS & F_SHORT) {
+		warnx("One of the given input sequences is shorter than a thousand "
+			  "nucleotides. This may result in inaccurate distances. Try an "
+			  "alignment instead.");
+	}
+
+	// Warn about non ACGT residues.
+	if (FLAGS & F_NON_ACGT) {
+		warnx("The input sequences contained characters other than acgtACGT. "
+			  "These were automatically stripped to ensure correct results.");
+	}
+
 	// compute distance matrix
 	calculate_distances(dsa_data(&dsa), n);
 

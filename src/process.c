@@ -305,27 +305,6 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
  * @param n - The number of sequences.
  */
 void calculate_distances(seq_t *sequences, int n) {
-	int i;
-
-	// check the sequences
-	for (i = 0; i < n; i++) {
-		if (sequences[i].len < 1000) {
-			FLAGS |= F_SHORT;
-		}
-	}
-
-	if (FLAGS & F_SHORT) {
-		warnx("One of the given input sequences is shorter than a thousand "
-			  "nucleotides. This may result in inaccurate distances. Try an "
-			  "alignment instead.");
-	}
-
-	// Warn about non ACGT residues.
-	if (FLAGS & F_NON_ACGT) {
-		warnx("The input sequences contained characters other than acgtACGT. "
-			  "These were automatically stripped to ensure correct results.");
-	}
-
 	model *M = malloc(n * n * sizeof(*M));
 	if (!M) {
 		err(errno, "Could not allocate enough memory for the comparison "

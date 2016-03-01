@@ -309,10 +309,6 @@ void calculate_distances(seq_t *sequences, int n) {
 
 	// check the sequences
 	for (i = 0; i < n; i++) {
-		if (sequences[i].S == NULL || sequences[i].len == 0) {
-			errx(1, "Missing sequence: %s", sequences[i].name);
-		}
-
 		if (sequences[i].len < 1000) {
 			FLAGS |= F_SHORT;
 		}

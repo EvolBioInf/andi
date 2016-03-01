@@ -257,6 +257,11 @@ int seq_init(seq_t *S, const char *seq, const char *name) {
 		FLAGS |= F_SHORT;
 	}
 
+	if (S->len == 0) {
+		warnx("The sequence %s is empty.", S->name);
+		return 4;
+	}
+
 	return 0;
 }
 

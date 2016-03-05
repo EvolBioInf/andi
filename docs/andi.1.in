@@ -1,4 +1,4 @@
-.TH ANDI "1" "June 2015" "@VERSION@" ""
+.TH ANDI "1" "2016-03-05" "@VERSION@" "andi manual"
 .SH NAME
 andi \- estimates evolutionary distance
 .SH SYNOPSIS
@@ -11,7 +11,7 @@ andi \- estimates evolutionary distance
 The output is a symmetrical distance matrix in \fIPHYLIP\fR format, with each entry representing divergence with a positive real number. A distance of zero means that two sequences are identical, whereas other values are estimates for the nucleotide substitution rate (Jukes-Cantor corrected). For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were too short (<200bp) or too diverse (K>0.5) for our method to work properly.
 .SH OPTIONS
 .TP
-\fB\-b, \-\-bootstrap\fR <INT>
+\fB\-b\fR, \fB\-\-bootstrap\fR <INT>
 Compute multiple distance matrices, with \fIn-1\fR bootstrapped from the first. See the paper Klötzl & Haubold (2016, in review) for a detailed explanation.
 .TP
 \fB\-j\fR, \fB\-\-join\fR
@@ -40,7 +40,7 @@ Prints the synopsis and an explanation of available options.
 \fB\-\-version\fR
 Outputs version information and acknowledgments.
 .SH COPYRIGHT
-Copyright \(co 2014, 2015 Fabian Klötzl
+Copyright \(co 2014 - 2016 Fabian Klötzl
 License GPLv3+: GNU GPL version 3 or later.
 .br
 This is free software: you are free to change and redistribute it.

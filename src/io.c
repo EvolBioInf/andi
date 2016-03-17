@@ -134,6 +134,9 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 
 	switch (MODEL) {
 		case M_RAW: estimate = &estimate_RAW; break;
+		default:
+		/* intentional fall-through. This is just here to silence any
+		 * compiler warnings. The real default is set in andi.c.*/
 		case M_JC: estimate = &estimate_JC; break;
 		case M_KIMURA: estimate = &estimate_KIMURA; break;
 	}

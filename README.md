@@ -7,38 +7,51 @@ This is the `andi` program for estimating the evolutionary distance between clos
 This readme covers all necessary instructions for the impatient to get `andi` up and running. For extensive instructions please consult the [manual](andi-manual.pdf).
 
 
-# Build Instructions
+# Installation and Usage
 
-For the latest [stable release](https://github.com/EvolBioInf/andi/releases) of `andi` download the tar ball. If you'd like to contribute to this software, feel free to create a fork of our [git repository](https://github.com/EvolBioInf/andi) and send pull requests.
+Stable versions of `andi` are available via package managers. For manual installation see below.
 
+For Debian and Ubuntu (starting 16.04):
 
-## Prerequisites
+    sudo apt-get install andi
 
-This program has the following external dependencies: [libdivsufsort](https://github.com/y-256/libdivsufsort) and the [GSL](https://www.gnu.org/software/gsl/). Please make sure you installed both before attempting a build. If you did get the source, not as a tarball, but straight from the git repository, you will also need the autotools. Run `autoreconf -i` to generate the configure script and continue with the next step.
+For OS X with Homebrew:
 
+    brew install science/andi
 
-## Compiling
+For ArchLinux with aura:
 
-Assuming you have installed all prerequisites, building is as easy as follows.
+    sudo aura -A andi
+    
+With a successful installation you can get the usage instructions via `--help` or the man page.
 
-	$ ./configure
-	$ make
-	$ make install
-
-Excessive build instructions are located in `INSTALL`. If the build was successful you can get the usage instructions via `--help` or the man page.
-
-	$ andi --help
-	$ man andi
+    $ andi --help
+    $ man andi
 
 You can simply use `andi` with your genomes in `FASTA` format.
 
-	$ andi S1.fasta S2.fasta
-	2
-	S1     0.0  0.1
-	s2     0.1  0.0
+    $ andi S1.fasta S2.fasta
+    2
+    S1     0.0  0.1
+    s2     0.1  0.0
 
 From this distance matrix the phylogeny can be inferred via neighbor-joining. Check the [manual](andi-manual.pdf) for a more thorough description.
 
+
+## Manual installation
+
+If your system does not support one of the above package managers you have to manually build the latest [stable release](https://github.com/EvolBioInf/andi/releases) from a tarball. See the [manual](andi-manual.pdf) for extensive building instructions.
+
+This program has the following external dependencies: [libdivsufsort](https://github.com/y-256/libdivsufsort) and the [GSL](https://www.gnu.org/software/gsl/). Please make sure you installed both before attempting a build. If you did get the source, not as a tarball, but straight from the git repository, you will also need the autotools.
+
+Assuming you have installed all prerequisites, building is as easy as follows.
+
+    $ autoreconf -fi -Im4  # optional when build from tarball
+    $ ./configure
+    $ make
+    $ make install
+
+Excessive build instructions are located in `INSTALL`. 
 
 # Links and Additional Resources
 

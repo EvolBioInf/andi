@@ -26,7 +26,7 @@ Different models of nucleotide evolution are supported. By default the Jukes-Can
 \fB\-p\fR <FLOAT>
 Significance of an anchor pair; default: 0.05.
 .TP
-\fB\-t\fR <INT>
+\fB\-t\fR, \fB\-\-threads\fR <INT>
 The number of threads to be used; by default, all available processors are used.
 .br
 Multithreading is only available if \fBandi\fR was compiled with OpenMP support.

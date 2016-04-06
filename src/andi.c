@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
 
 				if (threads > (long unsigned int)omp_get_num_procs()) {
 					warnx(
-						"The number of threads to be used, is greater then the "
+						"The number of threads to be used, is greater than the "
 						"number of available processors; Ignoring -t %lu "
 						"argument.",
 						threads);
@@ -317,7 +317,7 @@ void version(void) {
 		"Sequence Analysis, Genome Rearrangements, and Phylogenetic "
 		"Reconstruction. pp 118f.\n"
 		"3) SA construction: Mori, Y. (2005). Short description of improved "
-		"two-stage suffix sorting alorithm. "
+		"two-stage suffix sorting algorithm. "
 		"http://homepage3.nifty.com/wpage/software/itssort.txt\n"};
 	printf("%s", str);
 	exit(EXIT_SUCCESS);

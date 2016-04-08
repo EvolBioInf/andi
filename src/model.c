@@ -158,8 +158,7 @@ model model_bootstrap(const model MM) {
  * @brief Given an anchor, classify nucleotides.
  *
  * For anchors we already know that the nucleotides of the subject and the query
- * are equal. Thus only one sequence has to be analysed. See `model_count` for
- * an explanation of the algorithm.
+ * are equal. Thus only one sequence has to be analysed.
  *
  * @param MM - The mutation matrix
  * @param S - The subject
@@ -175,18 +174,13 @@ void model_count_equal(model *MM, const char *S, size_t len) {
 			continue;
 		}
 
-		unsigned char nibble_s = s & 7;
-
-		static const unsigned int mm1 = 0x20031000;
-
-		unsigned char index = (mm1 >> (4 * nibble_s)) & 0x3;
-		local_counts[index]++;
+		local_counts[(s >> 1) & 3]++;
 	}
 
 	MM->counts[AtoA] += local_counts[0];
 	MM->counts[CtoC] += local_counts[1];
-	MM->counts[GtoG] += local_counts[2];
-	MM->counts[TtoT] += local_counts[3];
+	MM->counts[GtoG] += local_counts[3];
+	MM->counts[TtoT] += local_counts[2];
 }
 
 /**

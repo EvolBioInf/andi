@@ -16,4 +16,5 @@ nodist_EXTRA_andi_SOURCES = $(DUMMY)
 
 .PHONY: perf
 perf: CFLAGS+= -g -O3 -ggdb -fno-omit-frame-pointer
+perf: CXXFLAGS+= -g -O3 -ggdb -fno-omit-frame-pointer
 perf: andi

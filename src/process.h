@@ -8,6 +8,6 @@
 
 #include "sequence.h"
 
-void calculate_distances(seq_t *sequences, int n);
+void calculate_distances(seq_t *sequences, size_t n);
 
 #endif

@@ -304,7 +304,7 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
  * @param sequences - An array of pointers to the sequences.
  * @param n - The number of sequences.
  */
-void calculate_distances(seq_t *sequences, int n) {
+void calculate_distances(seq_t *sequences, size_t n) {
 	model *M = malloc(n * n * sizeof(*M));
 	if (!M) {
 		err(errno, "Could not allocate enough memory for the comparison "

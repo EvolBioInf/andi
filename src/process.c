@@ -4,11 +4,11 @@
  * @file
  * @brief This file contains various distance methods.
  */
-#include <stdlib.h>
-#include <string.h>
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "esa.h"
 #include "global.h"
 #include "io.h"
@@ -16,7 +16,6 @@
 #include "process.h"
 #include "sequence.h"
 
-#include <time.h>
 #include <gsl/gsl_rng.h>
 #include <gsl/gsl_randist.h>
 

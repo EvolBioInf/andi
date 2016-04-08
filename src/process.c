@@ -6,6 +6,7 @@
  */
 #include <assert.h>
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -304,7 +305,16 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
  * @param n - The number of sequences.
  */
 void calculate_distances(seq_t *sequences, size_t n) {
-	model *M = malloc(n * n * sizeof(*M));
+	struct model *M = NULL;
+
+	// The maximum number of sequences is near 457'845'052.
+	size_t intermediate = SIZE_MAX / sizeof(*M) / n;
+	if (intermediate < n) {
+		size_t root = (size_t)sqrt(SIZE_MAX / sizeof(*M));
+		err(1, "Comparison is limited to %zu sequences (%zu given).", root, n);
+	}
+
+	M = malloc(n * n * sizeof(*M));
 	if (!M) {
 		err(errno, "Could not allocate enough memory for the comparison "
 				   "matrix. Try using --join or --low-memory.");

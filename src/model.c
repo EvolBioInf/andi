@@ -165,16 +165,45 @@ model model_bootstrap(const model MM) {
  * @param len - The anchor length
  */
 void model_count_equal(model *MM, const char *S, size_t len) {
-	size_t local_counts[4] = {0};
+	uint32_t local_counts[4] = {0};
 
-	for (; len--;) {
-		char s = *S++;
+	#define CHUNK sizeof(size_t)
 
-		if (s < 'A') {
+	for (; (uintptr_t)(S) & (sizeof(size_t) - 1); S++, len--) {
+		char c = *S;
+
+		if (c < 'A') {
 			continue;
 		}
 
-		local_counts[(s >> 1) & 3]++;
+		local_counts[(c >> 1) & 3]++;
+	}
+
+	for (; len > CHUNK; S += CHUNK, len -= CHUNK) {
+		size_t u = *(size_t *)S;
+
+		#define MAGIC 0x4040404040404040
+		if ((u & MAGIC) != MAGIC) {
+			break;
+		}
+
+		u &= 0x0606060606060606;
+		u >>= 1;
+
+		for (size_t i = sizeof(u); i--;){
+			local_counts[u & 0xff]++;
+			u >>= 8;
+		}
+	}
+
+	for(; len--; S++) {
+		char c = *S;
+
+		if (c < 'A') {
+			continue;
+		}
+
+		local_counts[(c >> 1) & 3]++;
 	}
 
 	MM->counts[AtoA] += local_counts[0];

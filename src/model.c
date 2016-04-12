@@ -158,35 +158,47 @@ model model_bootstrap(const model MM) {
  * @brief Given an anchor, classify nucleotides.
  *
  * For anchors we already know that the nucleotides of the subject and the query
- * are equal. Thus only one sequence has to be analysed. See `model_count` for
- * an explanation of the algorithm.
+ * are equal. Thus only one sequence has to be analysed. Most models don't
+ * actually care about the individual nucleotides as long as they are equal in
+ * the two sequences. For these models, we just assume equal distribution.
  *
  * @param MM - The mutation matrix
  * @param S - The subject
  * @param len - The anchor length
  */
 void model_count_equal(model *MM, const char *S, size_t len) {
+	if (MODEL == M_RAW || MODEL == M_JC || MODEL == M_KIMURA) {
+		size_t fourth = len / 4;
+		MM->counts[AtoA] += fourth;
+		MM->counts[CtoC] += fourth;
+		MM->counts[GtoG] += fourth;
+		MM->counts[TtoT] += fourth + (len & 3);
+		return;
+	}
+
+	// Fall-back algorithm for future models. Note, as this works on a
+	// per-character basis it is slow.
+
 	size_t local_counts[4] = {0};
 
 	for (; len--;) {
 		char s = *S++;
 
+		// ';!#' are all smaller than 'A'
 		if (s < 'A') {
+			// Technically, s can only be ';' at this point.
 			continue;
 		}
 
-		unsigned char nibble_s = s & 7;
-
-		static const unsigned int mm1 = 0x20031000;
-
-		unsigned char index = (mm1 >> (4 * nibble_s)) & 0x3;
-		local_counts[index]++;
+		// The four canonical nucleotides can be uniquely identified by the bits
+		// 0x6: A -> 0, C → 1, G → 3, T → 2. Thus the order below is changed.
+		local_counts[(s >> 1) & 3]++;
 	}
 
 	MM->counts[AtoA] += local_counts[0];
 	MM->counts[CtoC] += local_counts[1];
-	MM->counts[GtoG] += local_counts[2];
-	MM->counts[TtoT] += local_counts[3];
+	MM->counts[GtoG] += local_counts[3];
+	MM->counts[TtoT] += local_counts[2];
 }
 
 /**

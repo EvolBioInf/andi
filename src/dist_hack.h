@@ -29,17 +29,17 @@
  * @param n - The number of sequences
  * @param M - A matrix for additional output data
  */
-void NAME(struct model *M, seq_t *sequences, size_t n) {
+void NAME(struct model *M, const seq_t *sequences, size_t n) {
 	size_t i;
 
 	//#pragma
 	P_OUTER
 	for (i = 0; i < n; i++) {
-		seq_t *subject = &sequences[i];
+		seq_t subject = sequences[i];
 		esa_s E;
 
-		if (seq_subject_init(subject) || esa_init(&E, subject)) {
-			errx(1, "Failed to create index for %s.", subject->name);
+		if (seq_subject_init(&subject) || esa_init(&E, &subject)) {
+			errx(1, "Failed to create index for %s.", subject.name);
 		}
 
 		// now compare every other sequence to i
@@ -60,10 +60,10 @@ void NAME(struct model *M, seq_t *sequences, size_t n) {
 
 			size_t ql = sequences[j].len;
 
-			M(i, j) = dist_anchor(&E, sequences[j].S, ql, subject->gc);
+			M(i, j) = dist_anchor(&E, sequences[j].S, ql, subject.gc);
 		}
 
 		esa_free(&E);
-		seq_subject_free(subject);
+		seq_subject_free(&subject);
 	}
 }

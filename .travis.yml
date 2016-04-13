@@ -50,4 +50,4 @@ script:
 - make check
 - cd ..
 after_success:
-- if [ "${TRAVIS_OS_NAME}" = "linux" -a "$CXX" = "g++" ]; then coveralls --exclude libdivsufsort-master -E '^andi-.*' --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'; fi
+- if [ "${TRAVIS_OS_NAME}" = "linux" -a "$CXX" = "g++-4.8" ]; then coveralls --exclude libdivsufsort-master -E '^andi-.*' --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'; fi

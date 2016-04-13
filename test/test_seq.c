@@ -22,47 +22,52 @@ void test_seq_basic(){
 void test_seq_full(){
 
 	seq_t S;
+	seq_subject subject;
 
 	seq_init( &S, "ACGTTGCA", "name");
-	int check = seq_subject_init( &S);
+	int check = seq_subject_init( &subject, &S);
 
 	g_assert_cmpint(check, ==, 0);
 
-	g_assert_cmpstr(S.RS, ==, "TGCAACGT#ACGTTGCA");
-	g_assert_cmpuint(S.RSlen, ==, 8*2+1);
-	g_assert( S.gc == 0.5);
+	g_assert_cmpstr(subject.RS, ==, "TGCAACGT#ACGTTGCA");
+	g_assert_cmpuint(subject.RSlen, ==, 8*2+1);
+	g_assert( subject.gc == 0.5);
 
+	seq_subject_free( &subject);
 	seq_free( &S);
 }
 
 void test_seq_nonacgt(){
 	seq_t S;
+	seq_subject subject;
 
 	seq_init( &S, "11ACGTNN7682394689NNTGCA11", "name");
-	seq_subject_init( &S);
+	seq_subject_init( &subject, &S);
 
 	g_assert_cmpstr(S.S, ==, "ACGTTGCA");
 	g_assert_cmpuint(S.len, ==, 8 );
 	g_assert( FLAGS & F_NON_ACGT);
 
-	g_assert_cmpstr(S.RS, ==, "TGCAACGT#ACGTTGCA");
-	g_assert_cmpuint(S.RSlen, ==, 8*2+1);
-	g_assert( S.gc == 0.5);
+	g_assert_cmpstr(subject.RS, ==, "TGCAACGT#ACGTTGCA");
+	g_assert_cmpuint(subject.RSlen, ==, 8*2+1);
+	g_assert( subject.gc == 0.5);
 
+	seq_subject_free( &subject);
 	seq_free( &S);
 
 	FLAGS = F_NONE;
 
 	seq_init( &S, "@ACGT_!0TGCA        ", "name");
-	seq_subject_init( &S);
+	seq_subject_init( &subject, &S);
 
 	g_assert_cmpstr(S.S, ==, "ACGT!TGCA");
 	g_assert_cmpuint(S.len, ==, 9 );
 	g_assert( FLAGS & F_NON_ACGT);
 
-	g_assert_cmpstr(S.RS, ==, "TGCA;ACGT#ACGT!TGCA");
-	g_assert_cmpuint(S.RSlen, ==, 9*2+1);
+	g_assert_cmpstr(subject.RS, ==, "TGCA;ACGT#ACGT!TGCA");
+	g_assert_cmpuint(subject.RSlen, ==, 9*2+1);
 
+	seq_subject_free( &subject);
 	seq_free( &S);
 
 	FLAGS = F_NONE;

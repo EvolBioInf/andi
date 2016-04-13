@@ -25,6 +25,7 @@ char code3char( ssize_t code){
 typedef struct {
 	esa_s *C;
 	seq_t *S;
+	seq_subject subject;
 } esa_fixture;
 
 void assert_equal_lcp( const lcp_inter_t *a, const lcp_inter_t *b){
@@ -60,9 +61,9 @@ void setup( esa_fixture *ef, gconstpointer test_data){
 	};
 
 	g_assert( seq_init( ef->S, seq, "S0" ) == 0);
-	seq_subject_init( ef->S);
-	g_assert( ef->S->RS != NULL);
-	int check = esa_init( ef->C, ef->S);
+	seq_subject_init( &ef->subject, ef->S);
+	g_assert( ef->subject.RS != NULL);
+	int check = esa_init( ef->C, &ef->subject);
 	g_assert( check == 0);
 }
 
@@ -86,9 +87,9 @@ void setup2( esa_fixture *ef, gconstpointer test_data){
 	};
 
 	g_assert( seq_init( ef->S, seq, "S0" ) == 0);
-	seq_subject_init( ef->S);
-	g_assert( ef->S->RS != NULL);
-	int check = esa_init( ef->C, ef->S);
+	seq_subject_init( &ef->subject, ef->S);
+	g_assert( ef->subject.RS != NULL);
+	int check = esa_init( ef->C, &ef->subject);
 	g_assert( check == 0);
 }
 

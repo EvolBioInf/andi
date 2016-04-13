@@ -69,7 +69,7 @@ typedef struct esa_s {
 
 lcp_inter_t get_match_cached(const esa_s *, const char *query, size_t qlen);
 lcp_inter_t get_match(const esa_s *, const char *query, size_t qlen);
-int esa_init(esa_s *, const seq_t *S);
+int esa_init(esa_s *, const seq_subject *S);
 void esa_free(esa_s *);
 
 #ifdef DEBUG

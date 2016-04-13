@@ -35,11 +35,12 @@ void NAME(struct model *M, const seq_t *sequences, size_t n) {
 	//#pragma
 	P_OUTER
 	for (i = 0; i < n; i++) {
-		seq_t subject = sequences[i];
+		seq_subject subject;
 		esa_s E;
 
-		if (seq_subject_init(&subject) || esa_init(&E, &subject)) {
-			errx(1, "Failed to create index for %s.", subject.name);
+		if (seq_subject_init(&subject, &sequences[i]) ||
+			esa_init(&E, &subject)) {
+			errx(1, "Failed to create index for %s.", sequences[i].name);
 		}
 
 		// now compare every other sequence to i

@@ -18,26 +18,33 @@
 typedef struct seq_s {
 	/** This is the DNAs forward strand as a string. */
 	char *S;
+	/** The length of the forward strand. */
+	size_t len;
+	/** A name for this sequence */
+	char *name;
+} seq_t;
+
+/**
+ * @brief This structure enhances the usual sequence with its reverse
+ * complement.
+ */
+typedef struct seq_subject {
 	/** This member contains first the reverse strand and then the
 		forward strand. */
 	char *RS;
-	/** The length of the forward strand. */
-	size_t len;
 	/** Corresponds to strlen(RS) */
 	size_t RSlen;
-	/** A name for this sequence */
-	char *name;
 	/**
 	 * @brief GC-Content
 	 *
 	 * The relative amount of G or C in the DNA.
 	 */
 	double gc;
-} seq_t;
+} seq_subject;
 
 void seq_free(seq_t *S);
-int seq_subject_init(seq_t *S);
-void seq_subject_free(seq_t *S);
+int seq_subject_init(seq_subject *S, const seq_t *);
+void seq_subject_free(seq_subject *S);
 int seq_init(seq_t *S, const char *seq, const char *name);
 
 /**

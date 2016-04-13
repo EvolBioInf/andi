@@ -238,8 +238,8 @@ int esa_init_FVC(esa_s *self) {
  * @param S - The sequence
  * @returns 0 iff successful
  */
-int esa_init(esa_s *C, const seq_t *S) {
-	if (!C || !S || !S->S) return 1;
+int esa_init(esa_s *C, const seq_subject *S) {
+	if (!C || !S || !S->RS) return 1;
 
 	*C = (esa_s){.S = S->RS, .len = S->RSlen};
 

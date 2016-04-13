@@ -127,7 +127,6 @@ seq_t dsa_join(dsa_t *A) {
  */
 void seq_free(seq_t *S) {
 	free(S->S);
-	free(S->RS);
 	free(S->name);
 	*S = (seq_t){};
 }
@@ -207,17 +206,17 @@ double calc_gc(const seq_t *S) {
 }
 
 /** @brief Prepares a sequences to be used as the subject in a comparison. */
-int seq_subject_init(seq_t *S) {
-	S->gc = calc_gc(S);
-	S->RS = catcomp(S->S, S->len);
+int seq_subject_init(seq_subject *S, const seq_t *base) {
+	S->gc = calc_gc(base);
+	S->RS = catcomp(base->S, base->len);
 	if (!S->RS) return 1;
-	S->RSlen = 2 * S->len + 1;
+	S->RSlen = 2 * base->len + 1;
 	return 0;
 }
 
 /** @brief Frees some memory unused for when a sequence is only used as query.
  */
-void seq_subject_free(seq_t *S) {
+void seq_subject_free(seq_subject *S) {
 	free(S->RS);
 	S->RS = NULL;
 	S->RSlen = 0;

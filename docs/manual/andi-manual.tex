@@ -15,13 +15,9 @@
 \usepackage{amsthm}
 \usepackage{acronym}
 \usepackage{amssymb}
-\usepackage{tikz}
-\usepackage{pgfplots}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage{booktabs}
 \usepackage{xspace}
-\usepackage{overpic}
 
 \bibliographystyle{alpha}
 
@@ -109,6 +105,13 @@ This document is release under the Creative Commons Attribution Share-Alike lice
 
 The easiest way to install \andi is via a package manager. This also handles all dependencies for you.
 
+
+\noindent Debian and Ubuntu (since 16.04):
+
+\begin{lstlisting}
+~ %  sudo apt-get install andi
+\end{lstlisting}
+
 \noindent OS X with homebrew:
 
 \begin{lstlisting}
@@ -119,12 +122,6 @@ The easiest way to install \andi is via a package manager. This also handles all
 
 \begin{lstlisting}
 ~ %  aura -A andi
-\end{lstlisting}
-
-\noindent Debian and Ubuntu (soon):
-
-\begin{lstlisting}
-~ %  sudo apt-get install andi
 \end{lstlisting}
 
 \andi is intended to run in a \algo{Unix} commandline such as \lstinline$bash$ or \lstinline$zsh$. All examples in this document are also intended for that environment. You can verify that \andi was installed correctly by executing \lstinline$andi -h$. This should give you a list of all available options (see Section~\ref{sec:options}).
@@ -189,10 +186,8 @@ To build \andi from the \algo{Git} repo, you will also need the \algo{autotools}
 \begin{lstlisting}
 ~ %  git clone git@github.com:EvolBioInf/andi.git
 ~ %  cd andi
-~/andi %  autoreconf -i
+~/andi %  autoreconf -fi -Im4
 \end{lstlisting}
-
-\noindent For old versions of \algo{autoconf} you may instead have to use \lstinline$autoreconf -i -Im4$.
 
 \noindent Continue with the \algo{Gnu} trinity as described in Section~\ref{sub:regular}.
 
@@ -269,7 +264,7 @@ In the above examples the runtime dropped from \SI{0.613}{\second}, to \SI{0.362
 
 By default, the distances computed by \andi are \emph{Jukes-Cantor} corrected \cite{jukescantor}. Other evolutionary models are also implemented (Kimura, raw). The \lstinline$--model$ parameter can be used to switch between them.
 
-Since version 0.9.4 \andi includes a bootstrapping method. It can be activated via the \lstinline$--bootstrap$ or \lstinline$-b$ switch. This option takes a numeric argument representing the number of matrices to create. The output can then be piped into \algo{phylip}.
+Since version 0.9.4 \andi includes a bootstrapping method. It can be activated via the \lstinline$--bootstrap$ or \lstinline$-b$ switch. This option takes a numeric argument representing the number of matrices to create. The output can then be piped into \algo{phylip}. For more information on computing support values from distance matrices see \cite{afra}.
 
 \begin{lstlisting}
 ~ %  andi -b 2 ../test/1M.1.fasta
@@ -376,7 +371,7 @@ The unit tests are located in the \andi repository under the \lstinline$./test$ 
 ~/andi %   make check
 \end{lstlisting}
 
-\noindent The unit tests are also checked each time a commit is sent to the repository. This is done via \algo{TravisCI}.\footnote{\url{https://travis-ci.org/EvolBioInf/andi}} Thus, a warning is produced, when the builds fail, or the unit tests to not run successfully. Currently, the unit tests cover more than 80\% of the code. This is computed via the \algo{Travis} builds and a service called \algo{Coveralls}.\footnote{\url{https://coveralls.io/r/EvolBioInf/andi}}
+\noindent The unit tests are also checked each time a commit is sent to the repository. This is done via \algo{TravisCI}.\footnote{\url{https://travis-ci.org/EvolBioInf/andi}} Thus, a warning is produced, when the builds fail, or the unit tests to not run successfully. Currently, the unit tests cover more than 75\% of the code. This is computed via the \algo{Travis} builds and a service called \algo{Coveralls}.\footnote{\url{https://coveralls.io/r/EvolBioInf/andi}} Unfortunately, coveralls is broken at this point in time.
 
 \section{Known Issues}
 
@@ -384,6 +379,9 @@ These minor issues are known. I intend to fix them, when I have time.
 
 \begin{enumerate}
   \item This code will not work under Windows. At two places Unix-only code is used: filepath-separators are assumed to be \lstinline$/$ and file-descriptors are used for I/O.
+  \item Only the first 9 characters are printed in the output matrix. This can make long gi numbers indistinguishable.
+  \item Unit tests for the bootstrapped matrices are missing.
+  \item Cached intervals are sometimes not “as deep as the could be”. If that got fixed \lstinline$get_match_cache$ could bail out on \lstinline$ij.lcp < CACHE_LENGTH$. However the \lstinline$esa_init_cache$ code is the most fragile part and should be handled with care.
 \end{enumerate}
 
 
@@ -393,7 +391,7 @@ A release should be a stable version of \andi with significant improvements over
 
 %\subsection{Preparing a new Release}
 
-Once \andi is matured, the new features implemented, and all tests were run, a new release can be created. First, increase the version number in \lstinline$configure.ac$. Commit that change in git, and tag this commit with \lstinline$vX.y$. Create another commit, where you set the version number to the next release (e.\,g., \lstinline$vX.z-beta$). This assures that there is only one commit and build with that specific version. Now return to the previous commit \lstinline$git checkout vX.y$.
+Once \andi is matured, the new features implemented, and all tests were run, a new release can be created. First, increase the version number in \lstinline$configure.ac$. Commit that change in git, and tag this commit with \lstinline$vX.y$. Tags should be annotated and signed, if possible. This manual then needs manual rebuilding.
 
 Ensure that \andi is ready for packaging with \algo{autoconf}.
 
@@ -414,9 +412,11 @@ andi-0.9.1-beta.tar.gz
 =================================================
 \end{lstlisting}
 
-If the command does not build successfully, no tarballs will be created. This may necessitate further study of \algo{autoconf} and \algo{automake}. 
+If the command does not build successfully, no tarballs will be created. This may necessitate further study of \algo{autoconf} and \algo{automake}.
 
+Also verify that the recent changes did not create a performance regression. This includes testing both ends of the scale: \eco and \pneu. Both should be reasonable close to previous releases.
 
+Create another commit, where you set the version number to the next release (e.\,g., \lstinline$vX.z-beta$). This assures that there is only one commit and build with that specific version.
 
 \backmatter
 %\addcontentsline{toc}{chapter}{Bibliography}

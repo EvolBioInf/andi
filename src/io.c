@@ -5,6 +5,7 @@
 #define _GNU_SOURCE
 #include <fcntl.h>
 #include <math.h>
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -40,6 +41,13 @@ void read_fasta_join(const char *file_name, dsa_t *dsa) {
 	}
 
 	seq_t joined = dsa_join(&single);
+
+	const size_t LENGTH_LIMIT = (INT_MAX - 1) / 2;
+	if (joined.len > LENGTH_LIMIT) {
+		warnx("The input sequence %s is too long. The technical limit is %zu.",
+			  file_name, LENGTH_LIMIT);
+		return;
+	}
 
 	/* In join mode we try to be clever about the sequence name. Given the file
 	 * path we extract just the file name. ie. path/file.ext -> file

@@ -44,8 +44,11 @@ void read_fasta_join(const char *file_name, dsa_t *dsa) {
 
 	const size_t LENGTH_LIMIT = (INT_MAX - 1) / 2;
 	if (joined.len > LENGTH_LIMIT) {
-		warnx("The input sequence %s is too long. The technical limit is %zu.",
+		warnx("The joined sequence %s is too long. The technical limit is "
+			  "%zu.",
 			  file_name, LENGTH_LIMIT);
+		dsa_free(&single);
+		dsa_free(&joined);
 		return;
 	}
 

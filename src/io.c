@@ -48,7 +48,7 @@ void read_fasta_join(const char *file_name, dsa_t *dsa) {
 			  "%zu.",
 			  file_name, LENGTH_LIMIT);
 		dsa_free(&single);
-		dsa_free(&joined);
+		seq_free(&joined);
 		return;
 	}
 

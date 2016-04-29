@@ -32,6 +32,8 @@
 void read_fasta_join(const char *file_name, dsa_t *dsa) {
 	if (!file_name || !dsa) return;
 
+	int saved_short = FLAGS & F_SHORT; // save F_SHORT bit
+
 	dsa_t single;
 	dsa_init(&single);
 	read_fasta(file_name, &single);
@@ -41,6 +43,18 @@ void read_fasta_join(const char *file_name, dsa_t *dsa) {
 	}
 
 	seq_t joined = dsa_join(&single);
+
+	// In the above call to read_fasta the F_SHORT bit may get set for a contig.
+	// However, we do not want to produce an error message for short contigs in
+	// join mode. Thus we have to clear that bit, whilst retaining any true bit
+	// set for a short joined genome.
+	FLAGS &= ~F_SHORT; // clear bit
+	FLAGS |= saved_short; // restore saved bit
+
+	// check joined genome
+	if (joined.len < 1000) {
+		FLAGS |= F_SHORT;
+	}
 
 	const size_t LENGTH_LIMIT = (INT_MAX - 1) / 2;
 	if (joined.len > LENGTH_LIMIT) {

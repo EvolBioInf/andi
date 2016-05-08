@@ -334,17 +334,18 @@ Here be an explanation of all possible errors. Other errors may occur and are du
 
 \section{Sequence Related Messages}
 
-\subsection*{Less than two sequences given}
+\subsection*{Unexpected Character}
 
-As \andi tries to compare sequences, at least two need to be supplied. Note that \andi may have regarded some of your given sequences as unusable.
+\andi is pretty pedantic about the formatting of \algo{FASTA} files. If you violate the syntax, \andi will print the file name, the line and the problematic character. These errors are non-recovering, meaning no further sequences are read from the invalid file. The checks are implemented by the \href{https://github.com/kloetzl/pfasta}{\algo{pfasta}} library.
 
-\subsection*{Too Short Sequence}
-
-\andi was designed for big data sets of whole genomes. On short sequences the distance estimates are inaccurate. Use an multiple sequence alignment instead.
 
 \subsection*{Non acgtACGT Nucleotides Stripped}
 
 Our models of genome evolution (JC, Kimura) only work on the four canonical types of nucleotides. All others are stripped from the sequences. This can be ignored in most cases.
+
+\subsection*{Too Short Sequence}
+
+\andi was designed for big data sets of whole genomes. On short sequences the distance estimates are inaccurate. Use an multiple sequence alignment instead.
 
 \subsection*{Too Long Sequence}
 
@@ -353,6 +354,10 @@ Our models of genome evolution (JC, Kimura) only work on the four canonical type
 \subsection*{Empty Sequence}
 
 One of the given sequences contained either no nucleotides at all, or only non-canonical ones.
+
+\subsection*{Less than two sequences given}
+
+As \andi tries to compare sequences, at least two need to be supplied. Note that \andi may have regarded some of your given sequences as unusable.
 
 \subsection*{Maximum Number of Sequences}
 
@@ -377,12 +382,13 @@ This should not happen.
 
 This should not happen, either.
 
+\subsection*{Skipped and ignored Arguments}
+
+Some command line parameters of \andi require arguments. If these are not of the expected type, a warning is given. See Section~\ref{sec:options} for their correct usage.
 
 \subsection*{Todo}
 
 \begin{itemize}
-  \item Skipped/Ignored arguments.
-  \item pfasta
   \item nan
   \item 5\% homology
 \end{itemize}

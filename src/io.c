@@ -180,9 +180,9 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 
 	printf("%zu\n", n);
 	for (i = 0; i < n; i++) {
-		// Print exactly nine characters of the name. Pad with spaces if
+		// Print exactly ten characters of the name. Pad with spaces if
 		// necessary.
-		printf("%-9.9s", sequences[i].name);
+		printf("%-10.10s", sequences[i].name);
 
 		for (j = 0; j < n; j++) {
 			// use scientific notation for small numbers

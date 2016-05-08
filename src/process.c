@@ -54,13 +54,7 @@ size_t minAnchorLength(double p, double g, size_t l) {
 /**
  * @brief Calculates the binomial coefficient of n and k.
  *
- * We used to use gsl_sf_lnchoose(xx,kk) for this functionality.
- * After all, why implement something that has already been done?
- * Well, the reason is simplicity: GSL is used for only this one
- * function and the input (n<=20) is not even considered big.
- * Hence its much easier to have our own implementation and ditch
- * the GSL dependency even if that means our code is a tiny bit
- * less optimized and slower.
+ * We could (and probalby should) use gsl_sf_lnchoose(xx,kk) for this.
  *
  * @param n - The n part of the binomial coefficient.
  * @param k - analog.

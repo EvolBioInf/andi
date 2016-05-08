@@ -25,6 +25,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -55,7 +56,8 @@ void version(void);
  *
  * The main function reads and parses the commandline arguments. Depending on
  * the set flags it reads the input files and forwards the contained sequences
- * to processing.
+ * to processing. Also it verifies the input for correctness and issues warnings
+ * and errors.
  */
 int main(int argc, char *argv[]) {
 	int c;
@@ -244,6 +246,12 @@ int main(int argc, char *argv[]) {
 	// seed the random number generator with the current time
 	gsl_rng_set(RNG, time(NULL));
 
+	// Warn about non ACGT residues.
+	if (FLAGS & F_NON_ACGT) {
+		warnx("The input sequences contained characters other than acgtACGT. "
+			  "These were automatically stripped to ensure correct results.");
+	}
+
 	// validate sequence correctness
 	const seq_t *seq = dsa_data(&dsa);
 	for (size_t i = 0; i < n; ++i, seq++) {
@@ -252,19 +260,26 @@ int main(int argc, char *argv[]) {
 				  "will be truncated in the output to '%.10s'.",
 				  seq->name, seq->name);
 		}
+
+		const size_t LENGTH_LIMIT = (INT_MAX - 1) / 2;
+		if (seq->len > LENGTH_LIMIT) {
+			errx(1, "The sequence %s is too long. The technical limit is %zu.",
+				 seq->name, LENGTH_LIMIT);
+		}
+
+		if (seq->len == 0) {
+			errx(1, "The sequence %s is empty.", seq->name);
+		}
+
+		if (seq->len < 1000) {
+			FLAGS |= F_SHORT;
+		}
 	}
 
-	// The sequence length is validated in seq_init.
 	if (FLAGS & F_SHORT) {
 		warnx("One of the given input sequences is shorter than a thousand "
 			  "nucleotides. This may result in inaccurate distances. Try an "
 			  "alignment instead.");
-	}
-
-	// Warn about non ACGT residues.
-	if (FLAGS & F_NON_ACGT) {
-		warnx("The input sequences contained characters other than acgtACGT. "
-			  "These were automatically stripped to ensure correct results.");
 	}
 
 	// compute distance matrix

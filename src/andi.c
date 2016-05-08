@@ -199,9 +199,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	dsa_t dsa;
-	if (dsa_init(&dsa)) {
-		errx(errno, "Out of memory.");
-	}
+	dsa_init(&dsa);
 
 	const char *file_name;
 

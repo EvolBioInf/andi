@@ -328,6 +328,65 @@ EOF
 \end{figure}
 
 
+\chapter{Warnings and Errors}
+
+Here be an explanation of all possible errors. Other errors may occur and are due to the failure of underlying functions (e.\,g.~\lstinline$read(3)$). All warning messages are printed to \lstinline$stderr$. Most errors are non-recoverable and will result in \andi exiting with a non-zero state.
+
+\section{Sequence Related Messages}
+
+\subsection*{Less than two sequences given}
+
+As \andi tries to compare sequences, at least two need to be supplied. Note that \andi may have regarded some of your given sequences as unusable.
+
+\subsection*{Too Short Sequence}
+
+\andi was designed for big data sets of whole genomes. On short sequences the distance estimates are inaccurate. Use an multiple sequence alignment instead.
+
+\subsection*{Non acgtACGT Nucleotides Stripped}
+
+Our models of genome evolution (JC, Kimura) only work on the four canonical types of nucleotides. All others are stripped from the sequences. This can be ignored in most cases.
+
+\subsection*{Too Long Sequence}
+
+\algo{libdivsufsort} limits the length of a sequence to 31 bits. That count includes the reverse complement. So the technical limit for a sequence analysis is $2^{30} = 1.073.741.824$. Unfortunately, that excludes (full) human and mice genomes. Per-chromosome analysis works just fine.
+
+\subsection*{Empty Sequence}
+
+One of the given sequences contained either no nucgenomesgenomesleotides at all, or only non-canonical ones.
+
+\subsection*{Maximum Number of Sequences}
+
+The maximum number of sequences \andi can possible compare is huge (roughly $457.845.052$). I doubt anyone will ever reach that limit. Please send me a mail, if you do.
+
+\section{Technical Messages}
+
+
+\subsection*{Out of Memory}
+
+If \andi runs out of memory, it gives up. Either free memory, run \andi on a bigger machine, try the \lstinline$--low-memory$ mode or reduce the number of threads.
+
+\subsection*{RNG allocation}
+
+Some technical thing failed. If it keeps failing repeatedly, file a bug.
+
+\subsection*{Bootstrapping failed}
+
+This should not happen.
+
+
+
+\subsection*{Todo}
+
+\begin{itemize}
+  \item Skipped/Ignored arguments.
+  \item pfasta
+  \item nan
+  \item 5\% homology
+  \item failed index
+  huh?
+\end{itemize}
+
+
 
 
 \chapter{DevOps} %%%%%

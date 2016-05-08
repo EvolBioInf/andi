@@ -244,6 +244,15 @@ int main(int argc, char *argv[]) {
 	// seed the random number generator with the current time
 	gsl_rng_set(RNG, time(NULL));
 
+	// validate sequence correctness
+	const seq_t *seq = dsa_data(&dsa);
+	for (size_t i = 0; i < n; ++i, seq++) {
+		if (strlen(seq->name) > 10) {
+			warnx("The sequence name '%s' is longer than ten characters. It "
+				  "will be truncated in the output to '%.10s'.",
+				  seq->name, seq->name);
+		}
+	}
 
 	// The sequence length is validated in seq_init.
 	if (FLAGS & F_SHORT) {

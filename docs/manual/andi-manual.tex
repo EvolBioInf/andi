@@ -365,7 +365,6 @@ The maximum number of sequences \andi can possible compare is huge (roughly $457
 
 \section{Technical Messages}
 
-
 \subsection*{Out of Memory}
 
 If \andi runs out of memory, it gives up. Either free memory, run \andi on a bigger machine, try the \lstinline$--low-memory$ mode or reduce the number of threads.
@@ -386,14 +385,18 @@ This should not happen, either.
 
 Some command line parameters of \andi require arguments. If these are not of the expected type, a warning is given. See Section~\ref{sec:options} for their correct usage.
 
-\subsection*{Todo}
 
-\begin{itemize}
-  \item nan
-  \item 5\% homology
-\end{itemize}
+\section{Output-related Warnings}
 
+As the input sequences get more evolutionary divergent, \andi finds less anchors. With less anchors, less nucleotides are cosidered homologous between two sequences. If no anchors are found comparison fails and \lstinline!nan! is printed instead. See out paper and especiallt Figure~2 for details.
 
+\subsection*{NaN}
+
+No anchors were found. Your sequences are very divergent ($d>0.5$) or sprout a lot of indels that make comparison difficult.
+
+\subsection*{Little Homology}
+
+Very few anchors were found and thus only a tiny part of the sequences is considered homologous. Expect that the given distance is errorneous.
 
 
 \chapter{DevOps} %%%%%

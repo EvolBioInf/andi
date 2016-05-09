@@ -448,9 +448,9 @@ These minor issues are known. I intend to fix them, when I have time.
 
 \begin{enumerate}
   \item This code will not work under Windows. At two places Unix-only code is used: filepath-separators are assumed to be \lstinline$/$ and file-descriptors are used for I/O.
-  \item Only the first 9 characters are printed in the output matrix. This can make long gi numbers indistinguishable.
+  \item Only the first 10 characters are printed in the output matrix. This can make long gi numbers indistinguishable. In version 0.10 we started printing a warning for this.
   \item Unit tests for the bootstrapped matrices are missing.
-  \item Cached intervals are sometimes not “as deep as the could be”. If that got fixed \lstinline$get_match_cache$ could bail out on \lstinline$ij.lcp < CACHE_LENGTH$. However the \lstinline$esa_init_cache$ code is the most fragile part and should be handled with care.
+  \item Cached intervals are sometimes not “as deep as they could be”. If that got fixed \lstinline$get_match_cache$ could bail out on \lstinline$ij.lcp < CACHE_LENGTH$. However the \lstinline$esa_init_cache$ code is the most fragile part and should be handled with care.
 \end{enumerate}
 
 

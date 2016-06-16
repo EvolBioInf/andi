@@ -16,13 +16,13 @@
 #endif
 
 /** @brief This function calls dist_andi for pairs of subjects and queries, and
- *thereby fills the distance matrix.
+ * thereby fills the distance matrix.
  *
  * This function is actually two functions. It is one template that gets
- *compiled into two functions via
- * preprocessor hacks. The reason is DRY (Do not Repeat Yourselves).
- *   The two functions only differ by their name and pragmas; i.e. They run in
- *different parallel modes.
+ * compiled into two functions via preprocessor hacks. The reason is DRY (Do not
+ * Repeat Yourselves).
+ * The two functions only differ by their name and pragmas; i.e. They run in
+ * different parallel modes.
  * `distMatrix` is faster than `distMatrixLM` but needs more memory.
  *
  * @param sequences - The sequences to compare
@@ -53,15 +53,15 @@ void NAME(struct model *M, const seq_t *sequences, size_t n) {
 				continue;
 			}
 
-			// TODO: Provide a nicer progress indicator.
-			if (FLAGS & F_EXTRA_VERBOSE) {
-#pragma omp critical
-				{ fprintf(stderr, "comparing %zu and %zu\n", i, j); }
-			}
-
 			size_t ql = sequences[j].len;
 
 			M(i, j) = dist_anchor(&E, sequences[j].S, ql, subject.gc);
+		}
+
+		// TODO: Provide a nicer progress indicator.
+		if (FLAGS & F_EXTRA_VERBOSE) {
+#pragma omp critical
+			fprintf(stderr, "Subject %s done.\n", sequences[i].name);
 		}
 
 		esa_free(&E);

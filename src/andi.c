@@ -314,7 +314,7 @@ void usage(int status) {
 		"  -h, --help        Display this help and exit\n"
 		"      --version     Output version information and acknowledgments\n"};
 
-	printf("%s", str);
+	fprintf(status == EXIT_SUCCESS ? stdout : stderr, "%s", str);
 	exit(status);
 }
 

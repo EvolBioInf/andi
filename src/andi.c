@@ -48,7 +48,7 @@ double RANDOM_ANCHOR_PROP = 0.05;
 gsl_rng *RNG = NULL;
 int MODEL = M_JC;
 
-void usage(void);
+void usage(int);
 void version(void);
 
 /**
@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 
 		switch (c) {
 			case 0: break;
-			case 'h': usage(); break;
+			case 'h': usage(EXIT_SUCCESS); break;
 			case 'v':
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
 				break;
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			case '?': /* intentional fall-through */
-			default: usage(); break;
+			default: usage(EXIT_FAILURE); break;
 		}
 	}
 
@@ -291,7 +291,7 @@ int main(int argc, char *argv[]) {
 /**
  * Prints the usage to stdout and then exits successfully.
  */
-void usage(void) {
+void usage(int status) {
 	const char str[] = {
 		"Usage: andi [-jlv] [-b INT] [-p FLOAT] [-m MODEL] [-t INT] FILES...\n"
 		"\tFILES... can be any sequence of FASTA files. If no files are "
@@ -315,7 +315,7 @@ void usage(void) {
 		"      --version     Output version information and acknowledgments\n"};
 
 	printf("%s", str);
-	exit(EXIT_SUCCESS);
+	exit(status);
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015, Fabian Klötzl <fabian-pfasta@kloetzl.info>
+ * Copyright (c) 2015-2016, Fabian Klötzl <fabian-pfasta@kloetzl.info>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -78,7 +78,7 @@
 #define PF_FAIL_STR(...)                                                       \
 	do {                                                                       \
 		pf->errno__ = 0;                                                       \
-		(void) snprintf(pf->errstr_buf, PF_ERROR_STRING_LENGTH, __VA_ARGS__);  \
+		(void)snprintf(pf->errstr_buf, PF_ERROR_STRING_LENGTH, __VA_ARGS__);   \
 		pf->errstr = pf->errstr_buf;                                           \
 		return_code = -1;                                                      \
 		goto cleanup;                                                          \
@@ -454,7 +454,10 @@ static inline void dynstr_free(dynstr *ds) {
  */
 
 static inline char *dynstr_move(dynstr *ds) {
-	char *out = ds->str;
+	char *out = reallocarray(ds->str, ds->count + 1, 1);
+	if (!out) {
+		out = ds->str;
+	}
 	out[ds->count] = '\0';
 	*ds = (dynstr){NULL, 0, 0};
 	return out;

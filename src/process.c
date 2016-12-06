@@ -17,9 +17,6 @@
 #include "process.h"
 #include "sequence.h"
 
-#include <gsl/gsl_rng.h>
-#include <gsl/gsl_randist.h>
-
 #ifdef _OPENMP
 #include <omp.h>
 #endif

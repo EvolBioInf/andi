@@ -120,7 +120,7 @@ void print_seq( unsigned base_seed, unsigned mut_seed, int length, int line_leng
 
 void usage(){
 	const static char *str = {
-		"test_rand [-l length] [-d dist]\n"
+		"usage: test_fasta [-l length] [-d dist...] [-L line length] [-s seed] [-r raw]\n"
 	};
 	cerr << str;
 }

@@ -47,6 +47,7 @@ long unsigned int BOOTSTRAP = 0;
 double RANDOM_ANCHOR_PROP = 0.05;
 gsl_rng *RNG = NULL;
 int MODEL = M_JC;
+int EXIT_CODE = EXIT_SUCCESS;
 
 void usage(int);
 void version(void);
@@ -280,12 +281,15 @@ int main(int argc, char *argv[]) {
 			  "alignment instead.");
 	}
 
+	// side channel
+	EXIT_CODE = EXIT_SUCCESS;
+
 	// compute distance matrix
 	calculate_distances(dsa_data(&dsa), n);
 
 	dsa_free(&dsa);
 	gsl_rng_free(RNG);
-	return 0;
+	return EXIT_CODE;
 }
 
 /**

@@ -154,6 +154,7 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 			double coverage = model_coverage(&datum);
 
 			if (isnan(dist) && warnings) {
+				EXIT_CODE = EXIT_FAILURE;
 				const char str[] = {
 					"For the two sequences '%s' and '%s' the distance "
 					"computation failed and is reported as nan. "

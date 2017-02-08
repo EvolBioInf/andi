@@ -38,7 +38,7 @@ extern double RANDOM_ANCHOR_PROP;
 extern long unsigned int BOOTSTRAP;
 
 /**
- * A globel random number generator. Has to be seedable.
+ * A global random number generator. Has to be seedable.
  */
 extern gsl_rng *RNG;
 
@@ -48,6 +48,11 @@ extern gsl_rng *RNG;
 extern int MODEL;
 
 enum { M_RAW, M_JC, M_KIMURA };
+
+/**
+ * Global exit code. Should be non-zero on error.
+ */
+extern int EXIT_CODE;
 
 /**
  * This enum contains the available flags. Please note that all

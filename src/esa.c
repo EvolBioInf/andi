@@ -311,7 +311,7 @@ int esa_init_CLD(esa_s *C) {
 	saidx_t *CLD = C->CLD = malloc((C->len + 1) * sizeof(*CLD));
 	CHECK_MALLOC(CLD);
 
-	saidx_t *LCP = C->LCP;
+	const saidx_t *LCP = C->LCP;
 
 	typedef struct pair_s { saidx_t idx, lcp; } pair_t;
 
@@ -365,7 +365,7 @@ int esa_init_CLD(esa_s *C) {
  */
 int esa_init_LCP(esa_s *C) {
 	const char *S = C->S;
-	saidx_t *SA = C->SA;
+	const saidx_t *SA = C->SA;
 	saidx_t len = C->len;
 
 	// Trivial safety checks

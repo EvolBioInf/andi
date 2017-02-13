@@ -1,0 +1,28 @@
+#compdef andi
+
+# This file allows zsh to complete arguments for andi. As the syntax is
+# totally non-obvious, I'll explain the basics here. For details see
+#  http://zsh.sourceforge.net/Doc/Release/Completion-System.html
+# Each line consists of three parts: (A){B}[C]
+# The B part performs brace expansion as on the commandline. Thus each
+# line with braces gets translated into multiple arguments! Also the
+# B part lists the relevant argument for which we are trying to set
+# the completion rules. The A part simply states that B shall not be
+# completed if A is already present. i.e. Most flags only make sense once,
+# with the exception of -v. The string C is simply the message that is
+# displayed to the user.
+
+local args
+args+=(
+	'(-b --bootstrap)'{-b+,--bootstrap=}'[Print additional bootstrap matrices]'
+	'(-j --join)'{-j,--join}'[Treat all sequences from one file as a single genome]'
+	'(-l --low-memory)'{-l,--low-memory}'[Use less memory at the cost of speed]'
+	'(-m --model)'{-m+,--model=}'[Pick an evolutionary model]::when:(Raw JC Kimura)'
+	'(-p)-p+[Significance of an anchor pair; default\: 0.05]'
+	{-v,--verbose}'[Prints additional information]'
+	'(-t --threads)'{-t+,--threads=}'[The number of threads to be used; by default, all available processors are used]'
+	'(-h --help)'{-h,--help}'[Display help and exit]'
+	'--version[Output version information and acknowledgments]'
+)
+
+_arguments -w -s -S $args[@] '*:file:_files'

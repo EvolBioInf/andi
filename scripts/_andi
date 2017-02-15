@@ -14,13 +14,17 @@
 
 local args
 args+=(
-	'(-b --bootstrap)'{-b+,--bootstrap=}'[Print additional bootstrap matrices]'
+	'(-b --bootstrap)'{-b+,--bootstrap=}'[Print additional bootstrap matrices]:int:'
 	'(-j --join)'{-j,--join}'[Treat all sequences from one file as a single genome]'
 	'(-l --low-memory)'{-l,--low-memory}'[Use less memory at the cost of speed]'
-	'(-m --model)'{-m+,--model=}'[Pick an evolutionary model]::when:(Raw JC Kimura)'
-	'(-p)-p+[Significance of an anchor pair; default\: 0.05]'
-	{-v,--verbose}'[Prints additional information]'
-	'(-t --threads)'{-t+,--threads=}'[The number of threads to be used; by default, all available processors are used]'
+	'(-m --model)'{-m+,--model=}'[Pick an evolutionary model]:model:((
+		Raw\:Uncorrected\ distances
+		JC\:Jukes\-Cantor\ corrected
+		Kimura\:Kimura\-two\-parameter
+	))'
+	'(-p)-p+[Significance of an anchor pair; default\: 0.05]:float:'
+	'*'{-v,--verbose}'[Prints additional information]'
+	'(-t --threads)'{-t+,--threads=}'[The number of threads to be used; by default, all available processors are used]:num_threads:'
 	'(-h --help)'{-h,--help}'[Display help and exit]'
 	'--version[Output version information and acknowledgments]'
 )

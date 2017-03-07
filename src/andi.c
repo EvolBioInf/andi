@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
 
 		switch (c) {
 			case 0: {
-				char *option_str = long_options[option_index].name;
+				const char *option_str = long_options[option_index].name;
 				if (strcasecmp(option_str, "version") == 0) {
 					version();
 				}

@@ -58,7 +58,7 @@ typedef struct dsa_s {
 int dsa_init(dsa_t *A);
 void dsa_push(dsa_t *A, seq_t S);
 void dsa_free(dsa_t *A);
-size_t dsa_size(dsa_t *A);
+size_t dsa_size(const dsa_t *A);
 seq_t *dsa_data(dsa_t *A);
 
 seq_t dsa_join(dsa_t *dsa);

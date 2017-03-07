@@ -54,7 +54,7 @@ void dsa_free(dsa_t *A) {
 }
 
 /** Returns the number of sequences stored within an array. */
-size_t dsa_size(dsa_t *A) {
+size_t dsa_size(const dsa_t *A) {
 	return A->size;
 }
 

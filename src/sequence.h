@@ -48,9 +48,8 @@ void seq_subject_free(seq_subject *S);
 int seq_init(seq_t *S, const char *seq, const char *name);
 
 /**
- * A dynamically growing structure for sequences.
+ * @brief A dynamically growing structure for sequences.
  */
-
 typedef struct dsa_s {
 	seq_t *data;
 	size_t capacity, size;

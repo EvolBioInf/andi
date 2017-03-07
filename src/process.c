@@ -89,7 +89,7 @@ size_t binomial_coefficient(size_t n, size_t k) {
  * set. See Haubold et al. (2009).
  *
  * @param x - The maximum length of a shustring.
- * @param g - The the half of the relative amount of GC in the DNA.
+ * @param p - The half of the relative amount of GC in the DNA.
  * @param l - The length of the subject.
  * @returns The probability of a certain shustring length.
  */
@@ -124,11 +124,12 @@ double shuprop(size_t x, double p, size_t l) {
  * substrings that exist in both sequences. Then it manually checks for
  * mutations between those anchors.
  *
- * @return An estimate for the number of mutations within homologous regions.
  * @param C - The enhanced suffix array of the subject.
  * @param query - The actual query string.
  * @param query_length - The length of the query string. Needed for speed
  * reasons.
+ * @param gc - The relative GC content of the subject.
+ * @returns A matrix with estimates of base substitutions.
  */
 model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 				  double gc) {
@@ -270,23 +271,12 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 	return ret;
 }
 
-/**
- * @brief Computes the distance matrix.
- *
- * The distMatrix() populates the D matrix with computed distances.
- * @param sequences An array of pointers to the sequences.
- * @param n The number of sequences.
+/*
+ * Include distMatrix and distMatrixLM.
  */
 #define FAST
 #include "dist_hack.h"
 
-/**
- * @brief Computes the distance matrix.
- *
- * The distMatrixLM() populates the D matrix with computed distances.
- * @param sequences An array of pointers to the sequences.
- * @param n The number of sequences.
- */
 #undef FAST
 #include "dist_hack.h"
 

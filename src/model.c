@@ -124,12 +124,13 @@ double estimate_KIMURA(const model *MM) {
 	return dist <= 0.0 ? 0.0 : dist;
 }
 
-/* @brief Bootstrap a mutation matrix.
+/** @brief Bootstrap a mutation matrix.
  *
  * The classical bootstrapping process, as described by Felsenstein, resamples
  * all nucleotides of a MSA. As andi only computes a pairwise alignment, this
  * process boils down to a simple multinomial distribution. We just have to
- * resample the elements of the mutation matrix. (Paper in review.)
+ * resample the elements of the mutation matrix. See Klötzl & Haubold (2016)
+ * for details. http://www.mdpi.com/2075-1729/6/1/11/htm
  *
  * @param MM - The original mutation matrix.
  * @returns A bootstrapped mutation matrix.

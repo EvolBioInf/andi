@@ -61,10 +61,7 @@ void version(void);
  * and errors.
  */
 int main(int argc, char *argv[]) {
-	int c;
-	int version_flag = 0;
-
-	struct option long_options[] = {{"version", no_argument, &version_flag, 1},
+	struct option long_options[] = {{"version", no_argument, NULL, 0},
 									{"help", no_argument, NULL, 'h'},
 									{"verbose", no_argument, NULL, 'v'},
 									{"join", no_argument, NULL, 'j'},
@@ -83,16 +80,21 @@ int main(int argc, char *argv[]) {
 	while (1) {
 
 		int option_index = 0;
-
-		c = getopt_long(argc, argv, "jvht:p:m:b:l", long_options,
-						&option_index);
+		int c = getopt_long(argc, argv, "jvht:p:m:b:l", long_options,
+							&option_index);
 
 		if (c == -1) {
 			break;
 		}
 
 		switch (c) {
-			case 0: break;
+			case 0: {
+				const char *option_str = long_options[option_index].name;
+				if (strcasecmp(option_str, "version") == 0) {
+					version();
+				}
+				break;
+			}
 			case 'h': usage(EXIT_SUCCESS); break;
 			case 'v':
 				FLAGS |= FLAGS & F_VERBOSE ? F_EXTRA_VERBOSE : F_VERBOSE;
@@ -185,10 +187,6 @@ int main(int argc, char *argv[]) {
 			case '?': /* intentional fall-through */
 			default: usage(EXIT_FAILURE); break;
 		}
-	}
-
-	if (version_flag) {
-		version();
 	}
 
 	argc -= optind;

@@ -17,14 +17,29 @@
 #include "global.h"
 #include "io.h"
 
+/**
+ * @brief Access an element.
+ * @param sv - The base vector.
+ * @param index - The element index to access.
+ * @returns the string at position `index`.
+ */
 char *string_vector_at(struct string_vector *sv, size_t index) {
 	return sv->data[index];
 }
 
+/**
+ * @brief Access the underlying buffer.
+ * @param sv - The base vector.
+ * @returns the underlying buffer.
+ */
 char **string_vector_data(struct string_vector *sv) {
 	return sv->data;
 }
 
+/**
+ * @brief Free all data.
+ * @param sv - The base vector.
+ */
 void string_vector_free(struct string_vector *sv) {
 	size_t i = 0;
 	for (; i < sv->size; i++) {
@@ -33,6 +48,10 @@ void string_vector_free(struct string_vector *sv) {
 	free(sv->data);
 }
 
+/**
+ * @brief Initialise the vector.
+ * @param sv - The base vector.
+ */
 void string_vector_init(struct string_vector *sv) {
 	sv->data = malloc(sizeof(*sv->data) * 4);
 	CHECK_MALLOC(sv->data);
@@ -41,6 +60,11 @@ void string_vector_init(struct string_vector *sv) {
 	sv->size = 0;
 }
 
+/**
+ * @brief Adds a copy to the end of the vector.
+ * @param sv - The base vector.
+ * @param str - The new string to add.
+ */
 void string_vector_push_back(struct string_vector *sv, const char *str) {
 	if (sv->size < sv->capacity) {
 		sv->data[sv->size++] = strdup(str);
@@ -53,6 +77,11 @@ void string_vector_push_back(struct string_vector *sv, const char *str) {
 	}
 }
 
+/**
+ * @brief Add a file name to the end of the vector, directly.
+ * @param sv - The base vector.
+ * @param str - The string to emplace.
+ */
 void string_vector_emplace_back(struct string_vector *sv, char *str) {
 	if (sv->size < sv->capacity) {
 		sv->data[sv->size++] = str;
@@ -65,10 +94,20 @@ void string_vector_emplace_back(struct string_vector *sv, char *str) {
 	}
 }
 
+/**
+ * @brief Return the number of elements.
+ * @param sv - The base vector.
+ * @returns the size of the vector.
+ */
 size_t string_vector_size(const struct string_vector *sv) {
 	return sv->size;
 }
 
+/**
+ * @brief Read a *fof* and add it's contents into a vector.
+ * @param file_name - The file of file names aka. fof.
+ * @param sv - The vector to add file names to.
+ */
 void read_into_string_vector(const char *file_name, struct string_vector *sv) {
 	FILE *file = strcmp(file_name, "-") ? fopen(file_name, "r") : stdin;
 	if (!file) {
@@ -85,7 +124,17 @@ void read_into_string_vector(const char *file_name, struct string_vector *sv) {
 		if (check == -1) {
 			err(errno, "%s", file_name);
 		}
-		str[check - 1] = '\0'; // remove newline character
+
+		char *nl = strchr(str, '\n');
+		if (nl) {
+			*nl = '\0'; // remove newline character
+		}
+
+		// ignore empty lines
+		if (strlen(str) == 0) {
+			continue;
+		}
+
 		string_vector_emplace_back(sv, str);
 	}
 

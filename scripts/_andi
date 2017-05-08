@@ -12,21 +12,26 @@
 # with the exception of -v. The string C is simply the message that is
 # displayed to the user.
 
-local args
+local info="-h --help --version"
+local args ret=1
+
 args+=(
-	'(-b --bootstrap)'{-b+,--bootstrap=}'[Print additional bootstrap matrices]:int:'
-	'(-j --join)'{-j,--join}'[Treat all sequences from one file as a single genome]'
-	'(-l --low-memory)'{-l,--low-memory}'[Use less memory at the cost of speed]'
-	'(-m --model)'{-m+,--model=}'[Pick an evolutionary model]:model:((
+	"($info -b --bootstrap)"{-b+,--bootstrap=}'[Print additional bootstrap matrices]:int:'
+	"($info -j --join)"{-j,--join}'[Treat all sequences from one file as a single genome]'
+	"($info -l --low-memory)"{-l,--low-memory}'[Use less memory at the cost of speed]'
+	"($info -m --model)"{-m+,--model=}'[Pick an evolutionary model]:model:((
 		Raw\:Uncorrected\ distances
 		JC\:Jukes\-Cantor\ corrected
 		Kimura\:Kimura\-two\-parameter
 	))'
-	'(-p)-p+[Significance of an anchor pair; default\: 0.05]:float:'
-	'*'{-v,--verbose}'[Prints additional information]'
-	'(-t --threads)'{-t+,--threads=}'[The number of threads to be used; by default, all available processors are used]:num_threads:'
-	'(-h --help)'{-h,--help}'[Display help and exit]'
-	'--version[Output version information and acknowledgments]'
+	"($info)-p+[Significance of an anchor pair; default\: 0.05]:float:"
+	"($info)*"{-v,--verbose}'[Prints additional information]'
+	'($info -t --threads)'{-t+,--threads=}'[The number of threads to be used; by default, all available processors are used]:num_threads:'
+	'(- *)'{-h,--help}'[Display help and exit]'
+	'(- *)--version[Output version information and acknowledgments]'
+	'*:file:_files'
 )
 
-_arguments -w -s -S $args[@] '*:file:_files'
+_arguments -w -s -S $args[@] && ret=0
+
+return ret

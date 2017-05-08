@@ -4,17 +4,96 @@
  */
 #define _GNU_SOURCE
 #include <fcntl.h>
-#include <math.h>
 #include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <pfasta.h>
+#include <compat-stdlib.h>
 #include <compat-string.h>
+#include <pfasta.h>
 
 #include "global.h"
 #include "io.h"
+
+char *string_vector_at(struct string_vector *sv, size_t index) {
+	return sv->data[index];
+}
+
+char **string_vector_data(struct string_vector *sv) {
+	return sv->data;
+}
+
+void string_vector_free(struct string_vector *sv) {
+	size_t i = 0;
+	for (; i < sv->size; i++) {
+		free(sv->data[i]);
+	}
+	free(sv->data);
+}
+
+void string_vector_init(struct string_vector *sv) {
+	sv->data = malloc(sizeof(*sv->data) * 4);
+	CHECK_MALLOC(sv->data);
+
+	sv->capacity = 4;
+	sv->size = 0;
+}
+
+void string_vector_push_back(struct string_vector *sv, const char *str) {
+	if (sv->size < sv->capacity) {
+		sv->data[sv->size++] = strdup(str);
+	} else {
+		char **ptr = reallocarray(sv->data, sv->capacity / 2, 3 * sizeof(*ptr));
+		CHECK_MALLOC(ptr);
+		sv->data = ptr;
+		sv->capacity = (sv->capacity / 2) * 3;
+		sv->data[sv->size++] = strdup(str);
+	}
+}
+
+void string_vector_emplace_back(struct string_vector *sv, char *str) {
+	if (sv->size < sv->capacity) {
+		sv->data[sv->size++] = str;
+	} else {
+		char **ptr = reallocarray(sv->data, sv->capacity / 2, 3 * sizeof(*ptr));
+		CHECK_MALLOC(ptr);
+		sv->data = ptr;
+		sv->capacity = (sv->capacity / 2) * 3;
+		sv->data[sv->size++] = str;
+	}
+}
+
+size_t string_vector_size(const struct string_vector *sv) {
+	return sv->size;
+}
+
+void read_into_string_vector(const char *file_name, struct string_vector *sv) {
+	FILE *file = strcmp(file_name, "-") ? fopen(file_name, "r") : stdin;
+	if (!file) {
+		err(errno, "%s", file_name);
+	}
+
+	while (feof(file) == 0) {
+		char *str = NULL;
+		size_t buffer_size = 0;
+		ssize_t check = getline(&str, &buffer_size, file);
+		if (check == -1 && strlen(str) == 0) {
+			break; // EOF
+		}
+		if (check == -1) {
+			err(errno, "%s", file_name);
+		}
+		str[check - 1] = '\0'; // remove newline character
+		string_vector_emplace_back(sv, str);
+	}
+
+	int check = fclose(file);
+	if (check != 0) {
+		err(errno, "%s", file_name);
+	}
+}
 
 /**
  * @brief Joins all sequences from a file into a single long sequence.

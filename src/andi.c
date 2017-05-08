@@ -61,21 +61,25 @@ void version(void);
  * and errors.
  */
 int main(int argc, char *argv[]) {
-	struct option long_options[] = {{"version", no_argument, NULL, 0},
-									{"truncate-names", no_argument, NULL, 0},
-									{"help", no_argument, NULL, 'h'},
-									{"verbose", no_argument, NULL, 'v'},
-									{"join", no_argument, NULL, 'j'},
-									{"low-memory", no_argument, NULL, 'l'},
-									{"threads", required_argument, NULL, 't'},
-									{"bootstrap", required_argument, NULL, 'b'},
-									{"model", required_argument, NULL, 'm'},
-									{0, 0, 0, 0}};
+	struct option long_options[] = {
+		{"version", no_argument, NULL, 0},
+		{"truncate-names", no_argument, NULL, 0},
+		{"file-of-filenames", required_argument, NULL, 0},
+		{"help", no_argument, NULL, 'h'},
+		{"verbose", no_argument, NULL, 'v'},
+		{"join", no_argument, NULL, 'j'},
+		{"low-memory", no_argument, NULL, 'l'},
+		{"threads", required_argument, NULL, 't'},
+		{"bootstrap", required_argument, NULL, 'b'},
+		{"model", required_argument, NULL, 'm'},
+		{0, 0, 0, 0}};
 
 #ifdef _OPENMP
 	// Use all available processors by default.
 	THREADS = omp_get_num_procs();
 #endif
+	struct string_vector file_names;
+	string_vector_init(&file_names);
 
 	// parse arguments
 	while (1) {
@@ -96,6 +100,9 @@ int main(int argc, char *argv[]) {
 				}
 				if (strcasecmp(option_str, "truncate-names") == 0) {
 					FLAGS |= F_TRUNCATE_NAMES;
+				}
+				if (strcasecmp(option_str, "file-of-filenames") == 0) {
+					read_into_string_vector(optarg, &file_names);
 				}
 				break;
 			}
@@ -196,34 +203,36 @@ int main(int argc, char *argv[]) {
 	argc -= optind;
 	argv += optind;
 
+	// copy command line arguments into vector
+	// std::copy, anyone?
+	for (size_t i = 0; i < argc; i++) {
+		string_vector_push_back(&file_names, argv[i]);
+	}
+
 	// at least one file name must be given
-	if (FLAGS & F_JOIN && argc == 0) {
+	if (FLAGS & F_JOIN && string_vector_size(&file_names) == 0) {
 		errx(1, "In join mode at least one filename needs to be supplied.");
 	}
 
+	// parse all files
+	size_t minfiles = FLAGS & F_JOIN ? 2 : 1;
+	if (string_vector_size(&file_names) < minfiles) {
+		string_vector_push_back(&file_names, "-");
+	}
+
+	// parse fasta files
 	dsa_t dsa;
 	dsa_init(&dsa);
-
-	const char *file_name;
-
-	// parse all files
-	int minfiles = FLAGS & F_JOIN ? 2 : 1;
-	for (;; minfiles--) {
-		if (!*argv) {
-			if (minfiles <= 0) break;
-
-			// if no files are supplied, read from stdin
-			file_name = "-";
-		} else {
-			file_name = *argv++;
-		}
-
+	for (size_t i = 0; i < string_vector_size(&file_names); i++) {
+		char *file_name = string_vector_at(&file_names, i);
 		if (FLAGS & F_JOIN) {
 			read_fasta_join(file_name, &dsa);
 		} else {
 			read_fasta(file_name, &dsa);
 		}
 	}
+
+	string_vector_free(&file_names);
 
 	size_t n = dsa_size(&dsa);
 
@@ -304,19 +313,23 @@ void usage(int status) {
 		"supplied, stdin is used instead.\n"
 		"Options:\n"
 		"  -b, --bootstrap <INT>  Print additional bootstrap matrices\n"
+		"      --file-of-filenames <FILE>  Read additional filenames from "
+		"FILE; one per line\n"
 		"  -j, --join           Treat all sequences from one file as a single "
 		"genome\n"
 		"  -l, --low-memory     Use less memory at the cost of speed\n"
-		"  -m, --model <Raw|JC|Kimura>  Pick an evolutionary model; default: JC\n"
+		"  -m, --model <Raw|JC|Kimura>  Pick an evolutionary model; default: "
+		"JC\n"
 		"  -p <FLOAT>           Significance of an anchor pair; default: 0.05\n"
 #ifdef _OPENMP
-		"  -t, --threads <INT>  The number of threads to be used; by default, all "
+		"  -t, --threads <INT>  Set the number of threads; by default, all "
 		"available processors are used\n"
 #endif
 		"      --truncate-names Truncate names to ten characters\n"
 		"  -v, --verbose        Prints additional information\n"
 		"  -h, --help           Display this help and exit\n"
-		"      --version        Output version information and acknowledgments\n"};
+		"      --version        Output version information and "
+		"acknowledgments\n"};
 
 	fprintf(status == EXIT_SUCCESS ? stdout : stderr, "%s", str);
 	exit(status);

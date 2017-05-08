@@ -4,18 +4,18 @@
  * @file
  * @brief This file contains various distance methods.
  */
+#include "process.h"
+#include "esa.h"
+#include "global.h"
+#include "io.h"
+#include "model.h"
+#include "sequence.h"
 #include <assert.h>
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "esa.h"
-#include "global.h"
-#include "io.h"
-#include "model.h"
-#include "process.h"
-#include "sequence.h"
 
 #ifdef _OPENMP
 #include <omp.h>

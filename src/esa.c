@@ -13,11 +13,11 @@
  * ESA. If we simply store the interval for "AA" in the cache, once and use it
  * for each query we are significantly faster (up to 7 times).
  */
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
 #include "esa.h"
 #include "global.h"
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
 static void esa_init_cache_dfs(esa_s *, char *str, size_t pos, lcp_inter_t in);
 static void esa_init_cache_fill(esa_s *, char *str, size_t pos, lcp_inter_t in);

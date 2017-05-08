@@ -3,12 +3,12 @@
  * estimation of evolutionary distances thereof.
  */
 
+#include "model.h"
+#include "global.h"
+#include <gsl/gsl_randist.h>
 #include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
-#include <gsl/gsl_randist.h>
-#include "global.h"
-#include "model.h"
 
 /**
  * @brief Sum some mutation count specified by `summands`. Intended to be used

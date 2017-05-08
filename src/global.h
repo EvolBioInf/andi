@@ -9,8 +9,8 @@
 #define _GLOBAL_H_
 #include <gsl/gsl_rng.h>
 
-#include <err.h>
 #include "config.h"
+#include <err.h>
 
 /**
  * The *global* variable ::FLAGS is used to set different options

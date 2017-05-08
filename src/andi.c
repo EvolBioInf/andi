@@ -22,19 +22,19 @@
  *
  */
 
+#include "global.h"
+#include "io.h"
+#include "process.h"
+#include "sequence.h"
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
+#include <gsl/gsl_rng.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <gsl/gsl_rng.h>
-#include "global.h"
-#include "process.h"
-#include "io.h"
-#include "sequence.h"
 
 #ifdef _OPENMP
 #include <omp.h>

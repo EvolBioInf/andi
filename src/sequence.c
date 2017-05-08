@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <compat-stdlib.h>
-#include "sequence.h"
 #include "global.h"
+#include "sequence.h"
+#include <compat-stdlib.h>
 
 void normalize(seq_t *S);
 
@@ -154,7 +154,9 @@ char *revcomp(const char *str, size_t len) {
 			case 'T': d = 'A'; break;
 			case 'G': d = 'C'; break;
 			case 'C': d = 'G'; break;
-			case '!': d = ';'; break; // rosebud
+			case '!':
+				d = ';';
+				break; // rosebud
 			default: continue;
 		}
 

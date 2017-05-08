@@ -6,9 +6,9 @@
 #ifndef _ESA_H_
 #define _ESA_H_
 
-#include <sys/types.h>
-#include "sequence.h"
 #include "config.h"
+#include "sequence.h"
+#include <sys/types.h>
 
 #ifdef HAVE_LIBDIVSUFSORT
 #include <divsufsort.h>

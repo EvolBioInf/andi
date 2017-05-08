@@ -5,11 +5,11 @@
 #ifndef _IO_H_
 #define _IO_H_
 
+#include "model.h"
+#include "sequence.h"
 #include <err.h>
 #include <errno.h>
 #include <stdio.h>
-#include "sequence.h"
-#include "model.h"
 
 /**
  * This is a neat hack for dealing with matrices.

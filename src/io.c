@@ -174,9 +174,10 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 
 	printf("%zu\n", n);
 	for (i = 0; i < n; i++) {
-		// Print exactly ten characters of the name. Pad with spaces if
-		// necessary.
-		printf("%-10.10s", sequences[i].name);
+		// Print ten characters of the name. Pad with spaces, if
+		// necessary. Truncate to exactly ten characters if requested by user.
+		printf(FLAGS & F_TRUNCATE_NAMES ? "%-10.10s" : "%-10s",
+			   sequences[i].name);
 
 		for (j = 0; j < n; j++) {
 			// use scientific notation for small numbers

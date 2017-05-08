@@ -60,6 +60,7 @@ extern int EXIT_CODE;
  */
 enum {
 	F_NONE = 0,
+	F_TRUNCATE_NAMES = 1,
 	F_VERBOSE = 2,
 	F_EXTRA_VERBOSE = 4,
 	F_NON_ACGT = 8,

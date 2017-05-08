@@ -62,6 +62,7 @@ void version(void);
  */
 int main(int argc, char *argv[]) {
 	struct option long_options[] = {{"version", no_argument, NULL, 0},
+									{"truncate-names", no_argument, NULL, 0},
 									{"help", no_argument, NULL, 'h'},
 									{"verbose", no_argument, NULL, 'v'},
 									{"join", no_argument, NULL, 'j'},
@@ -92,6 +93,9 @@ int main(int argc, char *argv[]) {
 				const char *option_str = long_options[option_index].name;
 				if (strcasecmp(option_str, "version") == 0) {
 					version();
+				}
+				if (strcasecmp(option_str, "truncate-names") == 0) {
+					FLAGS |= F_TRUNCATE_NAMES;
 				}
 				break;
 			}
@@ -252,7 +256,7 @@ int main(int argc, char *argv[]) {
 	// validate sequence correctness
 	const seq_t *seq = dsa_data(&dsa);
 	for (size_t i = 0; i < n; ++i, seq++) {
-		if (strlen(seq->name) > 10) {
+		if ((FLAGS & F_TRUNCATE_NAMES) && strlen(seq->name) > 10) {
 			warnx("The sequence name '%s' is longer than ten characters. It "
 				  "will be truncated in the output to '%.10s'.",
 				  seq->name, seq->name);
@@ -299,22 +303,20 @@ void usage(int status) {
 		"\tFILES... can be any sequence of FASTA files. If no files are "
 		"supplied, stdin is used instead.\n"
 		"Options:\n"
-		"  -b, --bootstrap <INT> \n"
-		"                    Print additional bootstrap matrices\n"
-		"  -j, --join        Treat all sequences from one file as a single "
+		"  -b, --bootstrap <INT>  Print additional bootstrap matrices\n"
+		"  -j, --join           Treat all sequences from one file as a single "
 		"genome\n"
-		"  -l, --low-memory  Use less memory at the cost of speed\n"
-		"  -m, --model <Raw|JC|Kimura>\n"
-		"                    Pick an evolutionary model; default: JC\n"
-		"  -p <FLOAT>        Significance of an anchor pair; default: 0.05\n"
-		"  -v, --verbose     Prints additional information\n"
+		"  -l, --low-memory     Use less memory at the cost of speed\n"
+		"  -m, --model <Raw|JC|Kimura>  Pick an evolutionary model; default: JC\n"
+		"  -p <FLOAT>           Significance of an anchor pair; default: 0.05\n"
 #ifdef _OPENMP
-		"  -t, --threads <INT> \n"
-		"                    The number of threads to be used; by default, all "
+		"  -t, --threads <INT>  The number of threads to be used; by default, all "
 		"available processors are used\n"
 #endif
-		"  -h, --help        Display this help and exit\n"
-		"      --version     Output version information and acknowledgments\n"};
+		"      --truncate-names Truncate names to ten characters\n"
+		"  -v, --verbose        Prints additional information\n"
+		"  -h, --help           Display this help and exit\n"
+		"      --version        Output version information and acknowledgments\n"};
 
 	fprintf(status == EXIT_SUCCESS ? stdout : stderr, "%s", str);
 	exit(status);

@@ -132,6 +132,7 @@ void read_into_string_vector(const char *file_name, struct string_vector *sv) {
 
 		// ignore empty lines
 		if (strlen(str) == 0) {
+			free(str);
 			continue;
 		}
 

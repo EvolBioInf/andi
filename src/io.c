@@ -66,15 +66,7 @@ void string_vector_init(struct string_vector *sv) {
  * @param str - The new string to add.
  */
 void string_vector_push_back(struct string_vector *sv, const char *str) {
-	if (sv->size < sv->capacity) {
-		sv->data[sv->size++] = strdup(str);
-	} else {
-		char **ptr = reallocarray(sv->data, sv->capacity / 2, 3 * sizeof(*ptr));
-		CHECK_MALLOC(ptr);
-		sv->data = ptr;
-		sv->capacity = (sv->capacity / 2) * 3;
-		sv->data[sv->size++] = strdup(str);
-	}
+	string_vector_emplace_back(sv, strdup(str));
 }
 
 /**
@@ -119,6 +111,7 @@ void read_into_string_vector(const char *file_name, struct string_vector *sv) {
 		size_t buffer_size = 0;
 		ssize_t check = getline(&str, &buffer_size, file);
 
+		// EOF is set only *after* getline tried to read past it.
 		if (check == -1 && feof(file) != 0) {
 			free(str);
 			break; // EOF

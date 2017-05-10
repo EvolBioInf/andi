@@ -17,6 +17,7 @@ local args ret=1
 
 args+=(
 	"($info -b --bootstrap)"{-b+,--bootstrap=}'[Print additional bootstrap matrices]:int:'
+	"($info)*--file-of-filenames=[Read additional filenames from file; one per line]:file:_files"
 	"($info -j --join)"{-j,--join}'[Treat all sequences from one file as a single genome]'
 	"($info -l --low-memory)"{-l,--low-memory}'[Use less memory at the cost of speed]'
 	"($info -m --model)"{-m+,--model=}'[Pick an evolutionary model]:model:((
@@ -25,8 +26,9 @@ args+=(
 		Kimura\:Kimura\-two\-parameter
 	))'
 	"($info)-p+[Significance of an anchor pair; default\: 0.05]:float:"
+	"($info -t --threads)"{-t+,--threads=}'[The number of threads to be used; by default, all available processors are used]:num_threads:'
+	"($info)--truncate-names[Print only the first ten characters of each name]"
 	"($info)*"{-v,--verbose}'[Prints additional information]'
-	'($info -t --threads)'{-t+,--threads=}'[The number of threads to be used; by default, all available processors are used]:num_threads:'
 	'(- *)'{-h,--help}'[Display help and exit]'
 	'(- *)--version[Output version information and acknowledgments]'
 	'*:file:_files'

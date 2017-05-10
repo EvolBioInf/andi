@@ -114,14 +114,16 @@ void read_into_string_vector(const char *file_name, struct string_vector *sv) {
 		err(errno, "%s", file_name);
 	}
 
-	while (feof(file) == 0) {
+	while (1) {
 		char *str = NULL;
 		size_t buffer_size = 0;
 		ssize_t check = getline(&str, &buffer_size, file);
-		if (check == -1 && str && strlen(str) == 0) {
+
+		if (check == -1 && feof(file) != 0) {
 			free(str);
 			break; // EOF
 		}
+
 		if (check == -1) {
 			err(errno, "%s", file_name);
 		}

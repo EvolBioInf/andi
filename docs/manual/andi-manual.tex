@@ -71,7 +71,7 @@
   breaklines=true,
   basicstyle=\small\ttfamily,
   morekeywords={make, tar, git, sudo, andi, time, man, head, cut, fneighbor,
-   fretree, figtree, brew, aura, autoreconf},
+   fretree, figtree, brew, aura, autoreconf, ls},
  % literate={~} {$\sim$}{1}
 }
 
@@ -133,16 +133,16 @@ Download the latest \href{https://github.com/EvolBioInf/andi/releases}{release} 
 Once you have downloaded the package, unzip it and change into the newly created directory. 
 
 \begin{lstlisting}
-~ %  tar -xzvf andi-0.9.tar.gz
-~ %  cd andi-0.9
+~ %  tar -xzvf andi-0.11.tar.gz
+~ %  cd andi-0.11
 \end{lstlisting}
 
 \noindent Now build and install \andi.
 
 \begin{lstlisting}
-~/andi-0.9 %  ./configure
-~/andi-0.9 %  make
-~/andi-0.9 %  sudo make install
+~/andi-0.11 %  ./configure
+~/andi-0.11 %  make
+~/andi-0.11 %  sudo make install
 \end{lstlisting}
 
 \noindent This installs \andi for all users on your system. If you do not have root privileges, you will find a working copy of \andi in the \lstinline$src$ subdirectory. For the rest of this documentation, I will assume, that \andi is in your \textdollar\lstinline!PATH!.
@@ -150,21 +150,21 @@ Once you have downloaded the package, unzip it and change into the newly created
 Now \andi should be ready for use. Try invoking the help.
 
 \begin{lstlisting}
+~/andi-0.11 %  andi --help
 Usage: andi [-jlv] [-b INT] [-p FLOAT] [-m MODEL] [-t INT] FILES...
   FILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.
 Options:
-  -b, --bootstrap <INT>
-                    Print additional bootstrap matrices
-  -j, --join        Treat all sequences from one file as a single genome
-  -l, --low-memory  Use less memory at the cost of speed
-  -m, --model <Raw|JC|Kimura>
-                    Pick an evolutionary model; default: JC
-  -p <FLOAT>        Significance of an anchor pair; default: 0.05
-  -v, --verbose     Prints additional information
-  -t, --threads <INT>
-                    The number of threads to be used; by default, all available processors are used
-  -h, --help        Display this help and exit
-      --version     Output version information and acknowledgments
+  -b, --bootstrap <INT>  Print additional bootstrap matrices
+      --file-of-filenames <FILE>  Read additional filenames from FILE; one per line
+  -j, --join           Treat all sequences from one file as a single genome
+  -l, --low-memory     Use less memory at the cost of speed
+  -m, --model <Raw|JC|Kimura>  Pick an evolutionary model; default: JC
+  -p <FLOAT>           Significance of an anchor pair; default: 0.05
+  -t, --threads <INT>  Set the number of threads; by default, all available processors are used
+      --truncate-names Truncate names to ten characters
+  -v, --verbose        Prints additional information
+  -h, --help           Display this help and exit
+      --version        Output version information and acknowledgments
 \end{lstlisting}
 
 \noindent \andi also comes with a man page, which can be accessed via \lstinline$man andi$. % But once you are done with this documentation, you will require it scarcely.
@@ -228,7 +228,29 @@ If instead of distinct sequences, a \algo{Fasta} file contains contigs belonging
 
 When the \algo{join} mode is active, the file names are used to label the individual sequences. Thus, in \algo{join} mode, each genome has to be in its own file, and furthermore, at least one filename has to be given via the command line.
 
+If not enough file names are provided, \andi will try to read sequences from the standard input stream. This behaviour can be explicitly triggered by passing a single dash (\lstinline$-$) as a file name, which is useful in pipelines.
+
 If \andi seems to take unusually long, or requires huge amounts of memory, then you might have forgotten the \algo{join} switch. This makes \andi compare each contig instead of each genome, resulting in many more comparisons! To make \andi output the number of genome it about to compare, use the \lstinline$--verbose$ switch.
+
+Starting with version 0.11 \andi supports an extra way of input. Instead of passing file names directly to \andi via the commandline arguments, the files may also be read from a file itself. Using this new \lstinline$--file-of-filenames$ can work around limitations imposed be the shell.
+
+The following three snippets have the same functionality.
+
+\begin{lstlisting}
+~ %  andi --join *.fasta
+[Output]
+\end{lstlisting}
+
+\begin{lstlisting}
+~ %  ls *.fasta > filenames.txt
+~ %  andi --join --file-of-filenames filenames.txt
+[Output]
+\end{lstlisting}
+
+\begin{lstlisting}
+~ %  ls *.fasta | andi --join --file-of-filenames -
+[Output]
+\end{lstlisting}
 
 \section{Output}
 
@@ -276,11 +298,15 @@ S1        0.0000 0.1071
 S2        0.1071 0.0000
 \end{lstlisting}
 
+The original \algo{phylip} only supports distance matrices with names no longer than ten characters. However, this sometimes leads to problems with long accession numbers. Starting with version 0.11 \andi print the full name of a sequence, even if it is longer than ten characters. If your downstream tools have trouble with this, use \lstinline$--truncate-names$ to reimpose the limit.
+
+Also new in version 0.11 is the \lstinline$--file-of-filenames$ option. See Section~\ref{sec:join} for details.
+
 \section{Example: \algo{eco29}}
 
 Here follows a real-world example of how to use \algo{andi}. It makes heavy use of the commandline and tools like \algo{Phylip}. If you prefer \algo{R}, check out this excellent \href{http://holtlab.net/2015/05/08/r-code-to-infer-tree-from-andi-output/}{blog post} by Kathryn Holt.
 
-As a data set we use \algo{eco29}; 29 genomes of \textit{E. Coli} and \textit{Shigella}. You can download the data here: {\small{\url{http://guanine.evolbio.mpg.de/andi/eco29.fasta.gz}}}. The genomes have an average length of 4.9~million nucleotides amounting to a total \SI{138}{\mega\byte}.
+As a data set we use \algo{eco29}; 29 genomes of \textit{E. Coli} and \textit{Shigella}. You can download the data from here: {\small{\url{http://guanine.evolbio.mpg.de/andi/eco29.fasta.gz}}}. The genomes have an average length of 4.9~million nucleotides amounting to a total \SI{138}{\mega\byte}.
 
 \algo{eco29} comes a single \algo{fasta} file, where each sequence is a genome. To calculate their pairwise distances, enter
 
@@ -388,7 +414,7 @@ Some command line parameters of \andi require arguments. If these are not of the
 
 \section{Output-related Warnings}
 
-As the input sequences get more evolutionary divergent, \andi finds less anchors. With less anchors, less nucleotides are cosidered homologous between two sequences. If no anchors are found comparison fails and \lstinline!nan! is printed instead. See out paper and especiallt Figure~2 for details.
+As the input sequences get more evolutionary divergent, \andi finds less anchors. With less anchors, less nucleotides are considered homologous between two sequences. If no anchors are found, comparison fails and \lstinline!nan! is printed instead. See our paper and especially Figure~2 for details.
 
 \subsection*{NaN}
 
@@ -396,8 +422,11 @@ No anchors were found. Your sequences are very divergent ($d>0.5$) or sprout a l
 
 \subsection*{Little Homology}
 
-Very few anchors were found and thus only a tiny part of the sequences is considered homologous. Expect that the given distance is errorneous.
+Very few anchors were found and thus only a tiny part of the sequences is considered homologous. Expect that the given distance is erroneous.
 
+\subsection*{Too long name}
+
+If you added the \lstinline$--truncate-names$ switch and an input name is longer than ten characters, you will receive this warning.
 
 \chapter{DevOps} %%%%%
 
@@ -448,7 +477,6 @@ These minor issues are known. I intend to fix them, when I have time.
 
 \begin{enumerate}
   \item This code will not work under Windows. At two places Unix-only code is used: filepath-separators are assumed to be \lstinline$/$ and file-descriptors are used for I/O.
-  \item Only the first 10 characters are printed in the output matrix. This can make long gi numbers indistinguishable. In version 0.10 we started printing a warning for this.
   \item Unit tests for the bootstrapped matrices are missing.
   \item Cached intervals are sometimes not “as deep as they could be”. If that got fixed \lstinline$get_match_cache$ could bail out on \lstinline$ij.lcp < CACHE_LENGTH$. However the \lstinline$esa_init_cache$ code is the most fragile part and should be handled with care.
 \end{enumerate}
@@ -456,7 +484,7 @@ These minor issues are known. I intend to fix them, when I have time.
 
 \section{Creating a Release}
 
-A release should be a stable version of \andi with significant improvements over the last version. For bug fixes, dotdot release may be used.
+A release should be a stable version of \andi with significant improvements over the last version. dotdot releases should be avoided.
 
 %\subsection{Preparing a new Release}
 

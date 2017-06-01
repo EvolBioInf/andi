@@ -263,9 +263,11 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 	}
 
 	// We might miss a few nucleotides if the last anchor was also a right
-	// anchor.
+	// anchor. The logic is the same as a few lines above.
 	if (last_was_right_anchor) {
 		model_count(&ret, C->S + last_pos_S, query + last_pos_Q, last_length);
+	} else if ((last_length / 2) >= threshold) {
+		model_count_equal(&ret, query + last_pos_Q, last_length);
 	}
 
 	return ret;

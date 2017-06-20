@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -214,10 +215,14 @@ int main(int argc, char *argv[]) {
 		errx(1, "In join mode at least one filename needs to be supplied.");
 	}
 
-	// parse all files
 	size_t minfiles = FLAGS & F_JOIN ? 2 : 1;
 	if (string_vector_size(&file_names) < minfiles) {
+		// not enough files passed via arguments; read from stdin.
 		string_vector_push_back(&file_names, "-");
+		// explain to the user, why nothing is happening.
+		if (isatty(STDIN_FILENO)) {
+			warnx("Not enough file names given; expecting input via stdin.");
+		}
 	}
 
 	// parse fasta files

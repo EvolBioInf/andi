@@ -150,16 +150,6 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 
 	size_t num_right_anchors = 0;
 
-#ifdef DEBUG
-	size_t num_matches = 0;
-	size_t num_anchors = 0;
-	size_t num_anchors_in_rc = 0;
-	size_t num_right_anchors_in_rc = 0;
-	size_t length_anchors = 0;
-	double off_num = 0.0;
-	double off_dem = 0.0;
-#endif
-
 	size_t threshold =
 		minAnchorLength(1 - sqrt(1 - RANDOM_ANCHOR_PROP), gc, C->len);
 
@@ -168,33 +158,17 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 		inter =
 			get_match_cached(C, query + this_pos_Q, query_length - this_pos_Q);
 
-#ifdef DEBUG
-		num_matches++;
-#endif
-
 		this_length = inter.l <= 0 ? 0 : inter.l;
 
 		if (inter.i == inter.j && this_length >= threshold) {
 			// We have reached a new anchor.
 			this_pos_S = C->SA[inter.i];
 
-#ifdef DEBUG
-			num_anchors++;
-			length_anchors += this_length;
-			if (this_pos_S < (size_t)(C->len / 2)) {
-				num_anchors_in_rc++;
-			}
-#endif
-
 			// Check if this can be a right anchor to the last one.
 			if (this_pos_S > last_pos_S &&
 				this_pos_Q - last_pos_Q == this_pos_S - last_pos_S) {
 				num_right_anchors++;
-#ifdef DEBUG
-				if (this_pos_S < (size_t)(C->len / 2)) {
-					num_right_anchors_in_rc++;
-				}
-#endif
+
 				// classify nucleotides in the qanchor
 				model_count_equal(&ret, query + last_pos_Q, last_length);
 
@@ -204,14 +178,6 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 							this_pos_Q - last_pos_Q - last_length);
 				last_was_right_anchor = 1;
 			} else {
-#ifdef DEBUG
-				double off = fabs((double)(this_pos_Q - last_pos_Q) -
-								  (double)(this_pos_S - last_pos_S));
-				if (off < 100) {
-					off_num += off;
-					off_dem++;
-				}
-#endif
 				if (last_was_right_anchor) {
 					// If the last was a right anchor, but with the current one,
 					// we cannot extend, then add its length.
@@ -234,27 +200,6 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 		// Advance
 		this_pos_Q += this_length + 1;
 	}
-
-#ifdef DEBUG
-	if (FLAGS & F_EXTRA_VERBOSE) {
-		const char str[] = {"- threshold: %ld\n"
-							"- matches: %lu\n"
-							"- anchors: %lu (rc: %lu)\n"
-							"- right anchors: %lu (rc: %lu)\n"
-							"- avg length: %lf\n"
-							"- off: %f (skipped: %.0f)\n"
-							"\n"};
-
-#pragma omp critical
-		{
-			fprintf(stderr, str, threshold, num_matches, num_anchors,
-					num_anchors_in_rc, num_right_anchors,
-					num_right_anchors_in_rc,
-					(double)length_anchors / num_anchors, off_num / off_dem,
-					off_dem);
-		}
-	}
-#endif
 
 	// Very special case: The sequences are identical
 	if (last_length >= query_length) {

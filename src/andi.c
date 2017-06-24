@@ -206,7 +206,7 @@ int main(int argc, char *argv[]) {
 
 	// copy command line arguments into vector
 	// std::copy, anyone?
-	for (size_t i = 0; i < argc; i++) {
+	for (size_t i = 0; i < (unsigned int)argc; i++) {
 		string_vector_push_back(&file_names, argv[i]);
 	}
 
@@ -259,6 +259,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// seed the random number generator with the current time
+	// TODO: enable seeding for reproducibility
 	gsl_rng_set(RNG, time(NULL));
 
 	// Warn about non ACGT residues.

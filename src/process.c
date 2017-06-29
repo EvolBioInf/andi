@@ -36,13 +36,13 @@ int calculate_bootstrap(const struct model *M, const seq_t *sequences,
  * @param l - The length of the subject.
  * @returns The minimum length of an anchor.
  */
-size_t minAnchorLength(double p, double g, size_t l) {
+size_t min_anchor_length(double p, double g, size_t l) {
 	size_t x = 1;
 
 	double prop = 0.0;
-	while (prop < 1 - p) {
+	// Find smallest x with P(X > x) < p
+	for (; prop < 1 - p; x++) {
 		prop = shuprop(x, g / 2, l);
-		x++;
 	}
 
 	return x;
@@ -51,10 +51,10 @@ size_t minAnchorLength(double p, double g, size_t l) {
 /**
  * @brief Calculates the binomial coefficient of n and k.
  *
- * We could (and probalby should) use gsl_sf_lnchoose(xx,kk) for this.
+ * We could (and probably should) use gsl_sf_lnchoose(xx,kk) for this.
  *
  * @param n - The n part of the binomial coefficient.
- * @param k - analog.
+ * @param k - analogue.
  * @returns (n choose k)
  */
 size_t binomial_coefficient(size_t n, size_t k) {
@@ -150,8 +150,7 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 
 	size_t num_right_anchors = 0;
 
-	size_t threshold =
-		minAnchorLength(1 - sqrt(1 - RANDOM_ANCHOR_PROP), gc, C->len);
+	size_t threshold = min_anchor_length(RANDOM_ANCHOR_PROP, gc, C->len);
 
 	// Iterate over the complete query.
 	while (this_pos_Q < query_length) {
@@ -182,7 +181,7 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 					// If the last was a right anchor, but with the current one,
 					// we cannot extend, then add its length.
 					model_count_equal(&ret, query + last_pos_Q, last_length);
-				} else if ((last_length / 2) >= threshold) {
+				} else if (last_length >= threshold * 2) {
 					// The last anchor wasn't neither a left or right anchor.
 					// But, it was as long as an anchor pair. So still count it.
 					model_count_equal(&ret, query + last_pos_Q, last_length);
@@ -211,7 +210,7 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 	// anchor. The logic is the same as a few lines above.
 	if (last_was_right_anchor) {
 		model_count(&ret, C->S + last_pos_S, query + last_pos_Q, last_length);
-	} else if ((last_length / 2) >= threshold) {
+	} else if (last_length >= threshold * 2) {
 		model_count_equal(&ret, query + last_pos_Q, last_length);
 	}
 
@@ -277,7 +276,7 @@ void calculate_distances(seq_t *sequences, size_t n) {
 /** Yet another hack. */
 #define B(X, Y) (B[(X)*n + (Y)])
 
-/** @brief Computes a bootstrap from _pairwise_ aligments.
+/** @brief Computes a bootstrap from _pairwise_ alignments.
  *
  * Doing bootstrapping for alignments with only two sequences is easy. It boils
  * down to a simple multi-nomial process over the substitution matrix.

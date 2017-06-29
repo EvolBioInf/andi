@@ -27,7 +27,7 @@ In multithreaded mode, \fBandi\fR requires memory linear to the amount of thread
 Different models of nucleotide evolution are supported. By default the Jukes-Cantor correction is used.
 .TP
 \fB\-p\fR <FLOAT>
-Significance of an anchor pair; default: 0.05.
+Significance of an anchor; default: 0.025.
 .TP
 \fB\-t\fR, \fB\-\-threads\fR <INT>
 The number of threads to be used; by default, all available processors are used.

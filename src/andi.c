@@ -45,7 +45,7 @@
 int FLAGS = 0;
 int THREADS = 1;
 long unsigned int BOOTSTRAP = 0;
-double RANDOM_ANCHOR_PROP = 0.05;
+double RANDOM_ANCHOR_PROP = 0.025;
 gsl_rng *RNG = NULL;
 int MODEL = M_JC;
 int EXIT_CODE = EXIT_SUCCESS;
@@ -310,7 +310,7 @@ int main(int argc, char *argv[]) {
 }
 
 /**
- * Prints the usage to stdout and then exits successfully.
+ * @brief Prints the usage and then exits.
  */
 void usage(int status) {
 	const char str[] = {
@@ -326,7 +326,7 @@ void usage(int status) {
 		"  -l, --low-memory     Use less memory at the cost of speed\n"
 		"  -m, --model <Raw|JC|Kimura>  Pick an evolutionary model; default: "
 		"JC\n"
-		"  -p <FLOAT>           Significance of an anchor pair; default: 0.05\n"
+		"  -p <FLOAT>           Significance of an anchor; default: 0.025\n"
 #ifdef _OPENMP
 		"  -t, --threads <INT>  Set the number of threads; by default, all "
 		"available processors are used\n"
@@ -342,7 +342,7 @@ void usage(int status) {
 }
 
 /**
- * This function just prints the version string and then aborts
+ * @brief This function just prints the version string and then aborts
  * the program. It conforms to the [GNU Coding
  * Standard](http://www.gnu.org/prep/standards/html_node/_002d_002dversion.html#g_t_002d_002dversion).
  */

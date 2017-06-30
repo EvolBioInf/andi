@@ -25,14 +25,9 @@ $(TESTS): src/andi
 endif # BUILD_TESTS
 
 
-dist_noinst_DATA = README ChangeLog README.md
+dist_noinst_DATA = ChangeLog README.md
 dist_pdf_DATA = andi-manual.pdf
-dist_noinst_SCRIPTS= scripts/maf2phy.awk scripts/vmatch.sh
-
-# This is a small hack to satisfy both GitHub and the GNU coding style.
-README: README.md
-	cp README.md README
-
+dist_noinst_SCRIPTS= scripts/maf2phy.awk scripts/vmatch.sh scripts/_andi
 
 # Recreate the changelog, when the version string changes.
 ChangeLog: configure.ac

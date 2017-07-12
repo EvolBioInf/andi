@@ -17,7 +17,7 @@ For Debian and Ubuntu (starting 16.04):
 
 For OS X with Homebrew:
 
-    brew install science/andi
+    brew install homebrew/science/andi
 
 For ArchLinux with aura:
 

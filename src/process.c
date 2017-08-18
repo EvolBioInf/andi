@@ -148,8 +148,6 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 	size_t this_pos_S;
 	size_t this_length;
 
-	size_t num_right_anchors = 0;
-
 	size_t threshold = min_anchor_length(RANDOM_ANCHOR_PROP, gc, C->len);
 
 	// Iterate over the complete query.
@@ -166,7 +164,6 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 			// Check if this can be a right anchor to the last one.
 			if (this_pos_S > last_pos_S &&
 				this_pos_Q - last_pos_Q == this_pos_S - last_pos_S) {
-				num_right_anchors++;
 
 				// classify nucleotides in the qanchor
 				model_count_equal(&ret, query + last_pos_Q, last_length);

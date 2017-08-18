@@ -78,8 +78,7 @@ AC_ARG_WITH([seed],
 
 AC_SUBST([SEED])
 
-if test "x${try_unit_tests}" = xyes; then
-
+AS_IF([test "x${try_unit_tests}" = xyes], [
 	have_glib=yes
 	PKG_CHECK_MODULES([GLIB], [glib-2.0], [], [have_glib=no])
 
@@ -88,7 +87,7 @@ if test "x${try_unit_tests}" = xyes; then
 	fi
 
 	AX_CXX_COMPILE_STDCXX_11([],[mandatory])
-fi
+])
 
 
 # Check for various headers including those used by libdivsufsort.

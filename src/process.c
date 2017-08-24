@@ -115,6 +115,109 @@ double shuprop(size_t x, double p, size_t l) {
 	return s;
 }
 
+typedef _Bool bool;
+#define false 0
+#define true !false
+
+/**
+ * @brief This structure captures properties of an anchor.
+ */
+struct anchor {
+	/** The position on the subject. */
+	size_t pos_S;
+	/** The position on the query. */
+	size_t pos_Q;
+	/** The length of the exact match. */
+	size_t length;
+};
+
+/**
+ * @brief This is a structure of assorted variables needed for anchor finding.
+ */
+struct context {
+	const esa_s *C;
+	const char *query;
+	size_t query_length;
+	size_t threshold;
+};
+
+/**
+ * @brief Compute the length of the longest common prefix of two strings.
+ *
+ * @param S - One string.
+ * @param Q - Another string.
+ * @param remaining - The length of one of the strings.
+ * @returns the length of the lcp.
+ */
+static inline size_t lcp(const char *S, const char *Q, size_t remaining) {
+	size_t length = 0;
+	while (length < remaining && S[length] == Q[length]) {
+		length++;
+	}
+	return length;
+}
+
+/**
+ * @brief Check whether the last anchor can be extended by a lucky anchor.
+ *
+ * Anchors are defined to be unique and of a minimum length. The uniqueness
+ * requires us to search throw the suffix array for a second appearance of the
+ * anchor. However, if a left anchor is already unique, we could be sloppy and
+ * drop the uniqueness criterion for the second anchor. This way we can skip the
+ * lookup and just compare characters directly. However, for a lucky anchor the
+ * match still has to be longer than the threshold.
+ *
+ * @param ctx - Matching context of various variables.
+ * @param last_match - The last anchor.
+ * @param this_match - Input/Output variable for the current match.
+ * @returns true iff the current match is a lucky anchor.
+ */
+static inline bool lucky_anchor(const struct context *ctx,
+								const struct anchor *last_match,
+								struct anchor *this_match) {
+
+	// An interesting side-effect of this strategy is that we first try
+	// to match the beginning of Q with the beginning of S.
+
+	size_t advance = this_match->pos_Q - last_match->pos_Q;
+	size_t gap = this_match->pos_Q - last_match->pos_Q - last_match->length;
+
+	size_t try_pos_S = last_match->pos_S + advance;
+	if (try_pos_S >= (size_t)ctx->C->len || gap > ctx->threshold) {
+		return false;
+	}
+
+	this_match->pos_S = try_pos_S;
+	this_match->length =
+		lcp(ctx->query + this_match->pos_Q, ctx->C->S + try_pos_S,
+			ctx->query_length - this_match->pos_Q);
+
+	return this_match->length >= ctx->threshold;
+}
+
+/**
+ * @brief Check for a new anchor.
+ *
+ * Given the current context and starting position check if the new match is an
+ * anchor. The latter requires uniqueness and a certain minimum length.
+ *
+ * @param ctx - Matching context of various variables.
+ * @param last_match - (unused)
+ * @param this_match - Input/Output variable for the current match.
+ * @returns true iff an anchor was found.
+ */
+static inline bool anchor(const struct context *ctx,
+						  const struct anchor *last_match,
+						  struct anchor *this_match) {
+
+	lcp_inter_t inter = get_match_cached(ctx->C, ctx->query + this_match->pos_Q,
+										 ctx->query_length - this_match->pos_Q);
+
+	this_match->pos_S = ctx->C->SA[inter.i];
+	this_match->length = inter.l <= 0 ? 0 : inter.l;
+	return inter.i == inter.j && this_match->length >= ctx->threshold;
+}
+
 /**
  * @brief Divergence estimation using the anchor technique.
  *
@@ -135,80 +238,72 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 				  double gc) {
 	struct model ret = {.seq_len = query_length, .counts = {0}};
 
-	lcp_inter_t inter;
-
-	size_t last_pos_Q = 0;
-	size_t last_pos_S = 0;
-	size_t last_length = 0;
-	// This variable indicates that the last anchor was the right anchor of a
-	// pair.
-	size_t last_was_right_anchor = 0;
-
-	size_t this_pos_Q = 0;
-	size_t this_pos_S;
-	size_t this_length;
+	struct anchor this_match = {0};
+	struct anchor last_match = {0};
+	bool last_was_right_anchor = false;
 
 	size_t threshold = min_anchor_length(RANDOM_ANCHOR_PROP, gc, C->len);
 
+	struct context ctx = {C, query, query_length, threshold};
+
 	// Iterate over the complete query.
-	while (this_pos_Q < query_length) {
-		inter =
-			get_match_cached(C, query + this_pos_Q, query_length - this_pos_Q);
+	while (this_match.pos_Q < query_length) {
 
-		this_length = inter.l <= 0 ? 0 : inter.l;
-
-		if (inter.i == inter.j && this_length >= threshold) {
+		// Check for lucky anchors and fall back to normal strategy.
+		if (lucky_anchor(&ctx, &last_match, &this_match) ||
+			anchor(&ctx, &last_match, &this_match)) {
 			// We have reached a new anchor.
-			this_pos_S = C->SA[inter.i];
 
+			size_t end_S = last_match.pos_S + last_match.length;
+			size_t end_Q = last_match.pos_Q + last_match.length;
 			// Check if this can be a right anchor to the last one.
-			if (this_pos_S > last_pos_S &&
-				this_pos_Q - last_pos_Q == this_pos_S - last_pos_S) {
+			if (this_match.pos_S > end_S &&
+				this_match.pos_Q - end_Q == this_match.pos_S - end_S) {
 
-				// classify nucleotides in the qanchor
-				model_count_equal(&ret, query + last_pos_Q, last_length);
+				// classify nucleotides in the left qanchor
+				model_count_equal(&ret, query + last_match.pos_Q,
+								  last_match.length);
 
 				// Count the SNPs in between.
-				model_count(&ret, C->S + last_pos_S + last_length,
-							query + last_pos_Q + last_length,
-							this_pos_Q - last_pos_Q - last_length);
-				last_was_right_anchor = 1;
+				model_count(&ret, C->S + end_S, query + end_Q,
+							this_match.pos_Q - end_Q);
+				last_was_right_anchor = true;
 			} else {
 				if (last_was_right_anchor) {
 					// If the last was a right anchor, but with the current one,
 					// we cannot extend, then add its length.
-					model_count_equal(&ret, query + last_pos_Q, last_length);
-				} else if (last_length >= threshold * 2) {
+					model_count_equal(&ret, query + last_match.pos_Q,
+									  last_match.length);
+				} else if (last_match.length >= threshold * 2) {
 					// The last anchor wasn't neither a left or right anchor.
 					// But, it was as long as an anchor pair. So still count it.
-					model_count_equal(&ret, query + last_pos_Q, last_length);
+					model_count_equal(&ret, query + last_match.pos_Q,
+									  last_match.length);
 				}
 
-				last_was_right_anchor = 0;
+				last_was_right_anchor = false;
 			}
 
 			// Cache values for later
-			last_pos_Q = this_pos_Q;
-			last_pos_S = this_pos_S;
-			last_length = this_length;
+			last_match = this_match;
 		}
 
 		// Advance
-		this_pos_Q += this_length + 1;
+		this_match.pos_Q += this_match.length + 1;
 	}
 
 	// Very special case: The sequences are identical
-	if (last_length >= query_length) {
-		model_count(&ret, C->S + last_pos_S, query, query_length);
+	if (last_match.length >= query_length) {
+		model_count_equal(&ret, query, query_length);
 		return ret;
 	}
 
 	// We might miss a few nucleotides if the last anchor was also a right
 	// anchor. The logic is the same as a few lines above.
 	if (last_was_right_anchor) {
-		model_count(&ret, C->S + last_pos_S, query + last_pos_Q, last_length);
-	} else if (last_length >= threshold * 2) {
-		model_count_equal(&ret, query + last_pos_Q, last_length);
+		model_count_equal(&ret, query + last_match.pos_Q, last_match.length);
+	} else if (last_match.length >= threshold * 2) {
+		model_count_equal(&ret, query + last_match.pos_Q, last_match.length);
 	}
 
 	return ret;

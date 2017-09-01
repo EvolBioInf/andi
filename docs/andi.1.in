@@ -38,7 +38,7 @@ Multithreading is only available if \fBandi\fR was compiled with OpenMP support.
 By default \fBandi\fR outputs the full names of sequences, optionally padded with spaces, if they are shorter than ten characters. Names longer than ten characters may lead to problems with downstream tools. With this switch names will be truncated.
 .TP
 \fB\-v\fR, \fB\-\-verbose\fR
-Prints additional information. Apply multiple times for extra verboseness.
+Prints additional information, including the number of read sequences, a progress indicator, and the amount of found homology. Apply multiple times for extra verboseness.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Prints the synopsis and an explanation of available options.

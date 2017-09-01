@@ -2,9 +2,10 @@
  * @brief This file is a preprocessor hack for the two functions `distMatrix`
  * and `distMatrixLM`.
  */
+// clang-format off
 #ifdef FAST
 #define NAME distMatrix
-#define P_OUTER _Pragma("omp parallel for num_threads( THREADS)")
+#define P_OUTER _Pragma("omp parallel for num_threads( THREADS) default(none) shared(progress_counter) firstprivate( stderr, M, sequences, n, print_progress)")
 #define P_INNER
 #else
 #undef NAME
@@ -12,8 +13,9 @@
 #undef P_INNER
 #define NAME distMatrixLM
 #define P_OUTER
-#define P_INNER _Pragma("omp parallel for num_threads( THREADS)")
+#define P_INNER _Pragma("omp parallel for num_threads( THREADS) default(none) shared(progress_counter) firstprivate( stderr, M, sequences, n, print_progress, i, E, subject)")
 #endif
+// clang-format on
 
 /** @brief This function calls dist_andi for pairs of subjects and queries, and
  * thereby fills the distance matrix.
@@ -31,6 +33,14 @@
  */
 void NAME(struct model *M, const seq_t *sequences, size_t n) {
 	size_t i;
+
+	size_t progress_counter = 0;
+	int print_progress = FLAGS & F_VERBOSE && isatty(STDERR_FILENO);
+
+	if (print_progress) {
+		fprintf(stderr, "Comparing %zu sequences: %5.1f%% (%zu/%zu)", n, 0.0,
+				(size_t)0, n * n - n);
+	}
 
 	//#pragma
 	P_OUTER
@@ -56,15 +66,31 @@ void NAME(struct model *M, const seq_t *sequences, size_t n) {
 			size_t ql = sequences[j].len;
 
 			M(i, j) = dist_anchor(&E, sequences[j].S, ql, subject.gc);
+
+#pragma omp atomic update
+			progress_counter++;
 		}
 
-		// TODO: Provide a nicer progress indicator.
-		if (FLAGS & F_EXTRA_VERBOSE) {
+		if (print_progress) {
+			size_t local_progress_counter;
+			size_t num_comparisons = n * n - n;
+
+#pragma omp atomic read
+			local_progress_counter = progress_counter;
+
+			double progress =
+				100.0 * (double)local_progress_counter / num_comparisons;
+
 #pragma omp critical
-			fprintf(stderr, "Subject %s done.\n", sequences[i].name);
+			fprintf(stderr, "\rComparing %zu sequences: %5.1f%% (%zu/%zu)", n,
+					progress, local_progress_counter, num_comparisons);
 		}
 
 		esa_free(&E);
 		seq_subject_free(&subject);
+	}
+
+	if (print_progress) {
+		fprintf(stderr, ", done.\n");
 	}
 }

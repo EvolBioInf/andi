@@ -248,11 +248,6 @@ int main(int argc, char *argv[]) {
 			 n);
 	}
 
-	if (FLAGS & F_VERBOSE) {
-		fprintf(stderr, "Comparing %zu sequences\n", n);
-		fflush(stderr);
-	}
-
 	RNG = gsl_rng_alloc(gsl_rng_default);
 	if (!RNG) {
 		err(1, "RNG allocation failed.");

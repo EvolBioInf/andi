@@ -1,7 +1,6 @@
 language: cpp
 os:
   - linux
-  # - osx
 compiler:
   - gcc
   - clang
@@ -16,6 +15,7 @@ addons:
       - g++-4.8
       - libglib2.0-dev
       - libgsl0-dev
+      - libomp-dev
 install:
   - export LIBDIVDIR="$HOME/libdivsufsort"
   - pip install --user cpp-coveralls
@@ -24,14 +24,8 @@ install:
   - cd libdivsufsort-master && mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$LIBDIVDIR" ..
   - make && make install
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew install gsl; fi
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew install glib; fi
-before_install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 
-# - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
 script:
-- export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$LIBDIVDIR/lib"
 - export LD_LIBRARY_PATH="$LIBDIVDIR:$LIBDIVDIR/lib"
 - export LIBRARY_PATH="$LIBDIVDIR:$LIBRARY_PATH"
 - cd $TRAVIS_BUILD_DIR

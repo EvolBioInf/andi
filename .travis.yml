@@ -1,7 +1,4 @@
 language: cpp
-os:
-  - linux
-  # - osx
 compiler:
   - gcc
   - clang
@@ -13,9 +10,9 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - cmake
-      - g++-4.8
       - libglib2.0-dev
       - libgsl0-dev
+
 install:
   - export LIBDIVDIR="$HOME/libdivsufsort"
   - pip install --user cpp-coveralls
@@ -24,30 +21,26 @@ install:
   - cd libdivsufsort-master && mkdir build && cd build
   - cmake -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$LIBDIVDIR" ..
   - make && make install
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew install gsl; fi
-  - if [ "${TRAVIS_OS_NAME}" = "osx" ]; then brew install glib; fi
-before_install:
-  - if [ "$CXX" = "g++" ]; then export CXX="g++-4.8" CC="gcc-4.8"; fi
 
-# - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 90
 script:
-- export DYLD_LIBRARY_PATH="$DYLD_LIBRARY_PATH:$LIBDIVDIR/lib"
+- CONFIGURE_FLAGS=""
 - export LD_LIBRARY_PATH="$LIBDIVDIR:$LIBDIVDIR/lib"
 - export LIBRARY_PATH="$LIBDIVDIR:$LIBRARY_PATH"
 - cd $TRAVIS_BUILD_DIR
 - autoreconf -fvi -Im4
 - export MYFLAGS="-fprofile-arcs -ftest-coverage -I$LIBDIVDIR/include"
-- ./configure --enable-unit-tests LDFLAGS="-L$LIBDIVDIR/lib" CFLAGS="$MYFLAGS" CXXFLAGS="$MYFLAGS"
+- if [ "${CC}" = "clang" ]; then export CONFIGURE_FLAGS="--disable-openmp"; fi
+- ./configure $CONFIGURE_FLAGS --enable-unit-tests LDFLAGS="-L$LIBDIVDIR/lib" CFLAGS="$MYFLAGS" CXXFLAGS="$MYFLAGS"
 - make
-- make check
+- make check || cat ./test-suite.log || exit 1
 - export MYFLAGS="-I$LIBDIVDIR/include"
-- ./configure --enable-unit-tests LDFLAGS="-L$LIBDIVDIR/lib" CFLAGS="$MYFLAGS" CXXFLAGS="$MYFLAGS"
-- make distcheck DISTCHECK_CONFIGURE_FLAGS="LDFLAGS=\"-L$LIBDIVDIR/lib\" CFLAGS=\"-I$LIBDIVDIR/include\" CXXFLAGS=\"-I$LIBDIVDIR/include\""
+- ./configure $CONFIGURE_FLAGS --enable-unit-tests LDFLAGS="-L$LIBDIVDIR/lib" CFLAGS="$MYFLAGS" CXXFLAGS="$MYFLAGS"
+- make distcheck DISTCHECK_CONFIGURE_FLAGS="LDFLAGS=\"-L$LIBDIVDIR/lib\" CFLAGS=\"-I$LIBDIVDIR/include\" CXXFLAGS=\"-I$LIBDIVDIR/include\" $CONFIGURE_FLAGS"
 - tar xzvf andi-*.tar.gz
 - cd andi-*
-- ./configure --enable-unit-tests --without-libdivsufsort
+- ./configure $CONFIGURE_FLAGS --enable-unit-tests --without-libdivsufsort
 - make
-- make check
+- make check || cat ./test-suite.log || exit 1
 - cd ..
 after_success:
-- if [ "${TRAVIS_OS_NAME}" = "linux" -a "$CXX" = "g++-4.8" ]; then coveralls --exclude libdivsufsort-master -E '^andi-.*' --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'; fi
+- if [ "$CXX" = "g++" ]; then coveralls --exclude libdivsufsort-master -E '^andi-.*' --exclude libs --exclude test --gcov `which gcov-4.8` --gcov-options '\-lp'; fi

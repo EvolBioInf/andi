@@ -1,9 +1,9 @@
-.TH ANDI "1" "2017-06-30" "@VERSION@" "andi manual"
+.TH ANDI "1" "2017-09-17" "@VERSION@" "andi manual"
 .SH NAME
 andi \- estimates evolutionary distance
 .SH SYNOPSIS
 .B andi
-[\fI-jlv\fR] [\fI-b INT\fR] [\fI-p FLOAT\fR] [\fI-m MODEL\fR] [\fI-t INT\fR] \fIFILES\fR...
+[\fIOPTIONS...\fR] \fIFILES\fR...
 .SH DESCRIPTION
 .TP
 \fBandi\fR estimates the evolutionary distance between closely related genomes. For this \fBandi\fR reads the input sequences from \fIFASTA\fR files and computes the pairwise anchor distance. The idea behind this is explained in a paper by Haubold et al. (2015).
@@ -11,10 +11,10 @@ andi \- estimates evolutionary distance
 The output is a symmetrical distance matrix in \fIPHYLIP\fR format, with each entry representing divergence with a positive real number. A distance of zero means that two sequences are identical, whereas other values are estimates for the nucleotide substitution rate (Jukes-Cantor corrected). For technical reasons the comparison might fail and no estimate can be computed. In such cases \fInan\fR is printed. This either means that the input sequences were too short (<200bp) or too diverse (K>0.5) for our method to work properly.
 .SH OPTIONS
 .TP
-\fB\-b\fR, \fB\-\-bootstrap\fR <INT>
+\fB\-b\fR \fIINT\fR, \fB\-\-bootstrap\fR=\fIINT\fR
 Compute multiple distance matrices, with \fIn-1\fR bootstrapped from the first. See the paper Klötzl & Haubold (2016) for a detailed explanation.
 .TP
-\fB--file-of-filenames\fR <FILE>
+\fB--file-of-filenames\fR=\fIFILE\fR
 Usually, \fBandi\fR is called with the filenames as commandline arguments. With this option the filenames may also be read from a file itself, with one name per line. Use a single dash (\fB'-'\fR) to read from stdin.
 .TP
 \fB\-j\fR, \fB\-\-join\fR
@@ -23,13 +23,16 @@ Use this mode if each of your \fIFASTA\fR files represents one assembly with num
 \fB\-l\fR, \fB\-\-low-memory\fR
 In multithreaded mode, \fBandi\fR requires memory linear to the amount of threads. The low memory mode changes this to a constant demand independent from the used number of threads. Unfortunately, this comes at a significant runtime cost.
 .TP
-\fB\-m\fR, \fB\-\-model\fR <Raw|JC|Kimura>
-Different models of nucleotide evolution are supported. By default the Jukes-Cantor correction is used.
+\fB\-m\fR \fIMODEL\fR, \fB\-\-model\fR=\fIMODEL\fr
+Set the nucleotide evolution model to one of 'Raw', 'JC', or 'Kimura'. By default the Jukes-Cantor correction is used.
 .TP
-\fB\-p\fR <FLOAT>
+\fB\-p\fR \fIFLOAT\fR
 Significance of an anchor; default: 0.025.
 .TP
-\fB\-t\fR, \fB\-\-threads\fR <INT>
+\fB--progress\fR[=\fIWHEN\fR]
+Print a progress bar. \fIWHEN\fR can be 'auto' (default if omitted), 'always', or 'never'.
+.TP
+\fB\-t\fR \fIINT\fR, \fB\-\-threads\fR=\fIINT\fR
 The number of threads to be used; by default, all available processors are used.
 .br
 Multithreading is only available if \fBandi\fR was compiled with OpenMP support.
@@ -38,7 +41,7 @@ Multithreading is only available if \fBandi\fR was compiled with OpenMP support.
 By default \fBandi\fR outputs the full names of sequences, optionally padded with spaces, if they are shorter than ten characters. Names longer than ten characters may lead to problems with downstream tools. With this switch names will be truncated.
 .TP
 \fB\-v\fR, \fB\-\-verbose\fR
-Prints additional information, including the number of read sequences, a progress indicator, and the amount of found homology. Apply multiple times for extra verboseness.
+Prints additional information, including the amount of found homology. Apply multiple times for extra verboseness.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Prints the synopsis and an explanation of available options.
@@ -46,7 +49,7 @@ Prints the synopsis and an explanation of available options.
 \fB\-\-version\fR
 Outputs version information and acknowledgments.
 .SH COPYRIGHT
-Copyright \(co 2014 - 2016 Fabian Klötzl
+Copyright \(co 2014 - 2017 Fabian Klötzl
 License GPLv3+: GNU GPL version 3 or later.
 .br
 This is free software: you are free to change and redistribute it.

@@ -66,6 +66,7 @@ int main(int argc, char *argv[]) {
 		{"version", no_argument, NULL, 0},
 		{"truncate-names", no_argument, NULL, 0},
 		{"file-of-filenames", required_argument, NULL, 0},
+		{"progress", optional_argument, NULL, 0},
 		{"help", no_argument, NULL, 'h'},
 		{"verbose", no_argument, NULL, 'v'},
 		{"join", no_argument, NULL, 'j'},
@@ -79,6 +80,9 @@ int main(int argc, char *argv[]) {
 	// Use all available processors by default.
 	THREADS = omp_get_num_procs();
 #endif
+
+	enum { P_AUTO, P_NEVER, P_ALWAYS } progress = P_AUTO;
+
 	struct string_vector file_names;
 	string_vector_init(&file_names);
 
@@ -104,6 +108,19 @@ int main(int argc, char *argv[]) {
 				}
 				if (strcasecmp(option_str, "file-of-filenames") == 0) {
 					read_into_string_vector(optarg, &file_names);
+				}
+				if (strcasecmp(option_str, "progress") == 0) {
+					if (!optarg || strcasecmp(optarg, "auto") == 0) {
+						progress = P_AUTO;
+					} else if (strcasecmp(optarg, "always") == 0) {
+						progress = P_ALWAYS;
+					} else if (strcasecmp(optarg, "never") == 0) {
+						progress = P_NEVER;
+					} else {
+						warnx("invalid argument to --progress '%s'. Expected "
+							  "one of 'auto', 'always', or 'never'.",
+							  optarg);
+					}
 				}
 				break;
 			}
@@ -293,6 +310,14 @@ int main(int argc, char *argv[]) {
 			  "alignment instead.");
 	}
 
+	// determine whether to print a progress bar
+	if (progress == P_AUTO) {
+		progress = isatty(STDERR_FILENO) ? P_ALWAYS : P_NEVER;
+	}
+	if (progress == P_ALWAYS) {
+		FLAGS |= F_PRINT_PROGRESS;
+	}
+
 	// side channel
 	EXIT_CODE = EXIT_SUCCESS;
 
@@ -309,21 +334,22 @@ int main(int argc, char *argv[]) {
  */
 void usage(int status) {
 	const char str[] = {
-		"Usage: andi [-jlv] [-b INT] [-p FLOAT] [-m MODEL] [-t INT] FILES...\n"
+		"Usage: andi [OPTIONS...] FILES...\n"
 		"\tFILES... can be any sequence of FASTA files. If no files are "
 		"supplied, stdin is used instead.\n"
 		"Options:\n"
-		"  -b, --bootstrap <INT>  Print additional bootstrap matrices\n"
-		"      --file-of-filenames <FILE>  Read additional filenames from "
+		"  -b, --bootstrap=INT  Print additional bootstrap matrices\n"
+		"      --file-of-filenames=FILE  Read additional filenames from "
 		"FILE; one per line\n"
 		"  -j, --join           Treat all sequences from one file as a single "
 		"genome\n"
 		"  -l, --low-memory     Use less memory at the cost of speed\n"
-		"  -m, --model <Raw|JC|Kimura>  Pick an evolutionary model; default: "
+		"  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', 'Kimura'; default: "
 		"JC\n"
-		"  -p <FLOAT>           Significance of an anchor; default: 0.025\n"
+		"  -p FLOAT             Significance of an anchor; default: 0.025\n"
+		"      --progress=WHEN  Print a progress bar 'always', 'never', or 'auto'; default: auto\n"
 #ifdef _OPENMP
-		"  -t, --threads <INT>  Set the number of threads; by default, all "
+		"  -t, --threads=INT    Set the number of threads; by default, all "
 		"available processors are used\n"
 #endif
 		"      --truncate-names Truncate names to ten characters\n"

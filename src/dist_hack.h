@@ -35,7 +35,7 @@ void NAME(struct model *M, const seq_t *sequences, size_t n) {
 	size_t i;
 
 	size_t progress_counter = 0;
-	int print_progress = FLAGS & F_VERBOSE && isatty(STDERR_FILENO);
+	int print_progress = FLAGS & F_PRINT_PROGRESS;
 
 	if (print_progress) {
 		fprintf(stderr, "Comparing %zu sequences: %5.1f%% (%zu/%zu)", n, 0.0,

@@ -66,7 +66,8 @@ enum {
 	F_NON_ACGT = 8,
 	F_JOIN = 16,
 	F_LOW_MEMORY = 32,
-	F_SHORT = 64
+	F_SHORT = 64,
+	F_PRINT_PROGRESS = 128
 };
 
 /**

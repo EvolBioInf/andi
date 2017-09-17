@@ -234,11 +234,13 @@ int main(int argc, char *argv[]) {
 
 	size_t minfiles = FLAGS & F_JOIN ? 2 : 1;
 	if (string_vector_size(&file_names) < minfiles) {
-		// not enough files passed via arguments; read from stdin.
-		string_vector_push_back(&file_names, "-");
-		// explain to the user, why nothing is happening.
-		if (isatty(STDIN_FILENO)) {
-			warnx("Not enough file names given; expecting input via stdin.");
+		// not enough files passed via arguments
+		if (!isatty(STDIN_FILENO)) {
+			// read from stdin in pipe
+			string_vector_push_back(&file_names, "-");
+		} else {
+			// print a helpful message on './andi' without args
+			usage(EXIT_FAILURE);
 		}
 	}
 
@@ -335,8 +337,8 @@ int main(int argc, char *argv[]) {
 void usage(int status) {
 	const char str[] = {
 		"Usage: andi [OPTIONS...] FILES...\n"
-		"\tFILES... can be any sequence of FASTA files. If no files are "
-		"supplied, stdin is used instead.\n"
+		"\tFILES... can be any sequence of FASTA files.\n"
+		"\tUse '-' as file name to read from stdin.\n"
 		"Options:\n"
 		"  -b, --bootstrap=INT  Print additional bootstrap matrices\n"
 		"      --file-of-filenames=FILE  Read additional filenames from "
@@ -350,7 +352,7 @@ void usage(int status) {
 		"      --progress=WHEN  Print a progress bar 'always', 'never', or 'auto'; default: auto\n"
 #ifdef _OPENMP
 		"  -t, --threads=INT    Set the number of threads; by default, all "
-		"available processors are used\n"
+		"processors are used\n"
 #endif
 		"      --truncate-names Truncate names to ten characters\n"
 		"  -v, --verbose        Prints additional information\n"

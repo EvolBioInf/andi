@@ -202,6 +202,26 @@ void model_count_equal(model *MM, const char *S, size_t len) {
 	MM->counts[TtoT] += local_counts[2];
 }
 
+/** @brief Convert a nucleotide to a 2bit representation.
+ *
+ * We want to map characters:
+ *  A → 0
+ *  C → 1
+ *  G → 2
+ *  T → 3
+ * The trick used below is that the three lower bits of the
+ * characters are unique. Thus, they can be used to compute the mapping
+ * above. The mapping itself is done via tricky bitwise operations.
+ *
+ * @param c - input nucleotide
+ * @returns 2bit representation.
+ */
+char nucl2bit(char c) {
+	c &= 6;
+	c ^= c >> 1;
+	return c >> 1;
+}
+
 /**
  * @brief Count the substitutions and add them to the mutation matrix.
  *
@@ -213,7 +233,7 @@ void model_count_equal(model *MM, const char *S, size_t len) {
 void model_count(model *MM, const char *S, const char *Q, size_t len) {
 	size_t local_counts[MUTCOUNTS] = {0};
 
-	for (; len--; S++, Q++) {
+	for (size_t i = 0; i < len; S++, Q++, i++) {
 		char s = *S;
 		char q = *Q;
 
@@ -222,24 +242,9 @@ void model_count(model *MM, const char *S, const char *Q, size_t len) {
 			continue;
 		}
 
-		/* We want to map characters:
-		 *  A → 0
-		 *  C → 1
-		 *  G → 2
-		 *  T → 3
-		 * The trick used below is that the three lower bits of the
-		 * characters are unique. Thus, they can be used to compute the mapping
-		 * above. The mapping itself is done via tricky bitwise operations.
-		 */
-
-		unsigned char nibble_s = s & 7;
-		unsigned char nibble_q = q & 7;
-
-		static const unsigned int mm1 = 0x20031000;
-
 		// Pick the correct two bits representing s and q.
-		unsigned char foo = (mm1 >> (4 * nibble_s)) & 0x3;
-		unsigned char baz = (mm1 >> (4 * nibble_q)) & 0x3;
+		unsigned char foo = nucl2bit(s);
+		unsigned char baz = nucl2bit(q);
 
 		/*
 		 * The mutation matrix is symmetric. For convenience we define the

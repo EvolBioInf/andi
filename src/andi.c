@@ -110,10 +110,10 @@ int main(int argc, char *argv[]) {
 					read_into_string_vector(optarg, &file_names);
 				}
 				if (strcasecmp(option_str, "progress") == 0) {
-					if (!optarg || strcasecmp(optarg, "auto") == 0) {
-						progress = P_AUTO;
-					} else if (strcasecmp(optarg, "always") == 0) {
+					if (!optarg || strcasecmp(optarg, "always") == 0) {
 						progress = P_ALWAYS;
+					} else if (strcasecmp(optarg, "auto") == 0) {
+						progress = P_AUTO;
 					} else if (strcasecmp(optarg, "never") == 0) {
 						progress = P_NEVER;
 					} else {

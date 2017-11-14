@@ -276,23 +276,32 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 			}
 
 			double dist = DD(i, j) = i == j ? 0.0 : estimate(&datum);
-			double coverage = model_coverage(&datum);
+
+			if (dist > 0 && dist < 0.001) {
+				use_scientific = 1;
+			}
 
 			if (isnan(dist) && warnings) {
-				EXIT_CODE = EXIT_FAILURE;
 				const char str[] = {
 					"For the two sequences '%s' and '%s' the distance "
 					"computation failed and is reported as nan. "
 					"Please refer to the documentation for further details."};
 				warnx(str, sequences[i].name, sequences[j].name);
-			} else if (dist > 0 && dist < 0.001) {
-				use_scientific = 1;
-			} else if (i < j && coverage < 0.05 && warnings) {
-				const char str[] = {
-					"For the two sequences '%s' and '%s' less than 5%% "
-					"homology were found (%f and %f, respectively)."};
-				warnx(str, sequences[i].name, sequences[j].name,
-					  model_coverage(&D(i, j)), model_coverage(&D(j, i)));
+				EXIT_CODE = EXIT_FAILURE;
+			}
+
+			if (!isnan(dist) && i < j && warnings) {
+				double coverage1 = model_coverage(&D(i, j));
+				double coverage2 = model_coverage(&D(j, i));
+
+				if (coverage1 < 0.05 || coverage2 < 0.05) {
+					const char str[] = {
+						"For the two sequences '%s' and '%s' less than 5%% "
+						"homology were found (%f and %f, respectively)."};
+					warnx(str, sequences[i].name, sequences[j].name, coverage1,
+						  coverage2);
+					EXIT_CODE = EXIT_FAILURE;
+				}
 			}
 		}
 	}

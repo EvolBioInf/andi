@@ -103,7 +103,8 @@ size_t string_vector_size(const struct string_vector *sv) {
 void read_into_string_vector(const char *file_name, struct string_vector *sv) {
 	FILE *file = strcmp(file_name, "-") ? fopen(file_name, "r") : stdin;
 	if (!file) {
-		err(errno, "%s", file_name);
+		soft_err("%s", file_name);
+		return;
 	}
 
 	while (1) {
@@ -118,7 +119,8 @@ void read_into_string_vector(const char *file_name, struct string_vector *sv) {
 		}
 
 		if (check == -1) {
-			err(errno, "%s", file_name);
+			soft_err("%s", file_name);
+			break;
 		}
 
 		char *nl = strchr(str, '\n');
@@ -137,7 +139,7 @@ void read_into_string_vector(const char *file_name, struct string_vector *sv) {
 
 	int check = fclose(file);
 	if (check != 0) {
-		err(errno, "%s", file_name);
+		soft_err("%s", file_name);
 	}
 }
 
@@ -198,7 +200,7 @@ void read_fasta(const char *file_name, dsa_t *dsa) {
 		strcmp(file_name, "-") ? open(file_name, O_RDONLY) : STDIN_FILENO;
 
 	if (file_descriptor < 0) {
-		warn("%s", file_name);
+		soft_err("%s", file_name);
 		return;
 	}
 
@@ -209,7 +211,7 @@ void read_fasta(const char *file_name, dsa_t *dsa) {
 	pfasta_file pf;
 
 	if ((l = pfasta_parse(&pf, file_descriptor)) != 0) {
-		warnx("%s: %s", file_name, pfasta_strerror(&pf));
+		soft_errx("%s: %s", file_name, pfasta_strerror(&pf));
 		goto fail;
 	}
 
@@ -225,7 +227,7 @@ void read_fasta(const char *file_name, dsa_t *dsa) {
 	}
 
 	if (l < 0) {
-		warnx("%s: %s", file_name, pfasta_strerror(&pf));
+		soft_errx("%s: %s", file_name, pfasta_strerror(&pf));
 		pfasta_seq_free(&ps);
 	}
 
@@ -286,8 +288,7 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 					"For the two sequences '%s' and '%s' the distance "
 					"computation failed and is reported as nan. "
 					"Please refer to the documentation for further details."};
-				warnx(str, sequences[i].name, sequences[j].name);
-				EXIT_CODE = EXIT_FAILURE;
+				soft_errx(str, sequences[i].name, sequences[j].name);
 			}
 
 			if (!isnan(dist) && i < j && warnings) {
@@ -298,9 +299,8 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 					const char str[] = {
 						"For the two sequences '%s' and '%s' less than 5%% "
 						"homology were found (%f and %f, respectively)."};
-					warnx(str, sequences[i].name, sequences[j].name, coverage1,
-						  coverage2);
-					EXIT_CODE = EXIT_FAILURE;
+					soft_errx(str, sequences[i].name, sequences[j].name,
+							  coverage1, coverage2);
 				}
 			}
 		}

@@ -50,11 +50,6 @@ extern int MODEL;
 enum { M_RAW, M_JC, M_KIMURA };
 
 /**
- * Global exit code. Should be non-zero on error.
- */
-extern int EXIT_CODE;
-
-/**
  * This enum contains the available flags. Please note that all
  * available options are a power of 2.
  */
@@ -67,7 +62,8 @@ enum {
 	F_JOIN = 16,
 	F_LOW_MEMORY = 32,
 	F_SHORT = 64,
-	F_PRINT_PROGRESS = 128
+	F_PRINT_PROGRESS = 128,
+	F_SOFT_ERROR = 256
 };
 
 /**
@@ -80,6 +76,26 @@ enum {
 		if (PTR == NULL) {                                                     \
 			err(errno, "Out of memory");                                       \
 		}                                                                      \
-	} while (0);
+	} while (0)
+
+/**
+ * @brief This macro is used to print a warning and make the program exit with
+ * an failure exit code, later.
+ */
+#define soft_err(...)                                                          \
+	do {                                                                       \
+		FLAGS |= F_SOFT_ERROR;                                                 \
+		warn(__VA_ARGS__);                                                     \
+	} while (0)
+
+/**
+ * @brief This macro is used to print a warning and make the program exit with
+ * an failure exit code, later.
+ */
+#define soft_errx(...)                                                         \
+	do {                                                                       \
+		FLAGS |= F_SOFT_ERROR;                                                 \
+		warnx(__VA_ARGS__);                                                    \
+	} while (0)
 
 #endif

@@ -358,7 +358,7 @@ void calculate_distances(seq_t *sequences, size_t n) {
 	if (BOOTSTRAP) {
 		int res = calculate_bootstrap(M, sequences, n);
 		if (res) {
-			warnx("Bootstrapping failed.");
+			soft_errx("Bootstrapping failed.");
 		}
 	}
 

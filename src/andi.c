@@ -48,7 +48,6 @@ long unsigned int BOOTSTRAP = 0;
 double RANDOM_ANCHOR_PROP = 0.025;
 gsl_rng *RNG = NULL;
 int MODEL = M_JC;
-int EXIT_CODE = EXIT_SUCCESS;
 
 void usage(int);
 void version(void);
@@ -134,17 +133,17 @@ int main(int argc, char *argv[]) {
 				double prop = strtod(optarg, &end);
 
 				if (errno || end == optarg || *end != '\0') {
-					warnx(
+					soft_errx(
 						"Expected a floating point number for -p argument, but "
 						"'%s' was given. Skipping argument.",
 						optarg);
 					break;
 				}
 
-				if (prop < 0.0 || prop > 1.0) {
-					warnx("A probability should be a value between 0 and 1; "
-						  "Ignoring -p %f argument.",
-						  prop);
+				if (prop <= 0.0 || prop >= 1.0) {
+					soft_errx("A probability should be a value between 0 and "
+							  "1, exlusive; Ignoring -p %f argument.",
+							  prop);
 					break;
 				}
 
@@ -189,7 +188,7 @@ int main(int argc, char *argv[]) {
 				long unsigned int bootstrap = strtoul(optarg, &end, 10);
 
 				if (errno || end == optarg || *end != '\0' || bootstrap == 0) {
-					warnx(
+					soft_errx(
 						"Expected a positive number for -b argument, but '%s' "
 						"was given. Ignoring -b argument.",
 						optarg);
@@ -208,8 +207,9 @@ int main(int argc, char *argv[]) {
 				} else if (strcasecmp(optarg, "KIMURA") == 0) {
 					MODEL = M_KIMURA;
 				} else {
-					warnx("Ignoring argument for --model. Expected Raw, JC or "
-						  "Kimura");
+					soft_errx(
+						"Ignoring argument for --model. Expected Raw, JC or "
+						"Kimura");
 				}
 				break;
 			}
@@ -307,9 +307,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (FLAGS & F_SHORT) {
-		warnx("One of the given input sequences is shorter than a thousand "
-			  "nucleotides. This may result in inaccurate distances. Try an "
-			  "alignment instead.");
+		soft_errx(
+			"One of the given input sequences is shorter than a thousand "
+			"nucleotides. This may result in inaccurate distances. Try an "
+			"alignment instead.");
 	}
 
 	// determine whether to print a progress bar
@@ -320,15 +321,13 @@ int main(int argc, char *argv[]) {
 		FLAGS |= F_PRINT_PROGRESS;
 	}
 
-	// side channel
-	EXIT_CODE = EXIT_SUCCESS;
-
 	// compute distance matrix
 	calculate_distances(dsa_data(&dsa), n);
 
 	dsa_free(&dsa);
 	gsl_rng_free(RNG);
-	return EXIT_CODE;
+
+	return FLAGS & F_SOFT_ERROR ? EXIT_FAILURE : EXIT_SUCCESS;
 }
 
 /**
@@ -346,10 +345,12 @@ void usage(int status) {
 		"  -j, --join           Treat all sequences from one file as a single "
 		"genome\n"
 		"  -l, --low-memory     Use less memory at the cost of speed\n"
-		"  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', 'Kimura'; default: "
+		"  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', "
+		"'Kimura'; default: "
 		"JC\n"
 		"  -p FLOAT             Significance of an anchor; default: 0.025\n"
-		"      --progress=WHEN  Print a progress bar 'always', 'never', or 'auto'; default: auto\n"
+		"      --progress=WHEN  Print a progress bar 'always', 'never', or "
+		"'auto'; default: auto\n"
 #ifdef _OPENMP
 		"  -t, --threads=INT    Set the number of threads; by default, all "
 		"processors are used\n"

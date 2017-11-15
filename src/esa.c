@@ -313,7 +313,9 @@ int esa_init_CLD(esa_s *C) {
 
 	const saidx_t *LCP = C->LCP;
 
-	typedef struct pair_s { saidx_t idx, lcp; } pair_t;
+	typedef struct pair_s {
+		saidx_t idx, lcp;
+	} pair_t;
 
 	pair_t *stack = malloc((C->len + 1) * sizeof(*stack));
 	CHECK_MALLOC(stack);

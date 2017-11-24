@@ -18,8 +18,8 @@ SUBDIRS+= test
 AM_TESTS_ENVIRONMENT= \
 	RANDOM_SEED='@SEED@' ; export RANDOM_SEED ;
 
-XFAIL_TESTS=test/xfail_low_homo.sh test/xfail_nan.sh
-TESTS = $(XFAIL_TESTS) test/test_esa test/test_seq test/test_extra.sh test/test_random.sh test/test_join.sh
+XFAIL_TESTS=
+TESTS = $(XFAIL_TESTS) test/nan.sh test/low_homo.sh test/test_esa test/test_seq test/test_extra.sh test/test_random.sh test/test_join.sh
 
 $(TESTS): src/andi
 

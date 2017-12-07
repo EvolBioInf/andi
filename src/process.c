@@ -242,7 +242,7 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 	struct anchor last_match = {0};
 	bool last_was_right_anchor = false;
 
-	size_t threshold = min_anchor_length(RANDOM_ANCHOR_PROP, gc, C->len);
+	size_t threshold = min_anchor_length(ANCHOR_P_VALUE, gc, C->len);
 
 	struct context ctx = {C, query, query_length, threshold};
 

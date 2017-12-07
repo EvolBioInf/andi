@@ -26,11 +26,11 @@ extern int FLAGS;
 extern int THREADS;
 
 /**
- * The ::RANDOM_ANCHOR_PROP represents the probability with which a found
- * anchor is a random match and not homologous. Its value can be set using
- * the `-p` switch.
+ * The ::ANCHOR_P_VALUE represents the probability that an anchor will be found,
+ * if the two sequences are unrelated. I.e. it is the p-value for H_0: random
+ * sequences. Its value can be set using the `-p` switch.
  */
-extern double RANDOM_ANCHOR_PROP;
+extern double ANCHOR_P_VALUE;
 
 /**
  * The number of matrices that should be bootstrapped.

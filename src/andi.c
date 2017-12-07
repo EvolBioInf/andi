@@ -45,7 +45,7 @@
 int FLAGS = 0;
 int THREADS = 1;
 long unsigned int BOOTSTRAP = 0;
-double RANDOM_ANCHOR_PROP = 0.025;
+double ANCHOR_P_VALUE = 0.025;
 gsl_rng *RNG = NULL;
 int MODEL = M_JC;
 
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]) {
 					break;
 				}
 
-				RANDOM_ANCHOR_PROP = prop;
+				ANCHOR_P_VALUE = prop;
 				break;
 			}
 			case 'l': FLAGS |= F_LOW_MEMORY; break;

@@ -40,11 +40,8 @@ int calculate_bootstrap(const struct model *M, const seq_t *sequences,
 size_t min_anchor_length(double p, double g, size_t l) {
 	size_t x = 1;
 
-	double prop = 0.0;
-	// Find smallest x with P(X > x) < p
-	for (; prop < 1 - p; x++) {
-		// shuprop() is already cumulative.
-		prop = shuprop(x, g / 2, l);
+	while (shuprop(x, g / 2, l) < 1 - p) {
+		x++;
 	}
 
 	return x;

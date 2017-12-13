@@ -35,9 +35,9 @@ do
 			./src/andi -t 1 |
 			tail -n 1 |
 			awk -v dist=$dist '{print $2, dist}' |
-			awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) <= 0.02 && abs($1-$2) <= 0.02 * $2}')
+			awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) <= 0.055 && abs($1-$2) <= 0.055 * $2}')
 		if test $res -ne 1; then
-			echo "The last test computed a distance deviating more than two percent from its intended value."
+			echo "The last test computed a distance deviating more than five percent from its intended value."
 			echo "See test_random.fasta for the used sequences."
 			echo "./test/test_fasta -s $SEED -l $LENGTH -d $dist"
 			head -n 1 ./test/test_random.fasta
@@ -57,9 +57,9 @@ do
 			./src/andi -m RAW -t 1 |
 			tail -n 1 |
 			awk -v dist=$dist '{print $2, dist}' |
-			awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) <= 0.02 && abs($1-$2) <= 0.02 * $2}')
+			awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) <= 0.055 && abs($1-$2) <= 0.055 * $2}')
 		if test $res -ne 1; then
-			echo "The last test computed a distance deviating more than two percent from its intended value."
+			echo "The last test computed a distance deviating more than five percent from its intended value."
 			echo "See test_random.fasta for the used sequences."
 			echo "./test/test_fasta -r -s $SEED -l $LENGTH -d $dist"
 			head -n 1 ./test/test_random.fasta

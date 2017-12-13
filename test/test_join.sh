@@ -16,11 +16,11 @@ rm p1.fasta p2.fasta p3.fasta;
 RES=$(./src/andi -m RAW -t 1 -j S0.fasta S1.fasta |
 	tail -n 1 |
 	awk '{print ($2 - 0.1)}' |
-	awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.01}'
+	awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.03}'
 	)
 
 if test $RES -ne 1; then
-	echo "The last test computed a distance deviating more than one percent from its intended value."
+	echo "The last test computed a distance deviating more than three percent from its intended value."
 	echo "See S0.fasta and S1.fasta for the used sequences."
 	exit 1;
 fi
@@ -38,11 +38,11 @@ rm p2.fasta p3.fasta;
 RES=$(./src/andi -m RAW -t1 -j S0.fasta S1.fasta |
         tail -n 1 |
         awk '{print ($2 - 0.1)}' |
-        awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.01}'
+        awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.03}'
         )
 
 if test $RES -ne 1; then
-        echo "The last test computed a distance deviating more than one percent from its intended value."
+        echo "The last test computed a distance deviating more than three percent from its intended value."
         echo "See S0.fasta and S1.fasta for the used sequences."
         exit 1;
 fi
@@ -62,11 +62,11 @@ rm p1.fasta p2.fasta p3.fasta;
 RES=$(./src/andi -mRAW -t 1 -j S0.fasta S1.fasta |
         tail -n 1 |
         awk '{print ($2 - 0.1)}' |
-        awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.01}'
+        awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.03}'
         )
 
 if test $RES -ne 1; then
-        echo "The last test computed a distance deviating more than one percent from its intended value."
+        echo "The last test computed a distance deviating more than three percent from its intended value."
         echo "See S0.fasta and S1.fasta for the used sequences."
         exit 1;
 fi

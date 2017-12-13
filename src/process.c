@@ -31,9 +31,10 @@ int calculate_bootstrap(const struct model *M, const seq_t *sequences,
  * Given some parameters calculate the minimum length for anchors according
  * to the distribution from Haubold et al. (2009).
  *
- * @param p - The probability with which an anchor is allowed to be random.
+ * @param p - The probability with which an anchor will be created under a
+ * random model.
  * @param g - The the relative amount of GC in the subject.
- * @param l - The length of the subject.
+ * @param l - The length of the subject (includes revcomp).
  * @returns The minimum length of an anchor.
  */
 size_t min_anchor_length(double p, double g, size_t l) {
@@ -42,6 +43,7 @@ size_t min_anchor_length(double p, double g, size_t l) {
 	double prop = 0.0;
 	// Find smallest x with P(X > x) < p
 	for (; prop < 1 - p; x++) {
+		// shuprop() is already cumulative.
 		prop = shuprop(x, g / 2, l);
 	}
 
@@ -82,7 +84,7 @@ size_t binomial_coefficient(size_t n, size_t k) {
 
 /**
  * @brief Given `x` this function calculates the probability of a shustring
- * with a length less than `x`.
+ * with a length less than `x` given a random model.
  *
  * Let X be the longest shortest unique substring (shustring) at any position.
  * Then this function computes P{X <= x} with respect to the given parameter

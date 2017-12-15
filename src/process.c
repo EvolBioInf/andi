@@ -21,7 +21,7 @@
 #include <omp.h>
 #endif
 
-double shuprop(size_t x, double g, size_t l);
+double shustring_cum_prob(size_t x, double g, size_t l);
 int calculate_bootstrap(const struct model *M, const seq_t *sequences,
 						size_t n);
 
@@ -40,7 +40,7 @@ int calculate_bootstrap(const struct model *M, const seq_t *sequences,
 size_t min_anchor_length(double p, double g, size_t l) {
 	size_t x = 1;
 
-	while (shuprop(x, g / 2, l) < 1 - p) {
+	while (shustring_cum_prob(x, g / 2, l) < 1 - p) {
 		x++;
 	}
 
@@ -81,18 +81,20 @@ size_t binomial_coefficient(size_t n, size_t k) {
 
 /**
  * @brief Given `x` this function calculates the probability of a shustring
- * with a length less than `x` given a random model.
+ * with a length less or equal to `x` under a random model. This means, it is
+ * the cumulative probability.
  *
  * Let X be the longest shortest unique substring (shustring) at any position.
  * Then this function computes P{X <= x} with respect to the given parameter
- * set. See Haubold et al. (2009).
+ * set. See Haubold et al. (2009). Note that `x` includes the final mismatch.
+ * Thus, `x` is `match length + 1`.
  *
  * @param x - The maximum length of a shustring.
  * @param p - The half of the relative amount of GC in the DNA.
  * @param l - The length of the subject.
  * @returns The probability of a certain shustring length.
  */
-double shuprop(size_t x, double p, size_t l) {
+double shustring_cum_prob(size_t x, double p, size_t l) {
 	double xx = (double)x;
 	double ll = (double)l;
 	size_t k;

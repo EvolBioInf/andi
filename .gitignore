@@ -58,6 +58,7 @@ test-driver
 test_esa
 test_seq
 test_fasta
+test_process
 *.trs
 
 # Coverage

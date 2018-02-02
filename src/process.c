@@ -177,9 +177,6 @@ static inline bool lucky_anchor(const struct context *ctx,
 								const struct anchor *last_match,
 								struct anchor *this_match) {
 
-	// An interesting side-effect of this strategy is that we first try
-	// to match the beginning of Q with the beginning of S.
-
 	size_t advance = this_match->pos_Q - last_match->pos_Q;
 	size_t gap = this_match->pos_Q - last_match->pos_Q - last_match->length;
 

@@ -1,4 +1,4 @@
-.TH ANDI "1" "2017-09-17" "@VERSION@" "andi manual"
+.TH ANDI "1" "2018-02-26" "@VERSION@" "andi manual"
 .SH NAME
 andi \- estimates evolutionary distance
 .SH SYNOPSIS
@@ -49,7 +49,7 @@ Prints the synopsis and an explanation of available options.
 \fB\-\-version\fR
 Outputs version information and acknowledgments.
 .SH COPYRIGHT
-Copyright \(co 2014 - 2017 Fabian Klötzl
+Copyright \(co 2014 - 2018 Fabian Klötzl
 License GPLv3+: GNU GPL version 3 or later.
 .br
 This is free software: you are free to change and redistribute it.

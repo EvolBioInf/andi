@@ -27,6 +27,7 @@ args+=(
 		Kimura\:Kimura\-two\-parameter
 	))'
 	"($info)-p+[Significance of an anchor; default\: 0.025]:float:"
+	"($info)--progress=[Show progress bar]:when:(always auto never)"
 	"($info -t --threads)"{-t+,--threads=}'[The number of threads to be used; by default, all available processors are used]:num_threads:'
 	"($info)--truncate-names[Print only the first ten characters of each name]"
 	"($info)*"{-v,--verbose}'[Prints additional information]'

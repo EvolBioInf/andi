@@ -106,61 +106,62 @@ This document is release under the Creative Commons Attribution Share-Alike lice
 The easiest way to install \andi is via a package manager. This also handles all dependencies for you.
 
 
-\noindent Debian and Ubuntu (since 16.04):
+\noindent Debian and Ubuntu:
 
 \begin{lstlisting}
 ~ %  sudo apt-get install andi
 \end{lstlisting}
 
-\noindent OS X with homebrew:
+\noindent macOS with homebrew:
 
 \begin{lstlisting}
 ~ %  brew install homebrew/science/andi
 \end{lstlisting}
 
-\noindent ArchLinux:
+\noindent ArchLinux AUR package with aura:
 
 \begin{lstlisting}
 ~ %  aura -A andi
 \end{lstlisting}
 
-\andi is intended to run in a \algo{Unix} commandline such as \lstinline$bash$ or \lstinline$zsh$. All examples in this document are also intended for that environment. You can verify that \andi was installed correctly by executing \lstinline$andi -h$. This should give you a list of all available options (see Section~\ref{sec:options}).
+\andi is intended to be run in a \algo{Unix} commandline such as \lstinline$bash$ or \lstinline$zsh$. All examples in this document are also intended for that environment. You can verify that \andi was installed correctly by executing \lstinline$andi -h$. This should give you a list of all available options (see Section~\ref{sec:options}).
 
 \section{Source Package} \label{sub:regular}
 
-Download the latest \href{https://github.com/EvolBioInf/andi/releases}{release} from GitHub. Please note, that \andi requires the \algo{Gnu Scientific Library} and optionally \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
+To build \andi from source, download the latest \href{https://github.com/EvolBioInf/andi/releases}{release} from GitHub. Please note, that \andi requires the \algo{Gnu Scientific Library} and optionally \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
 
 Once you have downloaded the package, unzip it and change into the newly created directory. 
 
 \begin{lstlisting}
-~ %  tar -xzvf andi-0.11.tar.gz
-~ %  cd andi-0.11
+~ %  tar -xzvf andi-0.12.tar.gz
+~ %  cd andi-0.12
 \end{lstlisting}
 
 \noindent Now build and install \andi.
 
 \begin{lstlisting}
-~/andi-0.11 %  ./configure
-~/andi-0.11 %  make
-~/andi-0.11 %  sudo make install
+~/andi-0.12 %  ./configure
+~/andi-0.12 %  make
+~/andi-0.12 %  sudo make install
 \end{lstlisting}
 
-\noindent This installs \andi for all users on your system. If you do not have root privileges, you will find a working copy of \andi in the \lstinline$src$ subdirectory. For the rest of this documentation, I will assume, that \andi is in your \textdollar\lstinline!PATH!.
+\noindent This installs \andi for all users on your system. If you do not have root privileges, you will find a working copy of \andi in the \lstinline$src$ subdirectory. For the rest of this documentation, it is assumed, that \andi is in your \textdollar\lstinline!PATH!.
 
 Now \andi should be ready for use. Try invoking the help.
 
 \begin{lstlisting}
-~/andi-0.11 %  andi --help
-Usage: andi [-jlv] [-b INT] [-p FLOAT] [-m MODEL] [-t INT] FILES...
-  FILES... can be any sequence of FASTA files. If no files are supplied, stdin is used instead.
+~/andi-0.12 %  Usage: andi [OPTIONS...] FILES...
+  FILES... can be any sequence of FASTA files.
+  Use '-' as file name to read from stdin.
 Options:
-  -b, --bootstrap <INT>  Print additional bootstrap matrices
-      --file-of-filenames <FILE>  Read additional filenames from FILE; one per line
+  -b, --bootstrap=INT  Print additional bootstrap matrices
+      --file-of-filenames=FILE  Read additional filenames from FILE; one per line
   -j, --join           Treat all sequences from one file as a single genome
   -l, --low-memory     Use less memory at the cost of speed
-  -m, --model <Raw|JC|Kimura>  Pick an evolutionary model; default: JC
-  -p <FLOAT>           Significance of an anchor; default: 0.025
-  -t, --threads <INT>  Set the number of threads; by default, all available processors are used
+  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', 'Kimura'; default: JC
+  -p FLOAT             Significance of an anchor; default: 0.025
+      --progress=WHEN  Print a progress bar 'always', 'never', or 'auto'; default: auto
+  -t, --threads=INT    Set the number of threads; by default, all processors are used
       --truncate-names Truncate names to ten characters
   -v, --verbose        Prints additional information
   -h, --help           Display this help and exit
@@ -230,9 +231,9 @@ When the \algo{join} mode is active, the file names are used to label the indivi
 
 If not enough file names are provided, \andi will try to read sequences from the standard input stream. This behaviour can be explicitly triggered by passing a single dash (\lstinline$-$) as a file name, which is useful in pipelines.
 
-If \andi seems to take unusually long, or requires huge amounts of memory, then you might have forgotten the \algo{join} switch. This makes \andi compare each contig instead of each genome, resulting in many more comparisons! To make \andi output the number of genome it about to compare, use the \lstinline$--verbose$ switch.
+If \andi seems to take unusually long, or requires huge amounts of memory, then you might have forgotten the \algo{join} switch. This makes \andi compare each contig instead of each genome, resulting in many more comparisons! Since version 0.12 \andi produces a progressmeter on the standard error stream. \andi tries to be smart about when to show or hide the progress bar. You can manually change this behaviour using the \lstinline!--progress! option.
 
-Starting with version 0.11 \andi supports an extra way of input. Instead of passing file names directly to \andi via the commandline arguments, the files may also be read from a file itself. Using this new \lstinline$--file-of-filenames$ can work around limitations imposed be the shell.
+Starting with version 0.11 \andi supports an extra way of input. Instead of passing file names directly to \andi via the commandline arguments, the file names may also be read from a file itself. Using this new \lstinline$--file-of-filenames$ argument can work around limitations imposed be the shell.
 
 The following three snippets have the same functionality.
 
@@ -267,7 +268,7 @@ If the computation completed successfully, \andi exits with the status code 0. O
 
 \section{Options} \label{sec:options}
 
-\andi takes a small number of commandline options, of which even fewer are of interest on a day-to-day basis. If \lstinline$andi -h$ displays a \lstinline$-t$ option, then \andi was compiled with multi-threading support (implemented using \algo{OpenMP}). By default \andi uses all available processors. However, to restrict the number of threads, use \lstinline$-t$.
+\andi takes a small number of commandline options, of which even fewer are of interest on a day-to-day basis. If \lstinline$andi -h$ displays a \lstinline$-t$ option, then \andi was compiled with multi-threading support (implemented using \algo{OpenMP}). By default, \andi uses all available processors. However, to restrict the number of threads, use \lstinline$-t$.
 
 \begin{lstlisting}
 ~ %  time andi ../test/1M.1.fasta -t 1
@@ -298,13 +299,13 @@ S1        0.0000 0.1071
 S2        0.1071 0.0000
 \end{lstlisting}
 
-The original \algo{phylip} only supports distance matrices with names no longer than ten characters. However, this sometimes leads to problems with long accession numbers. Starting with version 0.11 \andi print the full name of a sequence, even if it is longer than ten characters. If your downstream tools have trouble with this, use \lstinline$--truncate-names$ to reimpose the limit.
+The original \algo{phylip} only supports distance matrices with names no longer than ten characters. However, this sometimes leads to problems with long accession numbers. Starting with version 0.11 \andi prints the full name of a sequence, even if it is longer than ten characters. If your downstream tools have trouble with this, use \lstinline$--truncate-names$ to reimpose the limit.
 
 Also new in version 0.11 is the \lstinline$--file-of-filenames$ option. See Section~\ref{sec:join} for details.
 
 \section{Example: \algo{eco29}}
 
-Here follows a real-world example of how to use \algo{andi}. It makes heavy use of the commandline and tools like \algo{Phylip}. If you prefer \algo{R}, check out this excellent \href{http://holtlab.net/2015/05/08/r-code-to-infer-tree-from-andi-output/}{blog post} by Kathryn Holt.
+Here follows a real-world example of how to use \algo{andi}. It makes heavy use of the commandline and tools like \algo{Phylip}. If you prefer \algo{R}, check out this excellent blog post by Kathryn Holt.\footnote{\url{http://holtlab.net/2015/05/08/r-code-to-infer-tree-from-andi-output/}}
 
 As a data set we use \algo{eco29}; 29 genomes of \textit{E. Coli} and \textit{Shigella}. You can download the data from here: {\small{\url{http://guanine.evolbio.mpg.de/andi/eco29.fasta.gz}}}. The genomes have an average length of 4.9~million nucleotides amounting to a total \SI{138}{\mega\byte}.
 
@@ -414,11 +415,11 @@ Some command line parameters of \andi require arguments. If these are not of the
 
 \section{Output-related Warnings}
 
-As the input sequences get more evolutionary divergent, \andi finds less anchors. With less anchors, less nucleotides are considered homologous between two sequences. If no anchors are found, comparison fails and \lstinline!nan! is printed instead. See our paper and especially Figure~2 for details.
+As the input sequences get more evolutionary divergent, \andi finds less homologous anchors. With less anchors, less nucleotides are considered homologous between two sequences. If no anchors are found, comparison fails and \lstinline!nan! is printed instead. See our paper and especially Figure~2 for details.
 
 \subsection*{NaN}
 
-No anchors were found. Your sequences are very divergent ($d>0.5$) or sprout a lot of indels that make comparison difficult.
+No homologous sections were found. Your sequences are very divergent ($d>0.5$) or sprout a lot of indels that make comparison difficult.
 
 \subsection*{Little Homology}
 
@@ -469,7 +470,7 @@ The unit tests are located in the \andi repository under the \lstinline$./test$ 
 ~/andi %   make check
 \end{lstlisting}
 
-\noindent The unit tests are also checked each time a commit is sent to the repository. This is done via \algo{TravisCI}.\footnote{\url{https://travis-ci.org/EvolBioInf/andi}} Thus, a warning is produced, when the builds fail, or the unit tests to not run successfully. Currently, the unit tests cover more than 75\% of the code. This is computed via the \algo{Travis} builds and a service called \algo{Coveralls}.\footnote{\url{https://coveralls.io/r/EvolBioInf/andi}} Unfortunately, coveralls is broken at this point in time.
+\noindent The unit tests are also checked each time a commit is sent to the repository. This is done via \algo{TravisCI}.\footnote{\url{https://travis-ci.org/EvolBioInf/andi}} Thus, a warning is produced, when the builds fail, or the unit tests did not run successfully. Currently, the unit tests cover more than 75\% of the code. This is computed via the \algo{Travis} builds and a service called \algo{Coveralls}.\footnote{\url{https://coveralls.io/r/EvolBioInf/andi}}
 
 \section{Known Issues}
 

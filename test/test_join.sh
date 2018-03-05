@@ -2,10 +2,19 @@
 
 ./src/andi --help > /dev/null || exit 1
 
+SEED=${RANDOM_SEED:-0}
+SEED2=0
+SEED3=0
+if test $SEED -ne 0; then
+        SEED=$((SEED + 1))
+        SEED2=$((SEED + 2))
+        SEED3=$((SEED + 3))
+fi
+
 # Simple join test
-./test/test_fasta -l 1000 -L 1000 -d 0.1 > p1.fasta
-./test/test_fasta -l 1000 -L 1000 -d 0.1 > p2.fasta
-./test/test_fasta -l 10000 -L 10000 -d 0.1 > p3.fasta
+./test/test_fasta -s $SEED -l 1000 -L 1000 -d 0.1 > p1.fasta
+./test/test_fasta -s $SEED2 -l 1000 -L 1000 -d 0.1 > p2.fasta
+./test/test_fasta -s $SEED3 -l 10000 -L 10000 -d 0.1 > p3.fasta
 
 head -qn 2 p1.fasta p2.fasta p3.fasta > S0.fasta
 tail -qn 2 p1.fasta p2.fasta p3.fasta > S1.fasta
@@ -25,9 +34,16 @@ if test $RES -ne 1; then
 	exit 1;
 fi
 
+SEED=${RANDOM_SEED:-0}
+SEED2=0
+if test $SEED -ne 0; then
+        SEED=$((SEED + 5))
+        SEED2=$((SEED + 6))
+fi
+
 #unbalanced number of contigs
-./test/test_fasta -l 1000 -L 1000 -d 0.1 > p2.fasta
-./test/test_fasta -l 10000 -L 10000 -d 0.1 > p3.fasta
+./test/test_fasta -s $SEED -l 1000 -L 1000 -d 0.1 > p2.fasta
+./test/test_fasta -s $SEED2 -l 10000 -L 10000 -d 0.1 > p3.fasta
 
 head -qn 2 p3.fasta > S0.fasta
 tail -qn 2 p2.fasta p3.fasta > S1.fasta
@@ -47,11 +63,19 @@ if test $RES -ne 1; then
         exit 1;
 fi
 
+SEED=${RANDOM_SEED:-0}
+SEED2=0
+SEED3=0
+if test $SEED -ne 0; then
+        SEED=$((SEED + 11))
+        SEED2=$((SEED + 12))
+        SEED3=$((SEED + 13))
+fi
 
 #unbalanced number of contigs 2
-./test/test_fasta -l 1000 -L 1000 -d 0.1 > p1.fasta
-./test/test_fasta -l 1000 -L 1000 -d 0.1 > p2.fasta
-./test/test_fasta -l 10000 -L 10000 -d 0.1 > p3.fasta
+./test/test_fasta -s $SEED -l 1000 -L 1000 -d 0.1 > p1.fasta
+./test/test_fasta -s $SEED2 -l 1000 -L 1000 -d 0.1 > p2.fasta
+./test/test_fasta -s $SEED3 -l 10000 -L 10000 -d 0.1 > p3.fasta
 
 head -qn 2 p1.fasta p3.fasta > S0.fasta
 tail -qn 2 p1.fasta p2.fasta p3.fasta > S1.fasta

@@ -1,7 +1,15 @@
 #!/bin/bash -f
 
-./test/test_fasta -l 10000 > a.fa
-./test/test_fasta -l 10000 > b.fa
+SEED=${RANDOM_SEED:-0}
+SEED2=0
+if test $SEED -ne 0; then
+	SEED=$((SEED + 1))
+	SEED2=$((SEED + 2))
+fi
+
+
+./test/test_fasta -s $SEED -l 10000 > a.fa
+./test/test_fasta -s $SEED2 -l 10000 > b.fa
 
 # this is expected to trigger the nan warning
 ./src/andi -j a.fa b.fa 2>&1 | grep 'nan'

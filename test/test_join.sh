@@ -12,17 +12,17 @@ if test $SEED -ne 0; then
 fi
 
 # Simple join test
-./test/test_fasta -s $SEED -l 1000 -L 1000 -d 0.1 > p1.fasta
-./test/test_fasta -s $SEED2 -l 1000 -L 1000 -d 0.1 > p2.fasta
-./test/test_fasta -s $SEED3 -l 10000 -L 10000 -d 0.1 > p3.fasta
+./test/test_fasta -s $SEED -l 1000 -L 1000 -d 0.1 > p1_join.fasta
+./test/test_fasta -s $SEED2 -l 1000 -L 1000 -d 0.1 > p2_join.fasta
+./test/test_fasta -s $SEED3 -l 10000 -L 10000 -d 0.1 > p3_join.fasta
 
-head -qn 2 p1.fasta p2.fasta p3.fasta > S0.fasta
-tail -qn 2 p1.fasta p2.fasta p3.fasta > S1.fasta
+head -qn 2 p1_join.fasta p2_join.fasta p3_join.fasta > S0_join.fasta
+tail -qn 2 p1_join.fasta p2_join.fasta p3_join.fasta > S1_join.fasta
 
-rm p1.fasta p2.fasta p3.fasta;
+rm p1_join.fasta p2_join.fasta p3_join.fasta;
 
 
-RES=$(./src/andi -m RAW -t 1 -j S0.fasta S1.fasta |
+RES=$(./src/andi -m RAW -t 1 -j S0_join.fasta S1_join.fasta |
 	tail -n 1 |
 	awk '{print ($2 - 0.1)}' |
 	awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.03}'
@@ -30,7 +30,7 @@ RES=$(./src/andi -m RAW -t 1 -j S0.fasta S1.fasta |
 
 if test $RES -ne 1; then
 	echo "The last test computed a distance deviating more than three percent from its intended value."
-	echo "See S0.fasta and S1.fasta for the used sequences."
+	echo "See S0_join.fasta and S1_join.fasta for the used sequences."
 	exit 1;
 fi
 
@@ -42,16 +42,16 @@ if test $SEED -ne 0; then
 fi
 
 #unbalanced number of contigs
-./test/test_fasta -s $SEED -l 1000 -L 1000 -d 0.1 > p2.fasta
-./test/test_fasta -s $SEED2 -l 10000 -L 10000 -d 0.1 > p3.fasta
+./test/test_fasta -s $SEED -l 1000 -L 1000 -d 0.1 > p2_join.fasta
+./test/test_fasta -s $SEED2 -l 10000 -L 10000 -d 0.1 > p3_join.fasta
 
-head -qn 2 p3.fasta > S0.fasta
-tail -qn 2 p2.fasta p3.fasta > S1.fasta
+head -qn 2 p3_join.fasta > S0_join.fasta
+tail -qn 2 p2_join.fasta p3_join.fasta > S1_join.fasta
 
-rm p2.fasta p3.fasta;
+rm p2_join.fasta p3_join.fasta;
 
 
-RES=$(./src/andi -m RAW -t1 -j S0.fasta S1.fasta |
+RES=$(./src/andi -m RAW -t1 -j S0_join.fasta S1_join.fasta |
         tail -n 1 |
         awk '{print ($2 - 0.1)}' |
         awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.03}'
@@ -59,7 +59,7 @@ RES=$(./src/andi -m RAW -t1 -j S0.fasta S1.fasta |
 
 if test $RES -ne 1; then
         echo "The last test computed a distance deviating more than three percent from its intended value."
-        echo "See S0.fasta and S1.fasta for the used sequences."
+        echo "See S0_join.fasta and S1_join.fasta for the used sequences."
         exit 1;
 fi
 
@@ -73,17 +73,17 @@ if test $SEED -ne 0; then
 fi
 
 #unbalanced number of contigs 2
-./test/test_fasta -s $SEED -l 1000 -L 1000 -d 0.1 > p1.fasta
-./test/test_fasta -s $SEED2 -l 1000 -L 1000 -d 0.1 > p2.fasta
-./test/test_fasta -s $SEED3 -l 10000 -L 10000 -d 0.1 > p3.fasta
+./test/test_fasta -s $SEED -l 1000 -L 1000 -d 0.1 > p1_join.fasta
+./test/test_fasta -s $SEED2 -l 1000 -L 1000 -d 0.1 > p2_join.fasta
+./test/test_fasta -s $SEED3 -l 10000 -L 10000 -d 0.1 > p3_join.fasta
 
-head -qn 2 p1.fasta p3.fasta > S0.fasta
-tail -qn 2 p1.fasta p2.fasta p3.fasta > S1.fasta
+head -qn 2 p1_join.fasta p3_join.fasta > S0_join.fasta
+tail -qn 2 p1_join.fasta p2_join.fasta p3_join.fasta > S1_join.fasta
 
-rm p1.fasta p2.fasta p3.fasta;
+rm p1_join.fasta p2_join.fasta p3_join.fasta;
 
 
-RES=$(./src/andi -mRAW -t 1 -j S0.fasta S1.fasta |
+RES=$(./src/andi -mRAW -t 1 -j S0_join.fasta S1_join.fasta |
         tail -n 1 |
         awk '{print ($2 - 0.1)}' |
         awk 'function abs(x){return ((x < 0.0) ? -x : x)} {print abs($1-$2) < 0.03}'
@@ -91,9 +91,9 @@ RES=$(./src/andi -mRAW -t 1 -j S0.fasta S1.fasta |
 
 if test $RES -ne 1; then
         echo "The last test computed a distance deviating more than three percent from its intended value."
-        echo "See S0.fasta and S1.fasta for the used sequences."
+        echo "See S0_join.fasta and S1_join.fasta for the used sequences."
         exit 1;
 fi
 
 
-rm S0.fasta S1.fasta
+rm S0_join.fasta S1_join.fasta

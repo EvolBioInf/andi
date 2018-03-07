@@ -8,18 +8,18 @@ if test $SEED -ne 0; then
 fi
 
 
-./test/test_fasta -s $SEED -l 10000 > a.fa
-./test/test_fasta -s $SEED2 -l 10000 > b.fa
+./test/test_fasta -s $SEED -l 10000 > a_nan.fa
+./test/test_fasta -s $SEED2 -l 10000 > b_nan.fa
 
 # this is expected to trigger the nan warning
-./src/andi -j a.fa b.fa 2>&1 | grep 'nan'
+./src/andi -j a_nan.fa b_nan.fa 2>&1 | grep 'nan'
 EXIT_VAL=$?
 
 
 if [[ EXIT_VAL -ge 1 ]]; then
 	echo "Triggering nan failed" >&2
-	grep '^>' a.fa b.fa both.fa
+	grep '^>' a_nan.fa b_nan.fa
 fi
 
-rm -f a.fa b.fa
+rm -f a_nan.fa b_nan.fa
 exit $EXIT_VAL

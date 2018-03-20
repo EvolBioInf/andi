@@ -98,6 +98,7 @@ void teardown( esa_fixture *ef, gconstpointer test_data){
 	free(ef->C);
 	seq_free(ef->S);
 	free(ef->S);
+	seq_subject_free(&ef->subject);
 }
 
 extern int count;

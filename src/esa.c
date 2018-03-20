@@ -462,9 +462,17 @@ static lcp_inter_t get_interval(const esa_s *self, lcp_inter_t ij, char a) {
 	SoSueMe:
 		if (c == a) {
 			/* found ! */
-			saidx_t n = L(CLD, m);
 
-			ij = (lcp_inter_t){.i = i, .j = m - 1, .m = n, .l = LCP[n]};
+			if (i != m - 1) {
+				// found interval contains >1 element
+				saidx_t n = L(CLD, m);
+
+				ij = (lcp_inter_t){.i = i, .j = m - 1, .m = n, .l = LCP[n]};
+			} else {
+				// empty or singleton
+				// doing L(CLD, m) is not valid in this case!
+				ij = (lcp_inter_t){.i = i, .j = i, .m = -1, .l = LCP[i]};
+			}
 
 			return ij;
 		}

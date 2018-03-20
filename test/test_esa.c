@@ -162,6 +162,9 @@ void normq_cached( esa_fixture *ef, gconstpointer test_data){
 	b = get_match(C, "AAAAAAAAAAAA", 12);
 	assert_equal_lcp( &a, &b);
 
+	a = get_match_cached(C, "!AAAAAAAAAAAA", 12);
+	b = get_match(C, "!AAAAAAAAAAAA", 12);
+	assert_equal_lcp( &a, &b);
 }
 
 size_t MAX_DEPTH = 11;

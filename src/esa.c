@@ -287,11 +287,7 @@ int esa_init_SA(esa_s *C) {
 	C->SA = malloc(C->len * sizeof(*C->SA));
 	CHECK_MALLOC(C->SA);
 
-	saidx_t result = 1;
-
-	result = divsufsort((const unsigned char *)C->S, C->SA, C->len);
-
-	return result;
+	return divsufsort((const unsigned char *)C->S, C->SA, C->len);
 }
 
 /** @brief Initializes the CLD (child) array.

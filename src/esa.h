@@ -8,17 +8,8 @@
 
 #include "config.h"
 #include "sequence.h"
-#include <sys/types.h>
-
-#ifdef HAVE_LIBDIVSUFSORT
 #include <divsufsort.h>
-#else
-
-#include "../opt/psufsort/interface.h"
-
-typedef int saidx_t;
-
-#endif
+#include <sys/types.h>
 
 /**
  * @brief Represents LCP-Intervals.

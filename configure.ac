@@ -26,36 +26,16 @@ AS_IF([test "x$have_gsl" = "xno"],[
 	AC_MSG_ERROR([Missing the Gnu Scientific Library.])
 ])
 
-# By default try to build with libdivsufsort.
-AC_ARG_WITH([libdivsufsort],
-    AS_HELP_STRING([--without-libdivsufsort], [Build without libdivsufsort and use psufsort instead.]))
+# The libdivsufsort header contains some Microsoft extension making
+# compilation fail on certain systems (i.e. OS X). Add the following
+# flag so the build runs smoothly.
+CPPFLAGS="$CPPFLAGS -fms-extensions"
+AC_CHECK_HEADERS([divsufsort.h],[have_libdivsufsort=yes],[have_libdivsufsort=no])
+AC_CHECK_LIB(divsufsort, divsufsort, [], [have_libdivsufsort=no])
 
-AS_IF([test "x$with_libdivsufsort" != "xno"],
-	[
-		# The libdivsufsort header contains some Microsoft extension making
-		# compilation fail on certain systems (i.e. OS X). Add the following
-		# flag so the build runs smoothly.
-		CPPFLAGS="$CPPFLAGS -fms-extensions"
-		AC_CHECK_HEADERS([divsufsort.h],[have_libdivsufsort=yes],[have_libdivsufsort=no])
-		AC_CHECK_LIB(divsufsort, divsufsort, [], [have_libdivsufsort=no])
-	],
-	[
-		have_libdivsufsort=no
-		# psufsort needs C++11
-		AX_CXX_COMPILE_STDCXX_11([],[mandatory])
-	]
-)
-
-AS_IF([test "x$have_libdivsufsort" = "xno"],
-	[AS_IF([test "x$with_libdivsufsort" != "xno"],
-		[AC_MSG_ERROR([Configuration for libdivsufsort failed. Either install libdivsufsort, or use our replacement, psufsort, instead.
-	./configure --without-libdivsufsort
-The latter may result in longer runtimes.])
-	])
+AS_IF([test "x$have_libdivsufsort" = "xno"],[
+	AC_MSG_ERROR([Missing libdivsufsort.])
 ])
-
-AM_CONDITIONAL([BUILD_WITH_LIBDIVSUFSORT],[test "x${with_libdivsufsort}" != "xno"])
-
 
 
 # The unit tests require GLIB2. So by default do not build the test.
@@ -124,7 +104,6 @@ AC_CONFIG_FILES([
  docs/Makefile
  libs/Makefile
  opt/Makefile
- opt/psufsort/Makefile
  src/Makefile
  test/Makefile
 ])

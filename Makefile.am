@@ -3,12 +3,8 @@ AM_DISTCHECK_CONFIGURE_FLAGS="--enable-unit-tests"
 
 .PHONY: all
 
-if !BUILD_WITH_LIBDIVSUFSORT
-OPT_PSUFSORT = opt/psufsort
-endif
-
-SUBDIRS = . $(OPT_PSUFSORT) libs opt src docs
-DIST_SUBDIRS = . libs opt src docs test opt/psufsort
+SUBDIRS = . libs opt src docs
+DIST_SUBDIRS = . libs opt src docs test
 
 # Conditionally build the tests
 if BUILD_TESTS

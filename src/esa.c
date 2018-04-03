@@ -289,11 +289,7 @@ int esa_init_SA(esa_s *C) {
 
 	saidx_t result = 1;
 
-#ifdef HAVE_LIBDIVSUFSORT
 	result = divsufsort((const unsigned char *)C->S, C->SA, C->len);
-#else
-	result = c_psufsort(C->S, C->SA);
-#endif
 
 	return result;
 }

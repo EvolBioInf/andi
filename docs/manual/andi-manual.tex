@@ -128,7 +128,7 @@ The easiest way to install \andi is via a package manager. This also handles all
 
 \section{Source Package} \label{sub:regular}
 
-To build \andi from source, download the latest \href{https://github.com/EvolBioInf/andi/releases}{release} from GitHub. Please note, that \andi requires the \algo{Gnu Scientific Library} and optionally \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}. If you wish to install \andi without \algo{libdivsufsort}, consult Section~\ref{sub:wo-divsufsort}.
+To build \andi from source, download the latest \href{https://github.com/EvolBioInf/andi/releases}{release} from GitHub. Please note, that \andi requires the \algo{Gnu Scientific Library} and \algo{libdivsufsort}\footnote{\url{https://github.com/y-256/libdivsufsort}} for optimal performance \cite{divsufsort}.
 
 Once you have downloaded the package, unzip it and change into the newly created directory. 
 
@@ -169,16 +169,6 @@ Options:
 \end{lstlisting}
 
 \noindent \andi also comes with a man page, which can be accessed via \lstinline$man andi$. % But once you are done with this documentation, you will require it scarcely.
-
-\section{Installing without \algo{libdivsufsort}} \label{sub:wo-divsufsort}
-
-In case you cannot or do not want to install \algo{libdivsufsort}, \andi comes with its own implementation of a \emph{suffix array construction algorithm}. It is called \algo{psufsort} and is also available, separately.\footnote{\url{https://github.com/kloetzl/psufsort}} To activate it for \algo{andi}, proceed as described in Section~\ref{sub:regular}, but with the following twist:
-
-\begin{lstlisting}
-~/andi %  ./configure --without-libdivsufsort
-\end{lstlisting}
-
-Please note that this requires a C++11 compiler. Also, \algo{psufsort} may be slower than \algo{libdivsufsort} and thus lead to inferior runtimes.
 
 \section{Installing from Git Repository}
 

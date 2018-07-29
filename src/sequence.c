@@ -6,6 +6,7 @@
  */
 #include <ctype.h>
 #include <limits.h>
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -14,6 +15,8 @@
 #include <compat-stdlib.h>
 
 void normalize(seq_t *S);
+double shustring_cum_prob(size_t x, double g, size_t l);
+size_t min_anchor_length(double p, double g, size_t l);
 
 /** Create a new dynamic array for sequences. */
 int dsa_init(dsa_t *A) {
@@ -154,9 +157,7 @@ char *revcomp(const char *str, size_t len) {
 			case 'T': d = 'A'; break;
 			case 'G': d = 'C'; break;
 			case 'C': d = 'G'; break;
-			case '!':
-				d = ';';
-				break; // rosebud
+			case '!': d = ';'; break; // rosebud
 			default: continue;
 		}
 
@@ -213,6 +214,9 @@ int seq_subject_init(seq_subject *S, const seq_t *base) {
 	S->RS = catcomp(base->S, base->len);
 	if (!S->RS) return 1;
 	S->RSlen = 2 * base->len + 1;
+
+	S->threshold = min_anchor_length(ANCHOR_P_VALUE, S->gc, S->RSlen);
+
 	return 0;
 }
 
@@ -277,4 +281,95 @@ void normalize(seq_t *S) {
 #pragma omp atomic
 		FLAGS |= F_NON_ACGT;
 	}
+}
+
+/**
+ * @brief Calculates the minimum anchor length.
+ *
+ * Given some parameters calculate the minimum length for anchors according
+ * to the distribution from Haubold et al. (2009).
+ *
+ * @param p - The probability with which an anchor will be created under a
+ * random model.
+ * @param g - The the relative amount of GC in the subject.
+ * @param l - The length of the subject (includes revcomp).
+ * @returns The minimum length of an anchor.
+ */
+size_t min_anchor_length(double p, double g, size_t l) {
+	size_t x = 1;
+
+	while (shustring_cum_prob(x, g / 2, l) < 1 - p) {
+		x++;
+	}
+
+	return x;
+}
+
+/**
+ * @brief Calculates the binomial coefficient of n and k.
+ *
+ * We could (and probably should) use gsl_sf_lnchoose(xx,kk) for this.
+ *
+ * @param n - The n part of the binomial coefficient.
+ * @param k - analogue.
+ * @returns (n choose k)
+ */
+size_t binomial_coefficient(size_t n, size_t k) {
+	if (n <= 0 || k > n) {
+		return 0;
+	}
+
+	if (k == 0 || k == n) {
+		return 1;
+	}
+
+	if (k > n - k) {
+		k = n - k;
+	}
+
+	size_t res = 1;
+
+	for (size_t i = 1; i <= k; i++) {
+		res *= n - k + i;
+		res /= i;
+	}
+
+	return res;
+}
+
+/**
+ * @brief Given `x` this function calculates the probability of a shustring
+ * with a length less or equal to `x` under a random model. This means, it is
+ * the cumulative probability.
+ *
+ * Let X be the longest shortest unique substring (shustring) at any position.
+ * Then this function computes P{X <= x} with respect to the given parameter
+ * set. See Haubold et al. (2009). Note that `x` includes the final mismatch.
+ * Thus, `x` is `match length + 1`.
+ *
+ * @param x - The maximum length of a shustring.
+ * @param p - The half of the relative amount of GC in the DNA.
+ * @param l - The length of the subject.
+ * @returns The probability of a certain shustring length.
+ */
+double shustring_cum_prob(size_t x, double p, size_t l) {
+	double xx = (double)x;
+	double ll = (double)l;
+	size_t k;
+
+	double s = 0.0;
+
+	for (k = 0; k <= x; k++) {
+		double kk = (double)k;
+		double t = pow(p, kk) * pow(0.5 - p, xx - kk);
+
+		s += pow(2, xx) * (t * pow(1 - t, ll)) *
+			 (double)binomial_coefficient(x, k);
+		if (s >= 1.0) {
+			s = 1.0;
+			break;
+		}
+	}
+
+	return s;
 }

@@ -40,6 +40,8 @@ typedef struct seq_subject {
 	 * The relative amount of G or C in the DNA.
 	 */
 	double gc;
+	/** The minimum length for an anchor. */
+	size_t threshold;
 } seq_subject;
 
 void seq_free(seq_t *S);

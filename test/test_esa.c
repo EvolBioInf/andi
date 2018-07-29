@@ -6,6 +6,7 @@
 
 int FLAGS = F_NONE;
 int THREADS = 1;
+double ANCHOR_P_VALUE = 0.025;
 
 extern const int CACHE_LENGTH;
 

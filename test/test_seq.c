@@ -4,6 +4,8 @@
 #include <string.h>
 #include "sequence.h"
 
+double ANCHOR_P_VALUE = 0.025;
+
 int FLAGS = F_NONE;
 
 void test_seq_basic(){

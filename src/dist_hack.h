@@ -5,7 +5,7 @@
 // clang-format off
 #ifdef FAST
 #define NAME distMatrix
-#define P_OUTER _Pragma("omp parallel for num_threads( THREADS) default(none) shared(progress_counter) firstprivate( stderr, M, sequences, n, print_progress)")
+#define P_OUTER _Pragma("omp parallel for num_threads( THREADS) default(none) shared(progress_counter) firstprivate( ANCHOR_P_VALUE, stderr, M, sequences, n, print_progress)")
 #define P_INNER
 #else
 #undef NAME
@@ -13,7 +13,7 @@
 #undef P_INNER
 #define NAME distMatrixLM
 #define P_OUTER
-#define P_INNER _Pragma("omp parallel for num_threads( THREADS) default(none) shared(progress_counter) firstprivate( stderr, M, sequences, n, print_progress, i, E, subject)")
+#define P_INNER _Pragma("omp parallel for num_threads( THREADS) default(none) shared(progress_counter) firstprivate( threshold, stderr, M, sequences, n, print_progress, i, E, subject)")
 #endif
 // clang-format on
 
@@ -53,6 +53,8 @@ void NAME(struct model *M, const seq_t *sequences, size_t n) {
 			errx(1, "Failed to create index for %s.", sequences[i].name);
 		}
 
+		size_t threshold = min_anchor_length(ANCHOR_P_VALUE, subject.gc, subject.RSlen);
+
 		// now compare every other sequence to i
 		size_t j;
 
@@ -65,7 +67,7 @@ void NAME(struct model *M, const seq_t *sequences, size_t n) {
 
 			size_t ql = sequences[j].len;
 
-			M(i, j) = dist_anchor(&E, sequences[j].S, ql, subject.gc);
+			M(i, j) = dist_anchor(&E, sequences[j].S, ql, threshold);
 
 #pragma omp atomic update
 			progress_counter++;

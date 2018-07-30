@@ -135,7 +135,7 @@ static inline bool anchor(const struct context *ctx,
  * @param query - The actual query string.
  * @param query_length - The length of the query string. Needed for speed
  * reasons.
- * @param gc - The relative GC content of the subject.
+ * @param threshold - Minimal length for an anchor.
  * @returns A matrix with estimates of base substitutions.
  */
 model dist_anchor(const esa_s *C, const char *query, size_t query_length,

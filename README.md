@@ -11,13 +11,14 @@ This readme covers all necessary instructions for the impatient to get `andi` up
 
 Stable versions of `andi` are available via package managers. For manual installation see below.
 
-For Debian and Ubuntu (starting 16.04):
+For Debian and Ubuntu:
 
     sudo apt-get install andi
 
 For OS X with Homebrew:
 
-    brew install homebrew/science/andi
+    brew tap brewsci/bio
+    brew install andi
 
 For ArchLinux with aura:
 

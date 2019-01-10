@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2016, Fabian Klötzl <fabian-pfasta@kloetzl.info>
+ * Copyright (c) 2015-2018, Fabian Klötzl <fabian-pfasta@kloetzl.info>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,388 +17,472 @@
 
 #include <assert.h>
 #include <ctype.h>
+#include <err.h>
 #include <errno.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <unistd.h>
 
-#include <compat-stdlib.h>
 #include "pfasta.h"
 
-#define BUFFERSIZE 4096
+#define VERSION "v14"
 
-/** @file
- *
- * Welcome to the code of `pfasta`, the pedantic FASTA parser. For future
- * reference I here explain some general, noteworthy things about the code.
- *
- *  - Most functions returning an `int` follow the zero-errors convention. On
- *    success a `0` is returned. A negative number indicates an error. Positive
- *    numbers can be used to signal a different exceptional state (i.e. EOF).
- *  - All functions use pointers to objects for their parameters.
- *  - The low-level Unix `read(2)` function is used to grab bytes from a file
- *    descriptor. These are stored in a buffer. The contents of this buffer is
- *    checked one char at a time and then appended to string buffer. Finally,
- *    the resulting strings are returned.
- *  - To work around the fact that C has no exceptions, I declare some nifty
- *    macros below.
- *  - As the length of the sequences are not known in advance I implemented a
- *    simple structure for growable strings called `dynstr`. One character at
- *    a time can be appended using `dynstr_put`. Internally an array is
- *    realloced with growth factor 1.5.
- *  - The functions which do the actual parsing are prefixed `pfasta_read_*`.
+#ifdef __SSE2__
+#include <emmintrin.h>
+#endif
+
+#ifdef __STDC_NO_THREADS__
+#define thread_local
+#else
+#include <threads.h>
+#endif
+
+/** The following is the maximum length of an error string. It has to be
+ * carefully chosen, so that all calls to PF_FAIL_STR succeed. For instance,
+ * the line number can account for up to 20 characters.
  */
+#define PF_ERROR_STRING_LENGTH 100
 
-#define PF_EXIT_ERRNO()                                                        \
+thread_local char errstr_buffer[PF_ERROR_STRING_LENGTH];
+
+void *pfasta_reallocarray(void *ptr, size_t nmemb, size_t size);
+
+#define BUFFER_SIZE 16384
+
+#define LIKELY(X) __builtin_expect((intptr_t)(X), 1)
+#define UNLIKELY(X) __builtin_expect((intptr_t)(X), 0)
+
+enum { NO_ERROR, E_EOF, E_ERROR, E_ERRNO, E_BUBBLE, E_STR, E_STR_CONST };
+
+#define PF_FAIL_ERRNO(PP)                                                      \
 	do {                                                                       \
-		pf->errno__ = errno;                                                   \
-		pf->errstr = NULL;                                                     \
-		return -2;                                                             \
-	} while (0)
-
-#define PF_EXIT_FORWARD() return -1
-
-#define PF_FAIL_FORWARD()                                                      \
-	do {                                                                       \
-		return_code = -1;                                                      \
+		(void)strerror_r(errno, errstr_buffer, PF_ERROR_STRING_LENGTH);        \
+		(PP)->errstr = errstr_buffer;                                          \
+		return_code = E_ERRNO;                                                 \
 		goto cleanup;                                                          \
 	} while (0)
 
-#define PF_FAIL_ERRNO()                                                        \
+#define PF_FAIL_BUBBLE_CHECK(PP, CHECK)                                        \
 	do {                                                                       \
-		pf->errno__ = errno;                                                   \
-		pf->errstr = NULL;                                                     \
-		return_code = -2;                                                      \
+		if (UNLIKELY(CHECK)) {                                                 \
+			return_code = CHECK;                                               \
+			goto cleanup;                                                      \
+		}                                                                      \
+	} while (0)
+
+#define PF_FAIL_BUBBLE(PP)                                                     \
+	do {                                                                       \
+		if (UNLIKELY((PP)->errstr)) {                                          \
+			return_code = E_BUBBLE;                                            \
+			goto cleanup;                                                      \
+		}                                                                      \
+	} while (0)
+
+#define PF_FAIL_STR_CONST(PP, STR)                                             \
+	do {                                                                       \
+		(PP)->errstr = (STR);                                                  \
+		return_code = E_STR_CONST;                                             \
 		goto cleanup;                                                          \
 	} while (0)
 
-#define PF_FAIL_STR(...)                                                       \
+#define PF_FAIL_STR(PP, ...)                                                   \
 	do {                                                                       \
-		pf->errno__ = 0;                                                       \
-		(void)snprintf(pf->errstr_buf, PF_ERROR_STRING_LENGTH, __VA_ARGS__);   \
-		pf->errstr = pf->errstr_buf;                                           \
-		return_code = -1;                                                      \
+		(void)snprintf(errstr_buffer, PF_ERROR_STRING_LENGTH, __VA_ARGS__);    \
+		(PP)->errstr = errstr_buffer;                                          \
+		return_code = E_STR;                                                   \
 		goto cleanup;                                                          \
 	} while (0)
 
-static int buffer_init(pfasta_file *pf);
-static inline int buffer_peek(const pfasta_file *pf);
-static inline int buffer_adv(pfasta_file *pf);
-static int buffer_read(pfasta_file *pf);
+int pfasta_read_name(struct pfasta_parser *pp, struct pfasta_record *pr);
+int pfasta_read_comment(struct pfasta_parser *pp, struct pfasta_record *pr);
+int pfasta_read_sequence(struct pfasta_parser *pp, struct pfasta_record *pr);
+
+static inline char *buffer_begin(struct pfasta_parser *pp);
+static inline char *buffer_end(struct pfasta_parser *pp);
+static inline int buffer_advance(struct pfasta_parser *pp, size_t steps);
+static inline int buffer_is_empty(const struct pfasta_parser *pp);
+static inline int buffer_is_eof(const struct pfasta_parser *pp);
+static inline int buffer_peek(struct pfasta_parser *pp);
+static inline int buffer_read(struct pfasta_parser *pp);
 
 typedef struct dynstr {
 	char *str;
 	size_t capacity, count;
 } dynstr;
 
-static inline int dynstr_init(dynstr *ds);
-static inline int dynstr_put(dynstr *ds, char c);
-static inline void dynstr_free(dynstr *ds);
 static inline char *dynstr_move(dynstr *ds);
+static inline int dynstr_init(dynstr *ds, struct pfasta_parser *pp);
 static inline size_t dynstr_len(const dynstr *ds);
+static inline void dynstr_free(dynstr *ds);
+static inline int dynstr_append(dynstr *ds, const char *str, size_t length,
+                                struct pfasta_parser *pp);
 
-int pfasta_read_name(pfasta_file *pf, pfasta_seq *ps);
-int pfasta_read_comment(pfasta_file *pf, pfasta_seq *ps);
-int pfasta_read_seq(pfasta_file *pf, pfasta_seq *ps);
-
-/*
- * When reading from a buffer, basically three things can happen.
- *
- *  1. Bytes are read (success)
- *  2. Low-level error (fail)
- *  3. No more bytes (EOF)
- *
- * A low-level error is indicated by `buffer_adv` returning non-zero. As
- * end-of-file is technically a successful read, EOF is instead signalled by
- * `buffer_peek`.
- */
-
-/** @brief Initialises the read buffer. First, memory is allocated and then
- * filled. Both operations may fail. But this ensure we detect problems with
- * an unreadable file at the the initialisation of the parser!
- *
- * @param pf - The parser we want to initialise.
- * @returns 0 iff successful.
- */
-static int buffer_init(pfasta_file *pf) {
-	char *buffer = malloc(BUFFERSIZE);
-	if (!buffer) PF_EXIT_ERRNO();
-
-	pf->buffer = pf->readptr = pf->fillptr = buffer;
-	if (buffer_read(pf) < 0) PF_EXIT_FORWARD();
-	return 0;
+static inline int my_isspace(int c) {
+	// ascii whitespace
+	return (c >= '\t' && c <= '\r') || (c == ' ');
 }
 
-/** @brief Returns the current character or EOF.
- *
- * @param pf - The parser to read from.
- * @returns The current character or EOF.
- */
-static inline int buffer_peek(const pfasta_file *pf) {
-	if (pf->readptr < pf->fillptr) {
-		return (int)*(pf->readptr);
-	}
-	return EOF;
+const char *pfasta_version(void) { return VERSION; }
+
+int buffer_init(struct pfasta_parser *pp) {
+	int return_code = 0;
+
+	pp->buffer = malloc(BUFFER_SIZE);
+	if (!pp->buffer) PF_FAIL_ERRNO(pp);
+
+	int check = buffer_read(pp);
+	PF_FAIL_BUBBLE_CHECK(pp, check);
+
+cleanup:
+	return return_code;
 }
 
-/** @brief Advances the read pointer in the buffer to the next character. If
- * needed, the buffer is filled with fresh bytes. A non-zero value is returned
- * if reading fails.
- *
- * @param pf - The parser which should be advanced.
- * @returns 0 iff successful.
- */
-static inline int buffer_adv(pfasta_file *pf) {
-	if (buffer_peek(pf) == '\n') {
-		pf->line++;
+int buffer_read(struct pfasta_parser *pp) {
+	int return_code = NO_ERROR;
+	ssize_t count = read(pp->file_descriptor, pp->buffer, BUFFER_SIZE);
+
+	if (UNLIKELY(count < 0)) PF_FAIL_ERRNO(pp);
+	if (UNLIKELY(count == 0)) { // EOF
+		pp->fill_ptr = pp->buffer;
+		pp->read_ptr = pp->buffer + 1;
+		pp->errstr = "EOF (maybe error)"; // enable bubbling
+		return E_EOF;
 	}
 
-	if (pf->readptr < pf->fillptr - 1) {
-		pf->readptr++;
+	pp->read_ptr = pp->buffer;
+	pp->fill_ptr = pp->buffer + count;
+
+cleanup:
+	return return_code;
+}
+
+int buffer_peek(struct pfasta_parser *pp) {
+	return LIKELY(pp->read_ptr < pp->fill_ptr) ? *pp->read_ptr : EOF;
+}
+
+char *buffer_begin(struct pfasta_parser *pp) { return pp->read_ptr; }
+
+char *buffer_end(struct pfasta_parser *pp) { return pp->fill_ptr; }
+
+inline int buffer_advance(struct pfasta_parser *pp, size_t steps) {
+	int return_code = 0;
+
+	pp->read_ptr += steps;
+	if (UNLIKELY(pp->read_ptr >= pp->fill_ptr)) {
+		assert(pp->read_ptr == pp->fill_ptr);
+		int check = buffer_read(pp); // resets pointers
+		PF_FAIL_BUBBLE_CHECK(pp, check);
+	}
+
+cleanup:
+	return return_code;
+}
+
+int buffer_is_empty(const struct pfasta_parser *pp) {
+	return pp->read_ptr == pp->fill_ptr;
+}
+
+int buffer_is_eof(const struct pfasta_parser *pp) {
+	return pp->read_ptr > pp->fill_ptr;
+}
+
+char *find_first_space(const char *begin, const char *end) {
+	size_t offset = 0;
+	size_t length = end - begin;
+
+#ifdef __SSE2__
+
+	typedef __m128i vec_type;
+	static const size_t vec_size = sizeof(vec_type);
+
+	const vec_type all_tab = _mm_set1_epi8('\t' - 1);
+	const vec_type all_carriage = _mm_set1_epi8('\r' + 1);
+	const vec_type all_space = _mm_set1_epi8(' ');
+
+	size_t vec_offset = 0;
+	size_t vec_length = (end - begin) / vec_size;
+
+	for (; vec_offset < vec_length; vec_offset++) {
+		vec_type chunk;
+		memcpy(&chunk, begin + vec_offset * vec_size, vec_size);
+
+		// isspace: \t <= char <= \r || char == space
+		vec_type v1 = _mm_cmplt_epi8(all_tab, chunk);
+		vec_type v2 = _mm_cmplt_epi8(chunk, all_carriage);
+		vec_type v3 = _mm_cmpeq_epi8(chunk, all_space);
+
+		unsigned int vmask = (_mm_movemask_epi8(v1) & _mm_movemask_epi8(v2)) |
+		                     _mm_movemask_epi8(v3);
+
+		if (UNLIKELY(vmask)) {
+			offset += __builtin_ctz(vmask);
+			offset += vec_offset * vec_size;
+			return (char *)begin + offset;
+		}
+	}
+
+	offset += vec_offset * vec_size;
+#endif
+
+	for (; offset < length; offset++) {
+		if (my_isspace(begin[offset])) break;
+	}
+	return (char *)begin + offset;
+}
+
+char *find_first_not_space(const char *begin, const char *end) {
+	size_t offset = 0;
+	size_t length = end - begin;
+
+	for (; offset < length; offset++) {
+		if (!my_isspace(begin[offset])) break;
+	}
+	return (char *)begin + offset;
+}
+
+size_t count_newlines(const char *begin, const char *end) {
+	size_t offset = 0;
+	size_t length = end - begin;
+	size_t newlines = 0;
+
+	for (; offset < length; offset++) {
+		if (begin[offset] == '\n') newlines++;
+	}
+
+	return newlines;
+}
+
+static int copy_word(struct pfasta_parser *pp, dynstr *target) {
+	int return_code = 0;
+
+	while (LIKELY(!my_isspace(buffer_peek(pp)))) {
+		char *end_of_word = find_first_space(buffer_begin(pp), buffer_end(pp));
+		size_t word_length = end_of_word - buffer_begin(pp);
+
+		assert(word_length > 0);
+
+		int check = dynstr_append(target, buffer_begin(pp), word_length, pp);
+		PF_FAIL_BUBBLE_CHECK(pp, check);
+
+		check = buffer_advance(pp, word_length);
+		PF_FAIL_BUBBLE_CHECK(pp, check);
+	}
+
+cleanup:
+	return return_code;
+}
+
+static int skip_whitespace(struct pfasta_parser *pp) {
+	int return_code = 0;
+
+	while (my_isspace(buffer_peek(pp))) {
+		char *split = find_first_not_space(buffer_begin(pp), buffer_end(pp));
+
+		// advance may clear the buffer. So count first …
+		size_t newlines = count_newlines(buffer_begin(pp), split);
+		int check = buffer_advance(pp, split - buffer_begin(pp));
+		PF_FAIL_BUBBLE_CHECK(pp, check);
+
+		// … and then increase the counter.
+		pp->line_number += newlines;
+	}
+
+cleanup:
+	return return_code;
+}
+
+struct pfasta_parser pfasta_init(int file_descriptor) {
+	int return_code = 0;
+	struct pfasta_parser pp = {0};
+	pp.line_number = 1;
+
+	pp.file_descriptor = file_descriptor;
+	int check = buffer_init(&pp);
+	if (check && check != E_EOF) PF_FAIL_BUBBLE_CHECK(&pp, check);
+
+	if (buffer_is_empty(&pp) || buffer_is_eof(&pp)) {
+		PF_FAIL_STR(&pp, "File is empty.");
+	}
+
+	if (buffer_peek(&pp) != '>') {
+		PF_FAIL_STR(&pp, "File must start with '>'.");
+	}
+
+cleanup:
+	// free buffer if necessary
+	if (return_code) {
+		pfasta_free(&pp);
+	}
+	pp.done = return_code || buffer_is_eof(&pp);
+	return pp;
+}
+
+struct pfasta_record pfasta_read(struct pfasta_parser *pp) {
+	int return_code = 0;
+	struct pfasta_record pr = {0};
+
+	int check = pfasta_read_name(pp, &pr);
+	PF_FAIL_BUBBLE_CHECK(pp, check);
+
+	check = pfasta_read_comment(pp, &pr);
+	PF_FAIL_BUBBLE_CHECK(pp, check);
+
+	check = pfasta_read_sequence(pp, &pr);
+	PF_FAIL_BUBBLE_CHECK(pp, check);
+
+cleanup:
+	if (return_code) {
+		pfasta_record_free(&pr);
+		pfasta_free(pp);
+	}
+	pp->done = return_code || buffer_is_eof(pp);
+	return pr;
+}
+
+int pfasta_read_name(struct pfasta_parser *pp, struct pfasta_record *pr) {
+	int return_code = 0;
+
+	dynstr name;
+	dynstr_init(&name, pp);
+	PF_FAIL_BUBBLE(pp);
+
+	assert(!buffer_is_empty(pp));
+	if (buffer_peek(pp) != '>') {
+		PF_FAIL_STR(pp, "Expected '>' but found '%c' on line %zu.",
+		            buffer_peek(pp), pp->line_number);
+	}
+
+	int check = buffer_advance(pp, 1); // skip >
+	if (check == E_EOF)
+		PF_FAIL_STR(pp, "Unexpected EOF in name on line %zu.", pp->line_number);
+	PF_FAIL_BUBBLE(pp);
+
+	check = copy_word(pp, &name);
+	if (check == E_EOF)
+		PF_FAIL_STR(pp, "Unexpected EOF in name on line %zu.", pp->line_number);
+	PF_FAIL_BUBBLE(pp);
+
+	if (dynstr_len(&name) == 0)
+		PF_FAIL_STR(pp, "Empty name on line %zu.", pp->line_number);
+
+	pr->name_length = dynstr_len(&name);
+	pr->name = dynstr_move(&name);
+
+cleanup:
+	if (return_code) {
+		dynstr_free(&name);
+	}
+	return return_code;
+}
+
+int pfasta_read_comment(struct pfasta_parser *pp, struct pfasta_record *pr) {
+	int return_code = 0;
+
+	if (buffer_peek(pp) == '\n') {
+		pr->comment_length = 0;
+		pr->comment = NULL;
 		return 0;
 	}
 
-	if (buffer_read(pf) < 0) PF_EXIT_FORWARD();
-
-	return 0;
-}
-
-/** @brief Fills the buffer with new data.
- *
- * @param pf - The parser which should be updated.
- * @returns 0 iff successful.
- */
-static int buffer_read(pfasta_file *pf) {
-	ssize_t count = read(pf->fd, pf->buffer, BUFFERSIZE);
-	if (count < 0) PF_EXIT_ERRNO();
-	if (count == 0) { // EOF
-		pf->fillptr = pf->buffer;
-		pf->readptr = pf->buffer + 1;
-		return 1;
-	}
-
-	pf->readptr = pf->buffer;
-	pf->fillptr = pf->buffer + count;
-
-	return 0;
-}
-
-/** @brief Frees all data associated with a parser. Also nulls pointers to avoid
- * a potential double-free.
- *
- * @param pf - The parser that shall be freed.
- */
-void pfasta_free(pfasta_file *pf) {
-	if (!pf) return;
-	free(pf->buffer);
-	pf->buffer = pf->readptr = pf->fillptr = pf->errstr = NULL;
-	pf->errno__ = 0;
-	pf->fd = -1;
-	pf->line = 0;
-	pf->unexpected_char = '\0';
-}
-
-/** @brief Creates a new parser for the given file. This includes allocating the
- * buffer and reading the first few bytes. These are then used to break on empty
- * or non-FASTA files.
- *
- * @param pf - A pointer to the parser structure we intend to initialise. No
- * assumption is made about the referenced memory except its existence.
- * @returns 0 iff successful.
- */
-int pfasta_parse(pfasta_file *pf, int file_descriptor) {
-	assert(pf && file_descriptor >= 0);
-	int return_code = 0;
-
-	pf->errno__ = 0;
-	pf->buffer = pf->readptr = pf->fillptr = pf->errstr = NULL;
-	pf->fd = file_descriptor;
-	pf->line = 1;
-	pf->unexpected_char = '\0';
-
-	if (buffer_init(pf) != 0) PF_FAIL_FORWARD();
-
-	int c = buffer_peek(pf);
-	if (c == EOF) PF_FAIL_STR("Empty file");
-	if (c != '>') PF_FAIL_STR("File does not start with '>'");
-
-cleanup:
-	return return_code;
-}
-
-/** @brief Frees the memory of a FASTA sequence. **/
-void pfasta_seq_free(pfasta_seq *ps) {
-	if (!ps) return;
-	free(ps->name);
-	free(ps->comment);
-	free(ps->seq);
-	ps->name = ps->comment = ps->seq = NULL;
-}
-
-/** @brief Reads the next sequence from the parser into the memory pointed to by
- * the parameter `ps`. This may fail for various reasons. No matter, what
- * happens, always free `ps` after usage!
- *
- * @param pf - The parser to read from.
- * @param ps - A reference to memory for the sequence data.
- *
- * @returns 0 if successful, 1 if the end of the file was reached and a negative
- * number on error.
- */
-int pfasta_read(pfasta_file *pf, pfasta_seq *ps) {
-	assert(pf && ps && pf->buffer);
-	*ps = (pfasta_seq){NULL, NULL, NULL};
-	int return_code = 0;
-
-	int c = buffer_peek(pf);
-	if (c == EOF) return 1;
-	if (c != '>') {
-		PF_FAIL_STR("Expected '>', but found '%c' on line %zu", c, pf->line);
-	}
-
-	if (pfasta_read_name(pf, ps) < 0) PF_FAIL_FORWARD();
-	if (isblank(buffer_peek(pf))) {
-		if (pfasta_read_comment(pf, ps) < 0) PF_FAIL_FORWARD();
-	}
-	if (pfasta_read_seq(pf, ps) < 0) PF_FAIL_FORWARD();
-
-	// Skip blank lines
-	while (buffer_peek(pf) == '\n') {
-		if (buffer_adv(pf) != 0) PF_FAIL_FORWARD();
-	}
-
-cleanup:
-	return return_code;
-}
-
-/** @brief Reads the sequence name and saves it into the structure.
- *
- * @param pf - The parser used for reading.
- * @param ps - The structure used to hold the name, later.
- *
- * @returns 0 iff successful
- */
-int pfasta_read_name(pfasta_file *pf, pfasta_seq *ps) {
-	int return_code = 0;
-	dynstr name;
-	if (dynstr_init(&name) != 0) PF_FAIL_ERRNO();
-
-	while (1) {
-		if (buffer_adv(pf) != 0) PF_FAIL_FORWARD();
-
-		int c = buffer_peek(pf);
-		if (c == EOF) {
-			PF_FAIL_STR("Unexpected EOF in sequence name on line %zu",
-			            pf->line);
-		}
-		if (!isgraph(c)) break;
-
-		if (dynstr_put(&name, c) != 0) PF_FAIL_ERRNO();
-	}
-
-	if (dynstr_len(&name) == 0) PF_FAIL_STR("Empty name on line %zu", pf->line);
-
-	ps->name = dynstr_move(&name);
-
-cleanup:
-	dynstr_free(&name);
-	return return_code;
-}
-
-/** @brief Reads the sequence comment and saves it into the structure.
- *
- * @param pf - The parser used for reading.
- * @param ps - The structure used to hold the comment, later.
- *
- * @returns 0 iff successful
- */
-int pfasta_read_comment(pfasta_file *pf, pfasta_seq *ps) {
-	int return_code = 0;
 	dynstr comment;
-	if (dynstr_init(&comment) != 0) PF_FAIL_ERRNO();
+	dynstr_init(&comment, pp);
+	PF_FAIL_BUBBLE(pp);
 
-	while (1) {
-		if (buffer_adv(pf) != 0) PF_FAIL_FORWARD();
+	assert(!buffer_is_empty(pp));
 
-		int c = buffer_peek(pf);
-		if (c == '\n') break;
-		if (c == EOF) {
-			PF_FAIL_STR("Unexpected EOF in sequence comment on line %zu",
-			            pf->line);
-		}
+	int check = buffer_advance(pp, 1); // skip first whitespace
+	if (check == E_EOF) goto label_eof;
+	PF_FAIL_BUBBLE(pp);
 
-		if (dynstr_put(&comment, c) != 0) PF_FAIL_ERRNO();
+	assert(!buffer_is_empty(pp));
+
+	// get comment
+	while (buffer_peek(pp) != '\n') {
+		check = dynstr_append(&comment, buffer_begin(pp), 1, pp);
+		PF_FAIL_BUBBLE_CHECK(pp, check);
+
+		check = buffer_advance(pp, 1);
+		if (check == E_EOF) goto label_eof;
+		PF_FAIL_BUBBLE_CHECK(pp, check);
 	}
 
-	ps->comment = dynstr_move(&comment);
+label_eof:
+	if (buffer_is_eof(pp))
+		PF_FAIL_STR(pp, "Unexpected EOF in comment on line %zu.",
+		            pp->line_number);
+
+	pr->comment_length = dynstr_len(&comment);
+	pr->comment = dynstr_move(&comment);
 
 cleanup:
-	dynstr_free(&comment);
+	if (return_code) {
+		dynstr_free(&comment);
+	}
 	return return_code;
 }
 
-/** @brief Reads the sequence data and saves it into the structure.
- *
- * @param pf - The parser used for reading.
- * @param ps - The structure used to hold the data, later.
- *
- * @returns 0 iff successful
- */
-int pfasta_read_seq(pfasta_file *pf, pfasta_seq *ps) {
+int pfasta_read_sequence(struct pfasta_parser *pp, struct pfasta_record *pr) {
 	int return_code = 0;
-	dynstr seq;
-	if (dynstr_init(&seq) != 0) PF_FAIL_ERRNO();
 
-	while (1) {
-		// The only guaranty is !graph && !blank
-		assert(!isgraph(buffer_peek(pf)) && !isblank(buffer_peek(pf)));
+	dynstr sequence;
+	dynstr_init(&sequence, pp);
+	PF_FAIL_BUBBLE(pp);
 
-		// deal with the first character explicitly
-		if (buffer_adv(pf) != 0) PF_FAIL_FORWARD();
+	assert(!buffer_is_empty(pp));
+	assert(!buffer_is_eof(pp));
+	assert(buffer_peek(pp) == '\n');
 
-		int c = buffer_peek(pf);
-		if (c == EOF || c == '>' || c == '\n') break;
+	int check = skip_whitespace(pp);
+	if (check == E_EOF)
+		PF_FAIL_STR(pp, "Empty sequence on line %zu.", pp->line_number);
+	PF_FAIL_BUBBLE_CHECK(pp, check);
 
-		goto regular;
+	while (LIKELY(isalpha(buffer_peek(pp)))) {
+		int check = copy_word(pp, &sequence);
+		if (UNLIKELY(check == E_EOF)) break;
+		PF_FAIL_BUBBLE_CHECK(pp, check);
 
-		// read line
-		while (1) {
-			if (buffer_adv(pf) != 0) PF_FAIL_FORWARD();
-
-			c = buffer_peek(pf);
-			if (c == '\n') break;
-			if (c == EOF) break;
-
-		regular:
-			if (!isgraph(c)) {
-				PF_FAIL_STR("Unexpected character '%c' in sequence on line %zu",
-				            c, pf->line);
-			}
-			if (dynstr_put(&seq, c) != 0) PF_FAIL_ERRNO();
+		// optimize for more common case
+		ptrdiff_t length = buffer_end(pp) - buffer_begin(pp);
+		if (LIKELY(length >= 2 && buffer_begin(pp)[0] == '\n' &&
+		           buffer_begin(pp)[1] > ' ')) {
+			pp->read_ptr++; // nasty hack
+			pp->line_number += 1;
+		} else {
+			check = skip_whitespace(pp);
+			if (UNLIKELY(check == E_EOF)) break;
+			PF_FAIL_BUBBLE_CHECK(pp, check);
 		}
 	}
 
-	if (dynstr_len(&seq) == 0) {
-		PF_FAIL_STR("Empty sequence on line %zu", pf->line);
-	}
-	ps->seq = dynstr_move(&seq);
+	if (dynstr_len(&sequence) == 0)
+		PF_FAIL_STR(pp, "Empty sequence on line %zu.", pp->line_number);
+
+	pr->sequence_length = dynstr_len(&sequence);
+	pr->sequence = dynstr_move(&sequence);
+	pp->errstr = NULL; // reset error
 
 cleanup:
-	dynstr_free(&seq);
+	if (return_code) {
+		dynstr_free(&sequence);
+	}
 	return return_code;
 }
 
-/** @brief Returns an explanatory string for encountered errors. */
-const char *pfasta_strerror(const pfasta_file *pf) {
-	if (!pf) return NULL;
-	if (pf->errno__ == 0) {
-		return pf->errstr;
-	} else {
-		return strerror(pf->errno__);
-	}
+void pfasta_record_free(struct pfasta_record *pr) {
+	if (!pr) return;
+	free(pr->name);
+	free(pr->comment);
+	free(pr->sequence);
+	pr->name = pr->comment = pr->sequence = NULL;
+}
+
+void pfasta_free(struct pfasta_parser *pp) {
+	if (!pp) return;
+	free(pp->buffer);
+	pp->buffer = NULL;
 }
 
 /** @brief Creates a new string that can grow dynamically.
@@ -407,35 +491,49 @@ const char *pfasta_strerror(const pfasta_file *pf) {
  *
  * @returns 0 iff successful.
  */
-static inline int dynstr_init(dynstr *ds) {
+static inline int dynstr_init(dynstr *ds, struct pfasta_parser *pp) {
+	int return_code = 0;
+
 	*ds = (dynstr){NULL, 0, 0};
 	ds->str = malloc(61);
-	if (!ds->str) return -1;
+	if (!ds->str) PF_FAIL_ERRNO(pp);
+
 	ds->str[0] = '\0';
 	ds->capacity = 61;
-	return 0;
+	ds->count = 0;
+
+cleanup:
+	return return_code;
 }
 
-/** @brief A append a character to a string.
+/** @brief A append more than one character to a string.
  *
  * @param ds - A reference to the dynstr container.
- * @param c - The new character.
+ * @param str - The new characters.
+ * @param length - number of new characters to append
  *
  * @returns 0 iff successful.
  */
-static inline int dynstr_put(dynstr *ds, char c) {
-	if (ds->count >= ds->capacity - 1) {
-		char *neu = reallocarray(ds->str, ds->capacity / 2, 3);
-		if (!neu) {
+static inline int dynstr_append(dynstr *ds, const char *str, size_t length,
+                                struct pfasta_parser *pp) {
+	int return_code = 0;
+	size_t required = ds->count + length;
+
+	if (UNLIKELY(required >= ds->capacity)) {
+		char *neu = pfasta_reallocarray(ds->str, required / 2, 3);
+		if (UNLIKELY(!neu)) {
 			dynstr_free(ds);
-			return -1;
+			PF_FAIL_ERRNO(pp);
 		}
 		ds->str = neu;
-		ds->capacity = (ds->capacity / 2) * 3;
+		ds->capacity = (required / 2) * 3;
 	}
 
-	ds->str[ds->count++] = c;
-	return 0;
+	memcpy(ds->str + ds->count, str, length);
+	ds->count = required;
+
+cleanup:
+	return return_code;
 }
 
 /** @brief Frees a dynamic string. */
@@ -452,9 +550,8 @@ static inline void dynstr_free(dynstr *ds) {
  *
  * @returns a `char*` to a standard null-terminated string.
  */
-
 static inline char *dynstr_move(dynstr *ds) {
-	char *out = reallocarray(ds->str, ds->count + 1, 1);
+	char *out = pfasta_reallocarray(ds->str, ds->count + 1, 1);
 	if (!out) {
 		out = ds->str;
 	}
@@ -465,3 +562,16 @@ static inline char *dynstr_move(dynstr *ds) {
 
 /** @brief Returns the current length of the dynamic string. */
 static inline size_t dynstr_len(const dynstr *ds) { return ds->count; }
+
+__attribute__((weak)) void *reallocarray(void *ptr, size_t nmemb, size_t size);
+
+/**
+ * @brief Unsafe fallback in case reallocarray isn't provided by the stdlib.
+ */
+void *pfasta_reallocarray(void *ptr, size_t nmemb, size_t size) {
+	if (reallocarray == NULL) {
+		return realloc(ptr, nmemb * size);
+	} else {
+		return reallocarray(ptr, nmemb, size);
+	}
+}

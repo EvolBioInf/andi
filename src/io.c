@@ -204,35 +204,32 @@ void read_fasta(const char *file_name, dsa_t *dsa) {
 		return;
 	}
 
-	int l;
-	int check;
-
-	seq_t top = {};
-	pfasta_file pf;
-
-	if ((l = pfasta_parse(&pf, file_descriptor)) != 0) {
-		soft_errx("%s: %s", file_name, pfasta_strerror(&pf));
+	struct pfasta_parser pp = pfasta_init(file_descriptor);
+	if (pp.errstr) {
+		soft_errx("%s: %s", file_name, pp.errstr);
 		goto fail;
 	}
 
-	pfasta_seq ps;
-	while ((l = pfasta_read(&pf, &ps)) == 0) {
-		check = seq_init(&top, ps.seq, ps.name);
+	seq_t top = {};
+	while (!pp.done) {
+		struct pfasta_record pr = pfasta_read(&pp);
+		if (pp.errstr) {
+			soft_errx("%s: %s", file_name, pp.errstr);
+			goto fail;
+		}
+		
+		int check = seq_init(&top, pr.sequence, pr.name);
 
 		// skip broken sequences
 		if (check != 0) continue;
 
 		dsa_push(dsa, top);
-		pfasta_seq_free(&ps);
+		pfasta_record_free(&pr);
 	}
 
-	if (l < 0) {
-		soft_errx("%s: %s", file_name, pfasta_strerror(&pf));
-		pfasta_seq_free(&ps);
-	}
 
 fail:
-	pfasta_free(&pf);
+	pfasta_free(&pp);
 	close(file_descriptor);
 }
 

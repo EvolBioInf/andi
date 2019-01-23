@@ -295,10 +295,10 @@ void print_distances(const struct model *D, const seq_t *sequences, size_t n,
 				double coverage1 = model_coverage(&D(i, j));
 				double coverage2 = model_coverage(&D(j, i));
 
-				if (coverage1 < 0.05 || coverage2 < 0.05) {
+				if (coverage1 < 0.2 || coverage2 < 0.2) {
 					const char str[] = {
-						"For the two sequences '%s' and '%s' less than 5%% "
-						"homology were found (%f and %f, respectively)."};
+						"For the two sequences '%s' and '%s' very little "
+						"homology was found (%f and %f, respectively)."};
 					soft_errx(str, sequences[i].name, sequences[j].name,
 							  coverage1, coverage2);
 				}

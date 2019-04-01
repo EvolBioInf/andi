@@ -314,7 +314,7 @@ int esa_init_CLD(esa_s *C) {
 	pair_t *top = stack; // points at the topmost filled element
 	pair_t last;
 
-	R(CLD, 0) = C->len + 1;
+	R(CLD, 0) = C->len;
 
 	top->idx = 0;
 	top->lcp = -1;

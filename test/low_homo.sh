@@ -13,8 +13,8 @@ fi
 ./test/test_fasta -s $SEED2 -l 100000 > b_low.fa
 ./test/test_fasta -s $SEED3 -l 100 > both_low.fa
 
-cat both_low.fa a_low.fa | awk -vRS='>' '{if($1 == "S0")print ">"$0 > "S0_low.fa"}'
-cat both_low.fa b_low.fa | awk -vRS='>' '{if($1 == "S1")print ">"$0 > "S1_low.fa"}'
+cat both_low.fa a_low.fa | awk -v RS='>' '{if($1 == "S0")print ">"$0 > "S0_low.fa"}'
+cat both_low.fa b_low.fa | awk -v RS='>' '{if($1 == "S1")print ">"$0 > "S1_low.fa"}'
 
 # this is expected to trigger the low homology warning
 ./src/andi -j S0_low.fa S1_low.fa 2>&1 | grep 'homology'

@@ -91,8 +91,8 @@ int esa_init_cache(esa_s *self) {
  *
  * This function is a depth first search on the virtual suffix tree and fills
  * the cache. Or rather it calls it self until some value to cache is
- * calculated. This function is a recursive version of get_inteval but with more
- * edge cases.
+ * calculated. This function is a recursive version of get_interval but with
+ * more edge cases.
  *
  * @param C - The ESA.
  * @param str - The current prefix.
@@ -121,6 +121,15 @@ void esa_init_cache_dfs(esa_s *C, char *str, size_t pos, const lcp_inter_t in) {
 
 		// fail early
 		if (ij.i == -1 && ij.j == -1) {
+			// if the current extension cannot be found, will with previous one
+			esa_init_cache_fill(C, str, pos + 1, in);
+			continue;
+		}
+
+		// singleton
+		if (ij.i == ij.j) {
+			// fix length
+			ij.l = pos + 1;
 			esa_init_cache_fill(C, str, pos + 1, ij);
 			continue;
 		}

@@ -175,6 +175,10 @@ void esa_init_cache_dfs(esa_s *C, char *str, size_t pos, const lcp_inter_t in) {
 			str[k] = c;
 		}
 
+		// We are skipping intervals here. Maybe for each of them we should also
+		// fill the cache. However, I haven't yet figured out how to do that
+		// properly and whether it is worth it.
+
 		if (non_acgt) {
 			esa_init_cache_fill(C, str, k, ij);
 		} else {

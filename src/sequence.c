@@ -150,15 +150,13 @@ char *revcomp(const char *str, size_t len) {
 	rev[len] = '\0';
 
 	do {
+		char c = *s--;
 		char d;
 
-		switch (*s--) {
-			case 'A': d = 'T'; break;
-			case 'T': d = 'A'; break;
-			case 'G': d = 'C'; break;
-			case 'C': d = 'G'; break;
-			case '!': d = ';'; break; // rosebud
-			default: continue;
+		if (c < 'A') {
+			d = ';'; // rosebud
+		} else {
+			d = c ^= c & 2 ? 4 : 21;
 		}
 
 		*r++ = d;

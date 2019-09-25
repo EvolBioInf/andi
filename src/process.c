@@ -145,6 +145,7 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 	struct anchor this_match = {0};
 	struct anchor last_match = {0};
 	bool last_was_right_anchor = false;
+	size_t border = C->len / 2;
 
 	struct context ctx = {C, query, query_length, threshold};
 
@@ -160,7 +161,8 @@ model dist_anchor(const esa_s *C, const char *query, size_t query_length,
 			size_t end_Q = last_match.pos_Q + last_match.length;
 			// Check if this can be a right anchor to the last one.
 			if (this_match.pos_S > end_S &&
-				this_match.pos_Q - end_Q == this_match.pos_S - end_S) {
+				this_match.pos_Q - end_Q == this_match.pos_S - end_S &&
+				(this_match.pos_S < border) == (last_match.pos_S < border)) {
 
 				// classify nucleotides in the left qanchor
 				model_count_equal(&ret, query + last_match.pos_Q,

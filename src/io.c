@@ -96,7 +96,7 @@ size_t string_vector_size(const struct string_vector *sv) {
 }
 
 /**
- * @brief Read a *fof* and add it's contents into a vector.
+ * @brief Read a *fof* and add its contents into a vector.
  * @param file_name - The file of file names aka. fof.
  * @param sv - The vector to add file names to.
  */

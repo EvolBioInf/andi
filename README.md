@@ -47,7 +47,7 @@ This program has the following external dependencies: [libdivsufsort](https://gi
 
 Assuming you have installed all prerequisites, building is as easy as follows.
 
-    $ autoreconf -fi -Im4  # optional when build from tarball
+    $ autoreconf -fi -Im4  # optional when building from tarball
     $ ./configure
     $ make
     $ make install
@@ -68,7 +68,7 @@ The release of this software is accompanied by a paper from [Haubold et al.](htt
 
 ## License
 
-Copyright © 2014 - 2018 Fabian Klötzl  
+Copyright © 2014 - 2020 Fabian Klötzl  
 License GPLv3+: GNU GPL version 3 or later.
 
 This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law. The full license text is available at <http://gnu.org/licenses/gpl.html>.

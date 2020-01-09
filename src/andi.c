@@ -373,7 +373,7 @@ void usage(int status) {
 void version(void) {
 	const char str[] = {
 		"andi " VERSION "\n"
-		"Copyright (C) 2014 - 2018 Fabian Klötzl\n"
+		"Copyright (C) 2014 - 2020 Fabian Klötzl\n"
 		"License GPLv3+: GNU GPL version 3 or later "
 		"<http://gnu.org/licenses/gpl.html>\n"
 		"This is free software: you are free to change and redistribute it.\n"
@@ -381,13 +381,13 @@ void version(void) {
 		"Acknowledgments:\n"
 		"1) Andi: Haubold, B. Klötzl, F. and Pfaffelhuber, P. (2015). "
 		"Fast and accurate estimation of evolutionary distances between "
-		"closely related genomes\n"
+		"closely related genomes, Bioinformatics.\n"
 		"2) Algorithms: Ohlebusch, E. (2013). Bioinformatics Algorithms. "
 		"Sequence Analysis, Genome Rearrangements, and Phylogenetic "
 		"Reconstruction. pp 118f.\n"
-		"3) SA construction: Mori, Y. (2005). Short description of improved "
-		"two-stage suffix sorting algorithm. "
-		"http://homepage3.nifty.com/wpage/software/itssort.txt\n"};
+		"3) SA construction: Mori, Y. (2005). libdivsufsort, unpublished.\n"
+		"4) Bootstrapping: Klötzl, F. and Haubold, B. (2016). Support Values "
+		"for Genome Phylogenies, Life 6.1.\n"};
 	printf("%s", str);
 	exit(EXIT_SUCCESS);
 }

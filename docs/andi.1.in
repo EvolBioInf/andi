@@ -62,8 +62,7 @@ The full license text is available at <http://gnu.org/licenses/gpl.html>.
 .br
 3) SA construction: Mori, Y. (2005). libdivsufsort, unpublished.
 .br
-4) Bootstrapping: Klötzl, F. and Haubold, B. (2016). Support Values for Genome Phylo-
-genies, Life 6.1.
+4) Bootstrapping: Klötzl, F. and Haubold, B. (2016). Support Values for Genome Phylogenies, Life 6.1.
 .SH BUGS
 .SS Reporting Bugs
 Please report bugs to <kloetzl@evolbio.mpg.de> or at <https://github.com/EvolBioInf/andi>.

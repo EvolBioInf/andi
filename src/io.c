@@ -217,7 +217,7 @@ void read_fasta(const char *file_name, dsa_t *dsa) {
 			soft_errx("%s: %s", file_name, pp.errstr);
 			goto fail;
 		}
-		
+
 		int check = seq_init(&top, pr.sequence, pr.name);
 
 		// skip broken sequences

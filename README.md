@@ -15,7 +15,7 @@ For Debian and Ubuntu:
 
     sudo apt-get install andi
 
-For OS X with Homebrew:
+For macOS with Homebrew:
 
     brew tap brewsci/bio
     brew install andi

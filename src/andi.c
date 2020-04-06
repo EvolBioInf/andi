@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
 
 				if (prop <= 0.0 || prop >= 1.0) {
 					soft_errx("A probability should be a value between 0 and "
-							  "1, exlusive; Ignoring -p %f argument.",
+							  "1, exclusive; Ignoring -p %f argument.",
 							  prop);
 					break;
 				}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Fabian Klötzl <fabian-pfasta@kloetzl.info>
+ * Copyright (c) 2015-2020, Fabian Klötzl <fabian-pfasta@kloetzl.info>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

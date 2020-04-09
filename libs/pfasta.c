@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015-2018, Fabian Klötzl <fabian-pfasta@kloetzl.info>
+ * Copyright (c) 2015-2020, Fabian Klötzl <fabian-pfasta@kloetzl.info>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,7 +27,7 @@
 
 #include "pfasta.h"
 
-#define VERSION "v14"
+#define VERSION "v15"
 
 #ifdef __SSE2__
 #include <emmintrin.h>
@@ -159,7 +159,8 @@ cleanup:
 }
 
 int buffer_peek(struct pfasta_parser *pp) {
-	return LIKELY(pp->read_ptr < pp->fill_ptr) ? *pp->read_ptr : EOF;
+	return LIKELY(pp->read_ptr < pp->fill_ptr) ? *(unsigned char *)pp->read_ptr
+	                                           : EOF;
 }
 
 char *buffer_begin(struct pfasta_parser *pp) { return pp->read_ptr; }
@@ -257,7 +258,8 @@ size_t count_newlines(const char *begin, const char *end) {
 static int copy_word(struct pfasta_parser *pp, dynstr *target) {
 	int return_code = 0;
 
-	while (LIKELY(!my_isspace(buffer_peek(pp)))) {
+	int c;
+	while (c = buffer_peek(pp), c != EOF && LIKELY(!my_isspace(c))) {
 		char *end_of_word = find_first_space(buffer_begin(pp), buffer_end(pp));
 		size_t word_length = end_of_word - buffer_begin(pp);
 
@@ -439,7 +441,9 @@ int pfasta_read_sequence(struct pfasta_parser *pp, struct pfasta_record *pr) {
 		PF_FAIL_STR(pp, "Empty sequence on line %zu.", pp->line_number);
 	PF_FAIL_BUBBLE_CHECK(pp, check);
 
-	while (LIKELY(isalpha(buffer_peek(pp)))) {
+	// Assume a line begins only with alpha, -, *, or more spaces
+	char c;
+	while (c = buffer_peek(pp), LIKELY(isalpha(c) || c == '-' || c == '*')) {
 		int check = copy_word(pp, &sequence);
 		if (UNLIKELY(check == E_EOF)) break;
 		PF_FAIL_BUBBLE_CHECK(pp, check);

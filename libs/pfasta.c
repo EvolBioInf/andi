@@ -33,11 +33,17 @@
 #include <emmintrin.h>
 #endif
 
-#ifdef __STDC_NO_THREADS__
-#define thread_local
-#else
+#if __STDC_VERSION__ >= 201112L && !defined(__STDC_NO_THREADS__)
 #include <threads.h>
+#define PFASTA_THREADSAFE 1
+#else
+#define thread_local
+#define PFASTA_THREADSAFE 0
 #endif
+
+int pfasta_threadsafe() {
+	return PFASTA_THREADSAFE ;
+}
 
 /** The following is the maximum length of an error string. It has to be
  * carefully chosen, so that all calls to PF_FAIL_STR succeed. For instance,

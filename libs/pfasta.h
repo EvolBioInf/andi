@@ -83,11 +83,10 @@ void pfasta_free(struct pfasta_parser *pp);
  */
 const char *pfasta_version(void);
 
-#ifdef __STDC_NO_THREADS__
-/** If the preprocessor macro `PFASTA_NO_THREADS` is defined, the parser is not
- * fully thread safe. */
-#define PFASTA_NO_THREADS
-#endif
+/**
+ * Returns 0 iff pfasta is not threadsafe.
+ */
+int pfasta_threadsafe();
 
 #ifdef __cplusplus
 }

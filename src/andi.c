@@ -206,6 +206,8 @@ int main(int argc, char *argv[]) {
 					MODEL = M_JC;
 				} else if (strcasecmp(optarg, "KIMURA") == 0) {
 					MODEL = M_KIMURA;
+				} else if (strcasecmp(optarg, "LOGDET") == 0) {
+					MODEL = M_LOGDET;
 				} else {
 					soft_errx(
 						"Ignoring argument for --model. Expected Raw, JC or "
@@ -346,7 +348,7 @@ void usage(int status) {
 		"genome\n"
 		"  -l, --low-memory     Use less memory at the cost of speed\n"
 		"  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', "
-		"'Kimura'; default: "
+		"'Kimura', 'LogDet'; default: "
 		"JC\n"
 		"  -p FLOAT             Significance of an anchor; default: 0.025\n"
 		"      --progress=WHEN  Print a progress bar 'always', 'never', or "

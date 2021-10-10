@@ -8,8 +8,7 @@
 #include <stdlib.h>
 
 /**
- * This enum contains all possible mutations. Some of them are considered
- * symmetric (e.g. AtoT and TtoA) and thus have the same value. The total number
+ * This enum contains all possible mutations. The total number
  * of different possible mutations is MUTCOUNTS.
  */
 enum {
@@ -18,18 +17,18 @@ enum {
 	AtoG,
 	AtoT,
 	CtoC,
+	CtoA,
 	CtoG,
 	CtoT,
 	GtoG,
+	GtoC,
+	GtoA,
 	GtoT,
 	TtoT,
-	MUTCOUNTS,
-	CtoA = AtoC,
-	GtoA = AtoG,
-	GtoC = CtoG,
-	TtoA = AtoT,
-	TtoC = CtoT,
-	TtoG = GtoT
+	TtoG,
+	TtoC,
+	TtoA,
+	MUTCOUNTS
 };
 
 /** @brief The mutation matrix.
@@ -61,4 +60,5 @@ double model_coverage(const model *);
 double estimate_RAW(const model *);
 double estimate_JC(const model *);
 double estimate_KIMURA(const model *);
+double estimate_LOGDET(const model *);
 model model_bootstrap(const model);

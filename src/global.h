@@ -47,7 +47,7 @@ extern gsl_rng *RNG;
  */
 extern int MODEL;
 
-enum { M_RAW, M_JC, M_KIMURA };
+enum { M_RAW, M_JC, M_KIMURA, M_LOGDET };
 
 /**
  * This enum contains the available flags. Please note that all

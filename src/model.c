@@ -80,7 +80,8 @@ double model_coverage(const model *MM) {
  */
 double estimate_RAW(const model *MM) {
 	size_t nucl = model_total(MM);
-	size_t SNPs = model_sum(MM, AtoC, AtoG, AtoT, CtoG, CtoT, GtoT);
+	size_t SNPs = model_sum(MM, AtoC, AtoG, AtoT, CtoA, CtoG, CtoT, GtoA,
+		GtoC, GtoT, TtoA, TtoC, TtoG);
 
 	// Insignificant results. All abort the fail train.
 	if (nucl <= 3) {
@@ -111,8 +112,9 @@ double estimate_JC(const model *MM) {
  */
 double estimate_KIMURA(const model *MM) {
 	size_t nucl = model_total(MM);
-	size_t transitions = model_sum(MM, AtoG, CtoT);
-	size_t transversions = model_sum(MM, AtoC, AtoT, GtoC, GtoT);
+	size_t transitions = model_sum(MM, AtoG, GtoA, CtoT, TtoC);
+	size_t transversions = model_sum(MM, AtoC, CtoA, AtoT, TtoA, GtoC, CtoG, 
+		GtoT, TtoG);
 
 	double P = (double)transitions / (double)nucl;
 	double Q = (double)transversions / (double)nucl;
@@ -122,6 +124,77 @@ double estimate_KIMURA(const model *MM) {
 
 	// fix negative zero
 	return dist <= 0.0 ? 0.0 : dist;
+}
+
+/** @brief computes the evolutionary distance using LogDet.
+ *
+ * The LogDet distance between sequence X and and sequence Y
+ * is given as
+ *
+ * -(1 / K) * (log(det(Fxy)) - 0.5 * log(det(Fxx * Fyy)))
+ *
+ * Where K is the number of character states, Fxy is the site-pattern 
+ * frequency matrix, and diagonal matrices Fxx and Fyy give the 
+ * frequencies of the different character states in sequences X and Y.
+ *
+ * Each i,j-th entry in Fxy is the proportion of homologous sites
+ * where sequences X and Y have character states i and j, respectively.
+ *
+ * For our purposes, X is the Subject (From) sequence and Y is the 
+ * Query (To) sequence and matrix Fxy looks like
+ *
+ *  To   A  C  G  T
+ * From
+ *  A  (            )
+ *  C  (            )
+ *  G  (            )
+ *  T  (            )
+ *
+ * @param MM - The mutation matrix.
+ * @returns The LogDet distance.
+*/
+double estimate_LOGDET(const model *MM) {
+
+    #define M(MM, i) ((MM)->counts[(i)] / nucl)
+
+    double nucl = (double)(model_total(MM));
+
+    double logDetFxxFyy =
+        // log determinant of diagonal matrix of row sums
+        log(model_sum(MM, AtoA, AtoC, AtoG, AtoT) / nucl) +
+        log(model_sum(MM, CtoA, CtoC, CtoG, CtoT) / nucl) +
+        log(model_sum(MM, GtoA, GtoC, GtoG, GtoT) / nucl) +
+        log(model_sum(MM, TtoA, TtoC, TtoG, TtoT) / nucl) +
+        // log determinant of diagonal matrix of column sums
+        log(model_sum(MM, AtoA, CtoA, GtoA, TtoA) / nucl) +
+        log(model_sum(MM, AtoC, CtoC, GtoC, TtoC) / nucl) +
+        log(model_sum(MM, AtoG, CtoG, GtoG, TtoG) / nucl) +
+        log(model_sum(MM, AtoT, CtoT, GtoT, TtoT) / nucl);
+
+    // determinant of the site-pattern frequency matrix
+    double detFxy =
+    M(MM, AtoA)*M(MM, CtoC)*(M(MM, GtoG)*M(MM, TtoT)-M(MM, TtoG)*M(MM, GtoT)) -
+    M(MM, AtoA)*M(MM, CtoG)*(M(MM, GtoC)*M(MM, TtoT)-M(MM, TtoC)*M(MM, GtoT)) +
+    M(MM, AtoA)*M(MM, CtoT)*(M(MM, GtoC)*M(MM, TtoG)-M(MM, TtoC)*M(MM, GtoG)) -
+
+    M(MM, AtoC)*M(MM, CtoA)*(M(MM, GtoG)*M(MM, TtoT)-M(MM, TtoG)*M(MM, GtoT)) +
+    M(MM, AtoC)*M(MM, CtoG)*(M(MM, GtoA)*M(MM, TtoT)-M(MM, TtoA)*M(MM, GtoT)) -
+    M(MM, AtoC)*M(MM, CtoT)*(M(MM, GtoA)*M(MM, TtoG)-M(MM, TtoA)*M(MM, GtoG)) +
+
+    M(MM, AtoG)*M(MM, CtoA)*(M(MM, GtoC)*M(MM, TtoT)-M(MM, TtoC)*M(MM, GtoT)) -
+    M(MM, AtoG)*M(MM, CtoC)*(M(MM, GtoA)*M(MM, TtoT)-M(MM, TtoA)*M(MM, GtoT)) +
+    M(MM, AtoG)*M(MM, CtoT)*(M(MM, GtoA)*M(MM, TtoC)-M(MM, TtoA)*M(MM, GtoC)) -
+
+    M(MM, AtoT)*M(MM, CtoA)*(M(MM, GtoC)*M(MM, TtoG)-M(MM, TtoC)*M(MM, GtoG)) +
+    M(MM, AtoT)*M(MM, CtoC)*(M(MM, GtoA)*M(MM, TtoG)-M(MM, TtoA)*M(MM, GtoG)) -
+    M(MM, AtoT)*M(MM, CtoG)*(M(MM, GtoA)*M(MM, TtoC)-M(MM, TtoA)*M(MM, GtoC));
+
+    #undef M
+    
+    double dist = -0.25 * (log(detFxy) - 0.5 * logDetFxxFyy);
+
+    // fix negative zero
+    return dist <= 0.0 ? 0.0 : dist;
 }
 
 /** @brief Bootstrap a mutation matrix.
@@ -247,22 +320,12 @@ void model_count(model *MM, const char *S, const char *Q, size_t len) {
 		unsigned char baz = nucl2bit(q);
 
 		/*
-		 * The mutation matrix is symmetric. For convenience we define the
-		 * mutation XtoY with X > Y.
-		 */
-		if (baz > foo) {
-			int temp = foo;
-			foo = baz;
-			baz = temp;
-		}
-
-		/*
 		 * Finally, we want to map the indices to the correct mutation. This is
 		 * done by utilising the mutation types in model.h.
 		 */
-		static const unsigned int map4 = 0x9740;
-		unsigned int base = (map4 >> (4 * baz)) & 0xf;
-		unsigned int index = base + (foo - baz);
+		static const unsigned int map4 = 0xc840;
+		unsigned int base = (map4 >> (4 * foo)) & 0xf;
+		unsigned int index = base + ((foo >= baz) ? (foo - baz) : baz);
 
 		local_counts[index]++;
 	}

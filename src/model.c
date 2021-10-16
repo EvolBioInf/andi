@@ -155,7 +155,7 @@ double estimate_KIMURA(const model *MM) {
  */
 double estimate_LOGDET(const model *MM) {
 
-#define M(MM, i) ((MM)->counts[(i)] / nucl)
+#define M(i) ((MM)->counts[(i)] / nucl)
 
 	double nucl = (double)(model_total(MM));
 
@@ -173,33 +173,21 @@ double estimate_LOGDET(const model *MM) {
 
 	// determinant of the site-pattern frequency matrix
 	double detFxy =
-		M(MM, AtoA) * M(MM, CtoC) *
-			(M(MM, GtoG) * M(MM, TtoT) - M(MM, TtoG) * M(MM, GtoT)) -
-		M(MM, AtoA) * M(MM, CtoG) *
-			(M(MM, GtoC) * M(MM, TtoT) - M(MM, TtoC) * M(MM, GtoT)) +
-		M(MM, AtoA) * M(MM, CtoT) *
-			(M(MM, GtoC) * M(MM, TtoG) - M(MM, TtoC) * M(MM, GtoG)) -
+		M(AtoA) * M(CtoC) * (M(GtoG) * M(TtoT) - M(TtoG) * M(GtoT)) -
+		M(AtoA) * M(CtoG) * (M(GtoC) * M(TtoT) - M(TtoC) * M(GtoT)) +
+		M(AtoA) * M(CtoT) * (M(GtoC) * M(TtoG) - M(TtoC) * M(GtoG)) -
 
-		M(MM, AtoC) * M(MM, CtoA) *
-			(M(MM, GtoG) * M(MM, TtoT) - M(MM, TtoG) * M(MM, GtoT)) +
-		M(MM, AtoC) * M(MM, CtoG) *
-			(M(MM, GtoA) * M(MM, TtoT) - M(MM, TtoA) * M(MM, GtoT)) -
-		M(MM, AtoC) * M(MM, CtoT) *
-			(M(MM, GtoA) * M(MM, TtoG) - M(MM, TtoA) * M(MM, GtoG)) +
+		M(AtoC) * M(CtoA) * (M(GtoG) * M(TtoT) - M(TtoG) * M(GtoT)) +
+		M(AtoC) * M(CtoG) * (M(GtoA) * M(TtoT) - M(TtoA) * M(GtoT)) -
+		M(AtoC) * M(CtoT) * (M(GtoA) * M(TtoG) - M(TtoA) * M(GtoG)) +
 
-		M(MM, AtoG) * M(MM, CtoA) *
-			(M(MM, GtoC) * M(MM, TtoT) - M(MM, TtoC) * M(MM, GtoT)) -
-		M(MM, AtoG) * M(MM, CtoC) *
-			(M(MM, GtoA) * M(MM, TtoT) - M(MM, TtoA) * M(MM, GtoT)) +
-		M(MM, AtoG) * M(MM, CtoT) *
-			(M(MM, GtoA) * M(MM, TtoC) - M(MM, TtoA) * M(MM, GtoC)) -
+		M(AtoG) * M(CtoA) * (M(GtoC) * M(TtoT) - M(TtoC) * M(GtoT)) -
+		M(AtoG) * M(CtoC) * (M(GtoA) * M(TtoT) - M(TtoA) * M(GtoT)) +
+		M(AtoG) * M(CtoT) * (M(GtoA) * M(TtoC) - M(TtoA) * M(GtoC)) -
 
-		M(MM, AtoT) * M(MM, CtoA) *
-			(M(MM, GtoC) * M(MM, TtoG) - M(MM, TtoC) * M(MM, GtoG)) +
-		M(MM, AtoT) * M(MM, CtoC) *
-			(M(MM, GtoA) * M(MM, TtoG) - M(MM, TtoA) * M(MM, GtoG)) -
-		M(MM, AtoT) * M(MM, CtoG) *
-			(M(MM, GtoA) * M(MM, TtoC) - M(MM, TtoA) * M(MM, GtoC));
+		M(AtoT) * M(CtoA) * (M(GtoC) * M(TtoG) - M(TtoC) * M(GtoG)) +
+		M(AtoT) * M(CtoC) * (M(GtoA) * M(TtoG) - M(TtoA) * M(GtoG)) -
+		M(AtoT) * M(CtoG) * (M(GtoA) * M(TtoC) - M(TtoA) * M(GtoC));
 
 #undef M
 

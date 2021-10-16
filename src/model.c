@@ -289,7 +289,7 @@ void model_count_equal(model *MM, const char *S, size_t len) {
  * @param c - input nucleotide
  * @returns 2bit representation.
  */
-char nucl2bit(char c) {
+char nucl2bit(unsigned char c) {
 	c &= 6;
 	c ^= c >> 1;
 	return c >> 1;
@@ -317,15 +317,13 @@ void model_count(model *MM, const char *S, const char *Q, size_t len) {
 
 		// Pick the correct two bits representing s and q.
 		unsigned char foo = nucl2bit(s);
-		unsigned char baz = nucl2bit(q);
+		unsigned char bar = nucl2bit(q);
 
 		/*
 		 * Finally, we want to map the indices to the correct mutation. This is
 		 * done by utilising the mutation types in model.h.
 		 */
-		static const unsigned int map4 = 0xc840;
-		unsigned int base = (map4 >> (4 * foo)) & 0xf;
-		unsigned int index = base + ((foo >= baz) ? (foo - baz) : baz);
+		unsigned int index = (foo << 2) + bar;
 
 		local_counts[index]++;
 	}

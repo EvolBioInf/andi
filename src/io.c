@@ -227,7 +227,6 @@ void read_fasta(const char *file_name, dsa_t *dsa) {
 		pfasta_record_free(&pr);
 	}
 
-
 fail:
 	pfasta_free(&pp);
 	close(file_descriptor);

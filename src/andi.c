@@ -199,7 +199,6 @@ int main(int argc, char *argv[]) {
 				break;
 			}
 			case 'm': {
-				// valid options are 'RAW' and 'JC'
 				if (strcasecmp(optarg, "RAW") == 0) {
 					MODEL = M_RAW;
 				} else if (strcasecmp(optarg, "JC") == 0) {
@@ -209,9 +208,8 @@ int main(int argc, char *argv[]) {
 				} else if (strcasecmp(optarg, "LOGDET") == 0) {
 					MODEL = M_LOGDET;
 				} else {
-					soft_errx(
-						"Ignoring argument for --model. Expected Raw, JC or "
-						"Kimura");
+					soft_errx("Ignoring argument for --model. Expected Raw, "
+							  "JC, Kimura or LogDet");
 				}
 				break;
 			}
@@ -342,14 +340,13 @@ void usage(int status) {
 		"\tUse '-' as file name to read from stdin.\n"
 		"Options:\n"
 		"  -b, --bootstrap=INT  Print additional bootstrap matrices\n"
-		"      --file-of-filenames=FILE  Read additional filenames from "
-		"FILE; one per line\n"
+		"      --file-of-filenames=FILE  Read additional filenames from FILE; "
+		"one per line\n"
 		"  -j, --join           Treat all sequences from one file as a single "
 		"genome\n"
 		"  -l, --low-memory     Use less memory at the cost of speed\n"
 		"  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', "
-		"'Kimura', 'LogDet'; default: "
-		"JC\n"
+		"'Kimura', 'LogDet'; default: JC\n"
 		"  -p FLOAT             Significance of an anchor; default: 0.025\n"
 		"      --progress=WHEN  Print a progress bar 'always', 'never', or "
 		"'auto'; default: auto\n"

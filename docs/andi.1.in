@@ -23,7 +23,7 @@ Use this mode if each of your \fIFASTA\fR files represents one assembly with num
 In multithreaded mode, \fBandi\fR requires memory linear to the amount of threads. The low memory mode changes this to a constant demand independent from the used number of threads. Unfortunately, this comes at a significant runtime cost.
 .TP
 \fB\-m\fR \fIMODEL\fR, \fB\-\-model\fR=\fIMODEL\fR
-Set the nucleotide evolution model to one of 'Raw', 'JC', or 'Kimura'. By default the Jukes-Cantor correction is used.
+Set the nucleotide evolution model to one of 'Raw', 'JC', 'Kimura', or 'LogDet'. By default the Jukes-Cantor correction is used.
 .TP
 \fB\-p\fR \fIFLOAT\fR
 Significance of an anchor; default: 0.025.

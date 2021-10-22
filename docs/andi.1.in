@@ -48,7 +48,7 @@ Prints the synopsis and an explanation of available options.
 \fB\-\-version\fR
 Outputs version information and acknowledgments.
 .SH COPYRIGHT
-Copyright \(co 2014 - 2020 Fabian Klötzl
+Copyright \(co 2014 - 2021 Fabian Klötzl
 License GPLv3+: GNU GPL version 3 or later.
 .br
 This is free software: you are free to change and redistribute it.

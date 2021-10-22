@@ -18,6 +18,7 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{xspace}
+\usepackage{microtype}
 
 \bibliographystyle{alpha}
 
@@ -134,16 +135,16 @@ To build \andi from source, download the latest \href{https://github.com/EvolBio
 Once you have downloaded the package, unzip it and change into the newly created directory. 
 
 \begin{lstlisting}
-~ %  tar -xzvf andi-0.12.tar.gz
-~ %  cd andi-0.12
+~ %  tar -xzvf andi-0.14.tar.gz
+~ %  cd andi-0.14
 \end{lstlisting}
 
 \noindent Now build and install \andi.
 
 \begin{lstlisting}
-~/andi-0.12 %  ./configure
-~/andi-0.12 %  make
-~/andi-0.12 %  sudo make install
+~/andi-0.14 %  ./configure
+~/andi-0.14 %  make
+~/andi-0.14 %  sudo make install
 \end{lstlisting}
 
 \noindent This installs \andi for all users on your system. If you do not have root privileges, you will find a working copy of \andi in the \lstinline$src$ subdirectory. For the rest of this documentation, it is assumed, that \andi is in your \textdollar\lstinline!PATH!.
@@ -151,15 +152,16 @@ Once you have downloaded the package, unzip it and change into the newly created
 Now \andi should be ready for use. Try invoking the help.
 
 \begin{lstlisting}
-~/andi-0.12 %  Usage: andi [OPTIONS...] FILES...
-  FILES... can be any sequence of FASTA files.
-  Use '-' as file name to read from stdin.
+~/andi-0.14 %  ~/andi
+Usage: andi [OPTIONS...] FILES...
+	FILES... can be any sequence of FASTA files.
+	Use '-' as file name to read from stdin.
 Options:
   -b, --bootstrap=INT  Print additional bootstrap matrices
       --file-of-filenames=FILE  Read additional filenames from FILE; one per line
   -j, --join           Treat all sequences from one file as a single genome
   -l, --low-memory     Use less memory at the cost of speed
-  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', 'Kimura'; default: JC
+  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', 'Kimura', 'LogDet'; default: JC
   -p FLOAT             Significance of an anchor; default: 0.025
       --progress=WHEN  Print a progress bar 'always', 'never', or 'auto'; default: auto
   -t, --threads=INT    Set the number of threads; by default, all processors are used
@@ -363,7 +365,7 @@ Our models of genome evolution (JC, Kimura) only work on the four canonical type
 
 \subsection*{Too Short Sequence}
 
-\andi was designed for big data sets of whole genomes. On short sequences the distance estimates are inaccurate. Use an multiple sequence alignment instead.
+\andi was designed for big data sets of whole genomes. On short sequences the distance estimates are inaccurate. Use a multiple sequence alignment instead.
 
 \subsection*{Too Long Sequence}
 

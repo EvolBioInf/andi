@@ -25,6 +25,7 @@ args+=(
 		Raw\:Uncorrected\ distances
 		JC\:Jukes\-Cantor\ corrected
 		Kimura\:Kimura\-two\-parameter
+		LogDet\:Logarithmic\ determinant
 	))'
 	"($info)-p+[Significance of an anchor; default\: 0.025]:float:"
 	"($info)--progress=[Show progress bar]:when:(always auto never)"

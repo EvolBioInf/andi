@@ -64,4 +64,4 @@ double estimate_RAW(const model *);
 double estimate_JC(const model *);
 double estimate_KIMURA(const model *);
 double estimate_LOGDET(const model *);
-model model_bootstrap(const model);
+model model_bootstrap(model);

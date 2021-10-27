@@ -205,25 +205,17 @@ double estimate_LOGDET(const model *MM) {
  * resample the elements of the mutation matrix. See Klötzl & Haubold (2016)
  * for details. http://www.mdpi.com/2075-1729/6/1/11/htm
  *
- * @param MM - The original mutation matrix.
+ * @param datum - The original mutation matrix.
  * @returns A bootstrapped mutation matrix.
  */
-model model_bootstrap(const model MM) {
-	model datum = MM;
-
-	size_t nucl = model_total(&MM);
+model model_bootstrap(model datum) {
+	size_t nucl = model_total(&datum);
 	double p[MUTCOUNTS];
 	for (size_t i = 0; i < MUTCOUNTS; ++i) {
-		p[i] = MM.counts[i] / (double)nucl;
+		p[i] = datum.counts[i] / (double)nucl;
 	}
 
-	unsigned int n[MUTCOUNTS];
-
-	gsl_ran_multinomial(RNG, MUTCOUNTS, nucl, p, n);
-
-	for (size_t i = 0; i < MUTCOUNTS; ++i) {
-		datum.counts[i] = n[i];
-	}
+	gsl_ran_multinomial(RNG, MUTCOUNTS, nucl, p, datum.counts);
 
 	return datum;
 }

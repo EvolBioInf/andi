@@ -155,9 +155,11 @@ double estimate_KIMURA(const model *MM) {
  */
 double estimate_LOGDET(const model *MM) {
 
-#define M(i) ((MM)->counts[(i)] / nucl)
-
-	double nucl = (double)(model_total(MM));
+	double nucl = (double)model_total(MM);
+	double P[MUTCOUNTS];
+	for (int i = 0; i < MUTCOUNTS; i++) {
+		P[i] = MM->counts[i] / nucl;
+	}
 
 	double logDetFxxFyy =
 		// log determinant of diagonal matrix of row sums
@@ -173,23 +175,21 @@ double estimate_LOGDET(const model *MM) {
 
 	// determinant of the site-pattern frequency matrix
 	double detFxy =
-		M(AtoA) * M(CtoC) * (M(GtoG) * M(TtoT) - M(TtoG) * M(GtoT)) -
-		M(AtoA) * M(CtoG) * (M(GtoC) * M(TtoT) - M(TtoC) * M(GtoT)) +
-		M(AtoA) * M(CtoT) * (M(GtoC) * M(TtoG) - M(TtoC) * M(GtoG)) -
+		P[AtoA] * P[CtoC] * (P[GtoG] * P[TtoT] - P[TtoG] * P[GtoT]) -
+		P[AtoA] * P[CtoG] * (P[GtoC] * P[TtoT] - P[TtoC] * P[GtoT]) +
+		P[AtoA] * P[CtoT] * (P[GtoC] * P[TtoG] - P[TtoC] * P[GtoG]) -
 
-		M(AtoC) * M(CtoA) * (M(GtoG) * M(TtoT) - M(TtoG) * M(GtoT)) +
-		M(AtoC) * M(CtoG) * (M(GtoA) * M(TtoT) - M(TtoA) * M(GtoT)) -
-		M(AtoC) * M(CtoT) * (M(GtoA) * M(TtoG) - M(TtoA) * M(GtoG)) +
+		P[AtoC] * P[CtoA] * (P[GtoG] * P[TtoT] - P[TtoG] * P[GtoT]) +
+		P[AtoC] * P[CtoG] * (P[GtoA] * P[TtoT] - P[TtoA] * P[GtoT]) -
+		P[AtoC] * P[CtoT] * (P[GtoA] * P[TtoG] - P[TtoA] * P[GtoG]) +
 
-		M(AtoG) * M(CtoA) * (M(GtoC) * M(TtoT) - M(TtoC) * M(GtoT)) -
-		M(AtoG) * M(CtoC) * (M(GtoA) * M(TtoT) - M(TtoA) * M(GtoT)) +
-		M(AtoG) * M(CtoT) * (M(GtoA) * M(TtoC) - M(TtoA) * M(GtoC)) -
+		P[AtoG] * P[CtoA] * (P[GtoC] * P[TtoT] - P[TtoC] * P[GtoT]) -
+		P[AtoG] * P[CtoC] * (P[GtoA] * P[TtoT] - P[TtoA] * P[GtoT]) +
+		P[AtoG] * P[CtoT] * (P[GtoA] * P[TtoC] - P[TtoA] * P[GtoC]) -
 
-		M(AtoT) * M(CtoA) * (M(GtoC) * M(TtoG) - M(TtoC) * M(GtoG)) +
-		M(AtoT) * M(CtoC) * (M(GtoA) * M(TtoG) - M(TtoA) * M(GtoG)) -
-		M(AtoT) * M(CtoG) * (M(GtoA) * M(TtoC) - M(TtoA) * M(GtoC));
-
-#undef M
+		P[AtoT] * P[CtoA] * (P[GtoC] * P[TtoG] - P[TtoC] * P[GtoG]) +
+		P[AtoT] * P[CtoC] * (P[GtoA] * P[TtoG] - P[TtoA] * P[GtoG]) -
+		P[AtoT] * P[CtoG] * (P[GtoA] * P[TtoC] - P[TtoA] * P[GtoC]);
 
 	double dist = -0.25 * (log(detFxy) - 0.5 * logDetFxxFyy);
 

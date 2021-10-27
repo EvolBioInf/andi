@@ -45,12 +45,15 @@ enum {
  *
  * The cells are absolute counts. Together with seq_len (the query length),
  * we can deduce the substitution rate and coverage.
+ *
+ * As libdivsufsort is 32 bit the sequence length is limited to (INT_MAX-1)/2.
+ * We can thus use the same limit for the counts.
  */
 typedef struct model {
 	/** The absolute counts of mutation types. */
-	size_t counts[MUTCOUNTS];
+	unsigned int counts[MUTCOUNTS];
 	/** The query length. */
-	size_t seq_len;
+	unsigned int seq_len;
 } model;
 
 void model_count_equal(model *, const char *, size_t);

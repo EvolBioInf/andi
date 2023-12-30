@@ -57,7 +57,7 @@ int main(int argc, char *argv[]){
 
 	auto base_seed = seed;
 
-	for( int i=0; i< seqs.size(); i++){
+	for( auto i=0u; i< seqs.size(); i++){
 		cout << ">S" << i << " (base_seed: " << base_seed << ")" << endl;
 		print_seq( base_seed, seed++, length, line_length, seqs[i]);
 	}

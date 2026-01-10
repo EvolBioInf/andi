@@ -20,9 +20,12 @@ void test_shustring_cum_prob() {
 
 	size_t threshold = min_anchor_length(p_value, gc, len);
 
-	g_assert_cmpfloat(1 - p_value, <, shustring_cum_prob(threshold + 1, gc / 2, len));
-	g_assert_cmpfloat(1 - p_value, <=, shustring_cum_prob(threshold, gc / 2, len));
-	g_assert_cmpfloat(1 - p_value, >, shustring_cum_prob(threshold - 1, gc / 2, len));
+	g_assert_cmpfloat(1 - p_value, <,
+					  shustring_cum_prob(threshold + 1, gc / 2, len));
+	g_assert_cmpfloat(1 - p_value, <=,
+					  shustring_cum_prob(threshold, gc / 2, len));
+	g_assert_cmpfloat(1 - p_value, >,
+					  shustring_cum_prob(threshold - 1, gc / 2, len));
 }
 
 int main(int argc, char *argv[]) {

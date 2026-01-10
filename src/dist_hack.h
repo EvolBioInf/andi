@@ -42,7 +42,7 @@ void NAME(struct model *M, const seq_t *sequences, size_t n) {
 				(size_t)0, n * n - n);
 	}
 
-	//#pragma
+	// #pragma
 	P_OUTER
 	for (i = 0; i < n; i++) {
 		seq_subject subject;

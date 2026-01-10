@@ -113,7 +113,7 @@ static inline bool lucky_anchor(const struct context *ctx,
 static inline bool anchor(const struct context *ctx,
 						  const struct anchor *last_match,
 						  struct anchor *this_match) {
-
+	(void)last_match;
 	lcp_inter_t inter = get_match_cached(ctx->C, ctx->query + this_match->pos_Q,
 										 ctx->query_length - this_match->pos_Q);
 
@@ -270,7 +270,7 @@ void calculate_distances(seq_t *sequences, size_t n) {
 }
 
 /** Yet another hack. */
-#define B(X, Y) (B[(X)*n + (Y)])
+#define B(X, Y) (B[(X) * n + (Y)])
 
 /** @brief Computes a bootstrap from _pairwise_ alignments.
  *

@@ -58,7 +58,7 @@ ssize_t char2code(const char c) {
 }
 
 #define R(CLD, i) ((CLD)[(i)])
-#define L(CLD, i) ((CLD)[(i)-1])
+#define L(CLD, i) ((CLD)[(i) - 1])
 
 /** @brief Fills the LCP-Interval cache.
  *

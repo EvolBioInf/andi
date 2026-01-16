@@ -197,6 +197,17 @@ double estimate_LOGDET(const model *MM) {
 	return dist <= 0.0 ? 0.0 : dist;
 }
 
+/**
+ * @brief Compute the average nucleotide interchange.
+ *
+ * @param MM - The mutation matrix.
+ * @returns The percent ANI.
+ */
+double estimate_ANI(const model *MM) {
+	double dist = estimate_JC(MM);
+	return (1.0 - dist) * 100;
+}
+
 /** @brief Bootstrap a mutation matrix.
  *
  * The classical bootstrapping process, as described by Felsenstein, resamples

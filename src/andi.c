@@ -207,9 +207,11 @@ int main(int argc, char *argv[]) {
 					MODEL = M_KIMURA;
 				} else if (strcasecmp(optarg, "LOGDET") == 0) {
 					MODEL = M_LOGDET;
+				} else if (strcasecmp(optarg, "ANI") == 0) {
+					MODEL = M_ANI;
 				} else {
 					soft_errx("Ignoring argument for --model. Expected Raw, "
-							  "JC, Kimura or LogDet");
+							  "JC, Kimura, LogDet or ANI");
 				}
 				break;
 			}
@@ -346,7 +348,7 @@ void usage(int status) {
 		"genome\n"
 		"  -l, --low-memory     Use less memory at the cost of speed\n"
 		"  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', "
-		"'Kimura', 'LogDet'; default: JC\n"
+		"'Kimura', 'LogDet', 'ANI'; default: JC\n"
 		"  -p FLOAT             Significance of an anchor; default: 0.025\n"
 		"      --progress=WHEN  Print a progress bar 'always', 'never', or "
 		"'auto'; default: auto\n"
@@ -372,7 +374,7 @@ void usage(int status) {
 void version(void) {
 	const char str[] = {
 		"andi " VERSION "\n"
-		"Copyright (C) 2014 - 2020 Fabian Klötzl\n"
+		"Copyright (C) 2014 - 2026 Fabian Klötzl\n"
 		"License GPLv3+: GNU GPL version 3 or later "
 		"<http://gnu.org/licenses/gpl.html>\n"
 		"This is free software: you are free to change and redistribute it.\n"

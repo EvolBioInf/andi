@@ -152,7 +152,7 @@ Once you have downloaded the package, unzip it and change into the newly created
 Now \andi should be ready for use. Try invoking the help.
 
 \begin{lstlisting}
-~/andi-0.14 %  ~/andi
+~/andi-0.15 %  ~/andi
 Usage: andi [OPTIONS...] FILES...
 	FILES... can be any sequence of FASTA files.
 	Use '-' as file name to read from stdin.
@@ -161,7 +161,7 @@ Options:
       --file-of-filenames=FILE  Read additional filenames from FILE; one per line
   -j, --join           Treat all sequences from one file as a single genome
   -l, --low-memory     Use less memory at the cost of speed
-  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', 'Kimura', 'LogDet'; default: JC
+  -m, --model=MODEL    Pick an evolutionary model of 'Raw', 'JC', 'Kimura', 'LogDet', 'ANI'; default: JC
   -p FLOAT             Significance of an anchor; default: 0.025
       --progress=WHEN  Print a progress bar 'always', 'never', or 'auto'; default: auto
   -t, --threads=INT    Set the number of threads; by default, all processors are used

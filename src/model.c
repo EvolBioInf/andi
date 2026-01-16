@@ -204,7 +204,7 @@ double estimate_LOGDET(const model *MM) {
  * @returns The percent ANI.
  */
 double estimate_ANI(const model *MM) {
-	double dist = estimate_JC(MM);
+	double dist = estimate_RAW(MM);
 	return (1.0 - dist) * 100;
 }
 

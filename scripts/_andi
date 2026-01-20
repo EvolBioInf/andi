@@ -26,6 +26,7 @@ args+=(
 		JC\:Jukes\-Cantor\ corrected
 		Kimura\:Kimura\-two\-parameter
 		LogDet\:Logarithmic\ determinant
+		ANI\:Average\ Nucleotide\ Interchange
 	))'
 	"($info)-p+[Significance of an anchor; default\: 0.025]:float:"
 	"($info)--progress=[Show progress bar]:when:(always auto never)"

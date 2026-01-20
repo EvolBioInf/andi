@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/EvolBioInf/andi.svg?branch=master)](https://travis-ci.org/EvolBioInf/andi) [![Coverage Status](https://coveralls.io/repos/EvolBioInf/andi/badge.svg?branch=master)](https://coveralls.io/r/EvolBioInf/andi?branch=master)
-
 # About
 
 This is the `andi` program for estimating the evolutionary distance between closely related genomes. These distances can be used to rapidly infer phylogenies for big sets of genomes. Because `andi` does not compute full alignments, it is so efficient that it scales even up to thousands of bacterial genomes.
@@ -68,7 +66,7 @@ The release of this software is accompanied by a paper from [Haubold et al.](htt
 
 ## License
 
-Copyright © 2014 - 2021 Fabian Klötzl  
+Copyright © 2014 - 2026 Fabian Klötzl  
 License GPLv3+: GNU GPL version 3 or later.
 
 This is free software: you are free to change and redistribute it. There is NO WARRANTY, to the extent permitted by law. The full license text is available at <http://gnu.org/licenses/gpl.html>.

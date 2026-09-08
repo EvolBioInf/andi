@@ -1,6 +1,12 @@
 # About
 
-This is the `andi` program for estimating the evolutionary distance between closely related genomes. These distances can be used to rapidly infer phylogenies for big sets of genomes. Because `andi` does not compute full alignments, it is so efficient that it scales even up to thousands of bacterial genomes.
+This is the `andi` program for estimating the evolutionary distance
+between closely related genomes. These distances can be used to
+rapidly infer phylogenies for big sets of genomes. Because `andi` does
+not compute full alignments, it is so efficient that it scales even up
+to thousands of bacterial genomes. For more details on the algorithm
+underlying `andi`, see our
+[publication](https://pubmed.ncbi.nlm.nih.gov/25504847/).
 
 This readme covers all necessary instructions for the impatient to get `andi` up and running. For extensive instructions please consult the [manual](andi-manual.pdf).
 
